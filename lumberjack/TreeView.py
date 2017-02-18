@@ -2,42 +2,62 @@
 
 import lxifc, lx
 
-class TreeView(lxifc.TreeView,
-                    lxifc.Tree,
-                    lxifc.ListenerPort,
-                    lxifc.Attributes
-                    ):
+from TreeData import *
+from TreeNode import *
+from util import *
+from var import *
 
-    _listenerClients = {}
+class TreeView(
+        lxifc.TreeView,
+        lxifc.Tree,
+        lxifc.ListenerPort,
+        lxifc.Attributes
+    ):
 
     def __init__(self, node=None, current_index=0):
-
         if node is None:
-            node = _BATCH.tree()
+            node = root_TreeNode()
 
         self.m_currentNode = node
         self.m_currentIndex = current_index
 
+        try:
+            self._listener_clients
+        except AttributeError:
+            self.__class__._listener_clients = {}
+
+    def root_TreeNode(self):
+        """Required method. Returns a TreeNode() object for display.
+        This method must be overridden by each TreeView subclass."""
+        return
+
     @classmethod
     def addListenerClient(cls, listener):
+        """Whenever a new tree view is created, we will add
+        a copy of its listener so that it can be notified
+        of attribute or shape changes"""
+
         tree_listener_obj = lx.object.TreeListener(listener)
-        cls._listenerClients[tree_listener_obj.__peekobj__()] = tree_listener_obj
+        cls._listener_clients[tree_listener_obj.__peekobj__()] = tree_listener_obj
 
     @classmethod
     def removeListenerClient(cls, listener):
+        """When a view is destroyed, it will be removed from
+        the list of clients that need notification."""
+
         tree_listener_object = lx.object.TreeListener(listener)
-        if tree_listener_object.__peekobj__() in cls._listenerClients:
-            del cls._listenerClients[tree_listener_object.__peekobj__()]
+        if tree_listener_object.__peekobj__() in cls._listener_clients:
+            del cls._listener_clients[tree_listener_object.__peekobj__()]
 
     @classmethod
     def notify_NewShape(cls):
-        for client in cls._listenerClients.values():
+        for client in cls._listener_clients.values():
             if client.test():
                 client.NewShape()
 
     @classmethod
     def notify_NewAttributes(cls):
-        for client in cls._listenerClients.values():
+        for client in cls._listener_clients.values():
             if client.test():
                 client.NewAttributes()
 
@@ -103,6 +123,9 @@ class TreeView(lxifc.TreeView,
         return self.targetNode().state()
 
     def tree_SetItemState(self, guid, state):
+        # TODO
+        # We have to store this in the data object and be prepared
+        # to return it, lest Bad Things happen.
         self.targetNode().set_state(state)
 
     def treeview_ColumnCount(self):
@@ -154,10 +177,41 @@ class TreeView(lxifc.TreeView,
 
         return False
 
+    def treeview_CellCommand(self, columnIndex):
+        lx.notimpl()
+
+    def treeview_BatchCommand(self, columnIndex):
+        lx.notimpl()
+
+    def treeview_ToolTip(self, columnIndex):
+        toolTip = self.targetNode().getToolTip(columnIndex)
+        if toolTip:
+            return toolTip
+        lx.notimpl()
+
+    def treeview_BadgeType(self, columnIndex, badgeIndex):
+        lx.notimpl()
+
+    def treeview_BadgeDetail(self, columnIndex, badgeIndex, badgeDetail):
+        lx.notimpl()
+
+    def treeview_IsInputRegion(self, columnIndex, regionID):
+        lx.notimpl()
+
+    def treeview_SupportedDragDropSourceTypes(self, columnIndex):
+        lx.notimpl()
+
+    def treeview_GetDragDropSourceObject(self, columnIndex, type):
+        lx.notimpl()
+
+    def treeview_GetDragDropDestinationObject(self, columnIndex):
+        lx.notimpl()
+
     def attr_Count(self):
         return len(_BATCH.tree().columns())
 
     def attr_GetString(self, index):
+        """needs to be fast"""
         if index == 0:
             return self.targetNode().display_name()
 

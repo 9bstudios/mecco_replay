@@ -1,5 +1,7 @@
 #python
 
+from var import *
+
 def markup(pre, string):
     """
     By Adam O'Hern for Mechanical Color

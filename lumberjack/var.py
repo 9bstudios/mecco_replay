@@ -1,30 +1,58 @@
+
+
+CLASS = 'lumberjack_class'
+VPTYPE = 'viewport_type'
+IDENT = 'ident'
+sSRV_USERNAME = 'internal_name'
+NICE_NAME = 'nice_name'
+REGIONS = 'input_regions'
+SERVERNAME = 'server_name'
+CONFIG_NAME = 'config_name'
+INTERNAL_NAME = 'internal_name'
+
 # Text Colors
-RED = markup('c', bitwise_rgb(255, 0, 0))
-BLUE = markup('c', bitwise_hex('#0e76b7'))
-GRAY = markup('c', '4113')
+GRAY = '\03(c:4113)'
 
 # Font Styles
-FONT_DEFAULT = markup('f', 'FONT_DEFAULT')
-FONT_NORMAL = markup('f', 'FONT_NORMAL')
-FONT_BOLD = markup('f', 'FONT_BOLD')
-FONT_ITALIC = markup('f', 'FONT_ITALIC')
+FONT_DEFAULT = '\03(f:FONT_DEFAULT')
+FONT_NORMAL = '\03(f:FONT_NORMAL')
+FONT_BOLD = '\03(f:FONT_BOLD')
+FONT_ITALIC = '\03(f:FONT_ITALIC')
 
-REGIONS = [
-    '(anywhere)', # 0 is reserved ".anywhere" region index
-    'batchTask', #1
-    'taskParam', #2
-    'taskParamMulti', #3
-    'taskParamSub', #4
-    'addNode', #5
-    'null', #6
-    'batchFile', #7
-    'addTask', #8
-    'addParam', #9
-    'addToList', #10
-    'addToDict' #11
-]
+LXfTREEITEM_ATTRIB =                    0x00000001 # Means listed under + instead of > in list.
+LXfTREEITEM_EXPANDED =                  0x00000002
+LXfTREEITEM_ATTREXP =                   0x00000004
 
-COL_NAME = "Name"
-COL_VALUE = "Value"
-IMAGE_FORMAT = 'image_format'
-SCENE_PATH = "scene"
+LXfTREEITEM_HIDDEN =                    0x00000008
+
+# TODO
+# The FILTER flags are flags you're expected to store and return.
+# They're set by the tree system.  This is all explained in the updated docs.
+LXfTREEITEM_FILTERED =                  0x00000040
+LXfTREEITEM_FILTER_SKIP =               0x00000080
+LXfTREEITEM_FILTER_EXPANDED =           0x00000100
+LXfTREEITEM_FILTER_ATTREXP =            0x00000200
+LXfTREEITEM_FILTER_EXPANDED_BY_ =       0x00000400
+LXfTREEITEM_FILTER_ATTREXP_BY_ =        0x00000800
+
+LXmTREEITEM_CLIENT =                    0xFF000000 # Reserved for client use
+
+LXmTREEITEM_ROWCOLOR_MASK =             0x001F0000 # The bits used for a colors
+LXfTREEITEM_ROWCOLOR_NONE =             0x00000000 # No color
+LXfTREEITEM_ROWCOLOR_RED =              0x00010000
+LXfTREEITEM_ROWCOLOR_MAGENTA =          0x00020000
+LXfTREEITEM_ROWCOLOR_PINK =             0x00030000
+LXfTREEITEM_ROWCOLOR_BROWN =            0x00040000
+LXfTREEITEM_ROWCOLOR_ORANGE =           0x00050000
+LXfTREEITEM_ROWCOLOR_YELLOW =           0x00060000
+LXfTREEITEM_ROWCOLOR_GREEN =            0x00070000
+LXfTREEITEM_ROWCOLOR_LIGHT_G =          0x00080000
+LXfTREEITEM_ROWCOLOR_CYAN =             0x00090000
+LXfTREEITEM_ROWCOLOR_BLUE =             0x000A0000
+LXfTREEITEM_ROWCOLOR_LIGHT_BLUE =       0x000B0000
+LXfTREEITEM_ROWCOLOR_ULTRAMA =          0x000C0000
+LXfTREEITEM_ROWCOLOR_PURPLE =           0x000D0000
+LXfTREEITEM_ROWCOLOR_LIGHT_PU =         0x000E0000
+LXfTREEITEM_ROWCOLOR_DARK_GREY =        0x000F0000
+LXfTREEITEM_ROWCOLOR_GREY =             0x00100000
+LXfTREEITEM_ROWCOLOR_WHITE =            0x00110000
