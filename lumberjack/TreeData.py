@@ -133,10 +133,38 @@ class TreeData(object):
     '_selected' - If True, the nodes is currently selected.
     '_selectable' - Self-explanatory.
     '_flags' - Bitwise flags for things like expand/contract, row color, etc.
-    '_ui_only' - If True, the node is exclusively for display and should be
-        ignored by any data processing operations. Used for grayed-out UI
-        elements in lists that fire commands, like "(new form)" at the bottom
-        of the Form Editor.
+
+    COMMAND NODES:
+    --------------
+
+    Command nodes are grayed-out nodes that only appear in the tree for the
+    purpose of firing a command, e.g. the (new group), (new form), and
+    (new control) nodes in the Form Editor.
+
+    To avoid confusing these nodes with data nodes, these should be added
+    as metadata to the parent node, rather than as literal nodes within
+    the data structure.
+
+    In the below example, the command node will be added to the final slot
+    amongst the children of node 1.
+
+    `{
+        'id': 1,
+        'values': {
+            'enable': { 'value': True },
+            'name': { 'value': 'A' },
+            'value': { 'value': 1.0 }
+        }
+        'children': [...]
+        'command-nodes': [
+            {
+                'command': 'myGreatCommand',
+                'label': '(My Great Command)',
+                'index': -1
+            }
+        ]
+    }`
+
 
     EXAMPLE DATA STRUCTURE:
     -----------------------
@@ -156,43 +184,53 @@ class TreeData(object):
                 'width': -3
             }
         ],
-        'data': [
-            {
-                'id': 1,
-                'values': {
-                    'enable': { 'value': True },
-                    'name': { 'value': 'A' },
-                    'value': { 'value': 1.0 }
-                }
-                'children': [
-                    {
-                        'id': 2,
-                        'values': {
-                            'enable': {
-                                'color': 'hdr(1.0, 1.0, 0.0)'
-                                'value': False
-                                },
-                            'name': {
-                                'color': '#123456',
-                                'font-weight': 'bold',
-                                'font-style': 'italic',
-                                'value': 'B'
-                                },
-                            'value': {
-                                'value': 2.0
-                                }
-                        }
+        'data': {
+            id: 'root', # Root node id is semantic-only; it is ignored.
+            children: [
+                {
+                    'id': 1,
+                    'values': {
+                        'enable': { 'value': True },
+                        'name': { 'value': 'A' },
+                        'value': { 'value': 1.0 }
                     }
-                ]
-            }, {
-                'id': 3,
-                'values': {
-                    'enable': { 'value': True },
-                    'name': { 'value': 'C' },
-                    'value': { 'value': 3.0 }
+                    'children': [
+                        {
+                            'id': 2,
+                            'values': {
+                                'enable': {
+                                    'color': 'hdr(1.0, 1.0, 0.0)'
+                                    'value': False
+                                    },
+                                'name': {
+                                    'color': '#123456',
+                                    'font-weight': 'bold',
+                                    'font-style': 'italic',
+                                    'value': 'B'
+                                    },
+                                'value': {
+                                    'value': 2.0
+                                    }
+                            }
+                        }
+                    ],
+                    'command-nodes': [
+                        {
+                            'command': 'myGreatCommand',
+                            'label': '(My Great Command)',
+                            'index': -1
+                        }
+                    ]
+                }, {
+                    'id': 3,
+                    'values': {
+                        'enable': { 'value': True },
+                        'name': { 'value': 'C' },
+                        'value': { 'value': 3.0 }
+                    }
                 }
-            }
-        ]
+            ]
+        }
     }`
     """
 
@@ -208,5 +246,12 @@ class TreeData(object):
         # its 'values' dictionary with value_dict
         pass
 
+    @property
     def data(self):
         return self._data
+
+    @property
+    def root(self):
+        # TODO
+        # returns root node object
+        pass

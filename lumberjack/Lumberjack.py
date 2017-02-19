@@ -43,9 +43,9 @@ class Lumberjack(object):
         # lumberjack subclass, not global to all lumberjack subclasses.
 
         try:
-            self._tree_data
+            self._tree_nodes
         except AttributeError:
-            self.__class__._tree_data = TreeData()
+            self.__class__._tree_nodes = TreeNode()
 
         try:
             self._tree_view
@@ -53,50 +53,26 @@ class Lumberjack(object):
             self.__class__._tree_view = TreeView()
 
     def rebuild(self, data):
-        """Updates the lumberjack TreeData object, regrows the TreeNode,
+        """Rebuilds the lumberjack TreeNode object from a dictionary
         and notifies the TreeView of the change.
 
-        The TreeView has two update notifiers:
-         - NewShape redraws the entire tree from scratch. Slow but thorough.
-         - NewAttributes only updates cell values within the tree. Fast,
-           but problematic if the data structure has changed.
+        :param data: Valid lumberjack TreeNode object or compatible dictionary."""
 
-        As such, this method has a 'regrow' parameter: when True, we use the
-        NewShape method. When False, we use NewAttributes. Use the latter with
-        caution.
-
-        :param data: Valid lumberjack TreeData object or compatible dictionary.
-        :param regrow: If structure of data hasn't changed since last update,
-        set this to False."""
-
-        # We can accept either a dictionary, or a TreeData object.
+        # We can accept either a dictionary, or a TreeNode object.
         # If it's a dict, just pump it straight into our data object:
         if isinstance(data, dict):
-            self._tree_data.update(data)
+            # TODO Build the tree
 
         # If it's a TreeData object, grab its internal data:
-        elif isinstance (data, TreeData):
-            self._tree_data.update(data.data())
+        elif isinstance (data, TreeNode):
+            self._tree_nodes = data
 
         # Rebuild the tree
         self._tree_view.notify_NewShape()
 
-    def update(self, node_id, column_name, value_dict):
-        """Update a specific cell and refresh the tree view. Faster than the
-        rebuild() method, but requires that you provide the specific node, column,
-        and value to update. The 'value_dict' parameter should be the same
-        format as 'value' parameters in the TreeData object, containing the
-        required 'value' field and optional fields like 'color' etc.
-
-        :param node_id: 'id' field for the node to modify
-        :param column_name: 'internal-name' for the cell to modify
-        :param value_dict: 'value' dictionary, requires a key called 'value'."""
-
-        # Update TreeData object
-        self._tree_data.update(node_id, column_name, value_dict)
-
-        # Update TreeView object
-        # TODO
+    def refresh(self):
+        """Called by TreeNodes when a value is updated. Refreshes the treeview
+        cell values without rebuilding the entire tree."""
 
         # Refresh the tree
         self._tree_view.notify_NewAttributes()
@@ -110,6 +86,11 @@ class Lumberjack(object):
         # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
         # string for use in each of these fields.
 
+        for parameter in [INTERNAL_NAME, VPTYPE, ID4, NICE_NAME]:
+            if not getattr(blessing_parameters(), parameter):
+                lx.out("Treeview could not be blessed. Missing parameter '%s'." % parameter)
+                return
+
         config_name = blessing_parameters()[INTERNAL_NAME]
         server_username = blessing_parameters()[INTERNAL_NAME]
         server_name = blessing_parameters()[INTERNAL_NAME]
@@ -121,10 +102,10 @@ class Lumberjack(object):
             blessing_parameters()[NICE_NAME]
         ))
 
-        if self.regions():
+        if getattr(blessing_parameters(), REGIONS):
             sINMAP = "name[{}] regions[{}]".format(
                 server_username, " ".join(
-                    ['{}@{}'.format(n, i) for n, i in enumerate(self.regions) if n != 0]
+                    ['{}@{}'.format(n, i) for n, i in enumerate(blessing_parameters()[REGIONS]) if n != 0]
                 )
             )
 
@@ -134,7 +115,11 @@ class Lumberjack(object):
             lx.symbol.sINMAP_DEFINE: sINMAP
         }
 
-        lx.bless(blessing_parameters()[CLASS], server_name, tags)
+        # Can only be blessed once per session. Just in case, try/except.
+        try:
+            lx.bless(blessing_parameters()[CLASS], server_name, tags)
+        except:
+            lx.out("Multiple Blessings: The treeview '%s' has already been blessed." % server_name)
 
     def blessing_parameters(self):
         """Returns all of the necessary information to bless the treeview into
@@ -183,12 +168,12 @@ class Lumberjack(object):
 
         return
 
-    @classmethod
-    def tree_data(cls):
+    @property
+    def root(self):
         """Returns the class TreeData object."""
-        return cls._tree_data
+        return self.__class__._tree_nodes
 
-    @classmethod
-    def tree_view(cls):
+    @property
+    def view(self):
         """Returns the class TreeView object."""
-        return cls._tree_view
+        return self.__class__._tree_view
