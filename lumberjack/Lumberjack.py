@@ -25,7 +25,7 @@ class Lumberjack(object):
 
     Lumberjack()`.root # gets root node`
     `Lumberjack().add_child(kwargs**) # equiv of .root.add_child()`
-    `Lumberjack().addCommandNode(kwargs**)`
+    `Lumberjack().tail_commands = [TreeNode()] # add UI commands to bottom of children
 
     Nodes have methods for various manipulations and properties for meta
     properties like row color. Note that input mapping regions can be added
@@ -77,13 +77,23 @@ class Lumberjack(object):
     `Lumberjack().selected # list of selected nodes`
     `Lumberjack().primary # most recently selected node (usually)`
     `Lumberjack().nodes # all nodes in tree`
-    `Lumberjack().node(ident) # node by ident`
     `Lumberjack().find(column_name, search_term) # list of matches`
     'Lumberjack().clear_selection()'
 
     Rebuild and Refresh methods are built into the various manipulation
     methods in Lumberjack, so there is no need to manually Refresh or Rebuild
     the treeview."""
+
+    # In case there are multiple Lumberjack subclasses floating around,
+    # we create our own subclass of TreeView for the blessing. That way
+    # the blessed class is sure not to interfere with any other Lumberjack
+    # subclasses.
+
+    _TreeViewSubclass = type('_TreeViewSubclass', (TreeView,), {})
+
+    _root = None
+    _tree_view = None
+    _blessed = False
 
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
@@ -95,20 +105,12 @@ class Lumberjack(object):
         The TreeData object is the data moel, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
-        # On init we need to create class variables. It's important that we do
-        # this inside the __init__() method and NOT at the top of the class,
-        # because we want for these class variables to be specific to any
-        # lumberjack subclass, not global to all lumberjack subclasses.
+        # The TreeNode() object is the root of the tree, and all other nodes
+        # will be children of this node. The root node is NOT visible in the GUI.
+        self._root = TreeNode()
 
-        try:
-            self._tree_nodes
-        except AttributeError:
-            self.__class__._tree_nodes = TreeNode()
-
-        try:
-            self._tree_view
-        except AttributeError:
-            self.__class__._tree_view = TreeView()
+        # Our internal handle for the view itself.
+        self._tree_view = _TreeViewSubclass()
 
     def rebuild(self, data):
         """Rebuilds the lumberjack TreeNode object from a dictionary
@@ -123,7 +125,7 @@ class Lumberjack(object):
 
         # If it's a TreeData object, grab its internal data:
         elif isinstance (data, TreeNode):
-            self._tree_nodes = data
+            self._root = data
 
         # Rebuild the tree
         self._tree_view.notify_NewShape()
@@ -135,111 +137,162 @@ class Lumberjack(object):
         # Refresh the tree
         self._tree_view.notify_NewAttributes()
 
-    def bless(self):
-        """Blesses a treeview using parameters defined in the lumberjack
-        subclass's `blessing_parameters` method."""
+    def bless(self, viewport_type, nice_name, internal_name, ident, column_names, input_regions, notifiers):
+        """Blesses the TreeView into existence in the MODO GUI.
+
+        Requires seven arguments.
+
+        :param viewport_type:   category in the MODO UI popup
+                                vpapplication, vp3DEdit, vptoolbars, vpproperties, vpdataLists,
+                                vpinfo, vpeditors, vputility, or vpembedded
+
+        :param nice_name:       display name for the treeview in window title bars, etc
+                                should ideally be a message table lookup '@table@message@'
+
+        :param internal_name:   name of the treeview server (also used in config files)
+
+        :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
+
+        :param column_names:    a list of column names for node values. Values in each
+                                node's values dictionary must correspond with these strings
+
+        :param input_regions:   list of regions for input remapping. These can be implemented from
+                                within the data object itself as described in TreeData(), and used
+                                in InputRemapping config files, like this:
+
+                                <atom type="InputRemapping">
+                                    <hash type="Region" key="treeViewConfigName+(contextless)/(stateless)+regionName@rmb">render</hash>
+                                </atom>
+
+                                NOTE: slot zero [0] in the list is reserved for the .anywhere region.
+                                Don't use it.
+
+                                [
+                                    '(anywhere)',       # 0 reserved for .anywhere
+                                    'regionNameOne',    # 1
+                                    'regionNameTwo'     # 2
+                                ]
+
+        :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.
+
+                                [
+                                    ("select.event", "polygon +ldt"),
+                                    ("select.event", "item +ldt")
+                                ]
+        """
+
+        # Can only be blessed once per session.
+        if self._blessed:
+            raise Exception('%s class has already been blessed.' % self.__class__.__name__)
 
         # NOTE: MODO has three different strings for SERVERNAME, sSRV_USERNAME,
         # and name to be used in config files. In practice, these should really
         # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
         # string for use in each of these fields.
 
-        for parameter in [INTERNAL_NAME, VPTYPE, ID4, NICE_NAME]:
-            if not getattr(blessing_parameters(), parameter):
-                lx.out("Treeview could not be blessed. Missing parameter '%s'." % parameter)
-                return
-
-        config_name = blessing_parameters()[INTERNAL_NAME]
-        server_username = blessing_parameters()[INTERNAL_NAME]
-        server_name = blessing_parameters()[INTERNAL_NAME]
+        config_name = internal_name
+        server_username = internal_name
+        server_name = internal_name
 
         sTREEVIEW_TYPE = " ".join((
-            blessing_parameters()[VPTYPE],
-            blessing_parameters()[ID4],
+            viewport_type,
+            ident,
             config_name,
-            blessing_parameters()[NICE_NAME]
+            nice_name
         ))
 
-        if getattr(blessing_parameters(), REGIONS):
-            sINMAP = "name[{}] regions[{}]".format(
-                server_username, " ".join(
-                    ['{}@{}'.format(n, i) for n, i in enumerate(blessing_parameters()[REGIONS]) if n != 0]
-                )
+        sINMAP = "name[{}] regions[{}]".format(
+            server_username, " ".join(
+                ['{}@{}'.format(n, i) for n, i in enumerate(input_regions) if n != 0]
             )
+        )
 
         tags = {
             lx.symbol.sSRV_USERNAME: server_username,
-            lx.symbol.sTREEVIEW_TYPE: blessing_parameters()[VPTYPE],
+            lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
             lx.symbol.sINMAP_DEFINE: sINMAP
         }
 
-        # Can only be blessed once per session. Just in case, try/except.
         try:
-            lx.bless(blessing_parameters()[CLASS], server_name, tags)
+            # We create a Lumberjack-specific subclass of our TreeView class for
+            # the blessing, just in case more than one Lumberjack subclass exists.
+            lx.bless(self._TreeViewSubclass, server_name, tags)
+
+            # Make sure it doesn't happen again.
+            self._blessed = True
+
         except:
-            lx.out("Multiple Blessings: The treeview '%s' has already been blessed." % server_name)
-
-    def blessing_parameters(self):
-        """Returns all of the necessary information to bless the treeview into
-        the MODO UI. Required.
-
-        `return {
-
-            # category in MODO UI popup
-            # vpapplication, vp3DEdit, vptoolbars, vpproperties, vpdataLists,
-            # vpinfo, vpeditors, vputility, or vpembedded
-            'viewport_type':    'vpapplication',
-
-            # display name for the treeview in window title bars, etc
-            # should ideally be a message table lookup '@table@message@'
-            'nice_name':        'My Tree View',
-
-            # name of the treeview server (also used in config files)
-            'internal_name':    'myTreeView',
-
-            # arbitrary, unique, four-letter, all-caps identifier
-            'ident':            'MTV1'
-
-            # a list of column names for node values. Values in each node's
-            # values dictionary must correspond with these strings
-            'column_names': [
-                'enabled',
-                'name',
-                'value'
-            ]
-
-            # list of regions for input remapping. These can be implemented from
-            # within the data object itself as described in TreeData(), and used
-            # in InputRemapping config files, like this:
-            #
-            # <atom type="InputRemapping">
-            #     <hash type="Region" key="treeViewConfigName+(contextless)/(stateless)+regionName@rmb">render</hash>
-            # </atom>
-            #
-            # NOTE: slot zero [0] in the list is reserved for the .anywhere region.
-            # Don't use it.
-            'input-regions': [
-                '(anywhere)',       # 0 reserved for .anywhere
-                'regionNameOne',    # 1
-                'regionNameTwo'     # 2
-            ]
-
-            # Returns a list of notifier tuples for auto-updating the tree. Optional.
-            'notifiers': [
-                ("select.event", "polygon +ldt"),
-                ("select.event", "item +ldt")
-            ]
-        }`
-        """
-
-        return
+            raise Exception('Unable to bless %s.' % self.__class__.__name__)
 
     @property
     def root(self):
         """Returns the class TreeData object."""
-        return self.__class__._tree_nodes
+        return self.__class__._root
 
     @property
     def view(self):
         """Returns the class TreeView object."""
         return self.__class__._tree_view
+
+    @property
+    def primary(self):
+        """Returns the primary TreeNode() object in the tree.
+        Usually this is the most recently selected or created."""
+        return self._root.primary
+
+    @property
+    def selected(self):
+        """Returns the selected TreeNode() objects in the tree."""
+        return self._root.selected
+
+    @property
+    def clear_selection(self):
+        """Returns the selected TreeNode() objects in the tree."""
+        return self._root.deselect_descendants()
+
+    def children(self):
+        doc = """A list of `TreeNode()` objects that are children of the current
+        node. Note that children appear under the triangular twirl in the listview
+        GUI, while attributes appear under the + sign."""
+        def fget(self):
+            return self._root.children
+        def fset(self, value):
+            self._root.children = value
+        return locals()
+
+    children = property(**children())
+
+    def tail_commands(self):
+        doc = """List of TreeNode objects appended to the bottom of the node's list
+        of children, e.g. (new group), (new form), and (new command) in Form Editor.
+        Command must be mapped using normal input remapping to the node's input region."""
+        def fget(self):
+            return self._root.tail_commands
+        def fset(self, value):
+            self._root.tail_commands = value
+        return locals()
+
+    tail_commands = property(**tail_commands())
+
+    def add_child(self, **kwargs):
+        """Adds a child `TreeNode()` to the current node and returns it."""
+        self._root.children.append(TreeNode(**kwargs))
+        return self._root.children[-1]
+
+    def nodes(self):
+        """Returns a list of all nodes in the tree."""
+        nodes = []
+        for child in self._root.children:
+            nodes.extend(child.get_descendants())
+        return nodes
+
+    def find(self, column_name, search_term, regex=False):
+        """Returns a list of nodes with values matching search criteria.
+
+        If the search term is a string, it is treated as a regular expression.
+        If it is any other value, search will require an exact match.
+
+        :param column_name: name of the column to search
+        :param search_term: regular expression or value to search for"""
+
+        return self._root.find_in_descendants(column_name, search_term, regex)

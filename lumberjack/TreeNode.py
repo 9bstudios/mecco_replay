@@ -1,6 +1,19 @@
 # python
 
+import re.search
+
 class TreeNode(object):
+    """Generalized container object for TreeView node data. Everything needed
+    to draw the node in the TreeView UI is contained in the TreeNode, as well
+    as properties and methods for getting, setting, and modifying that data
+    from outside.
+
+    The Lumberjack() object class is a self-contained Model-View-Controller system.
+    The Lumberjack() object itself acts as controller, it creates a TreeView() subclass
+    to act as the view, and a TreeNode() object acts as the model.
+
+    End-users of the Lumberjack class will probably never interact with TreeView
+    objects. They will, however, interact frequently with TreeNode objects."""
 
     # Whether selectable in GUI
     _selectable = bool()
@@ -25,6 +38,10 @@ class TreeNode(object):
     # are also TreeNode objects, but listed under the triangular twirl in the GUI.)
     _attributes = list()
 
+    # List of TreeNode objects appended to the bottom of the node's list
+    # of children, e.g. (new group), (new form), and (new command) in Form Editor
+    _tail_commands = list()
+
     # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
     _state = None
 
@@ -40,6 +57,7 @@ class TreeNode(object):
         self._index = getattr(kwargs, 'index', 0)
         self._children = getattr(kwargs, 'children', [])
         self._attributes = getattr(kwargs, 'attributes', [])
+        self._tail_commands = getattr(kwargs, 'tail_commands', [])
         self._state = getattr(kwargs, 'state', None)
         self._input_region = getattr(kwargs, 'input_region', None)
 
@@ -154,6 +172,18 @@ class TreeNode(object):
 
     attributes = property(**attributes())
 
+    def tail_commands(self):
+        doc = """List of TreeNode objects appended to the bottom of the node's list
+        of children, e.g. (new group), (new form), and (new command) in Form Editor.
+        Command must be mapped using normal input remapping to the node's input region."""
+        def fget(self):
+            return self._tail_commands
+        def fset(self, value):
+            self._tail_commands = value
+        return locals()
+
+    tail_commands = property(**tail_commands())
+
     def state(self):
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.
         Leave these alone."""
@@ -201,6 +231,18 @@ class TreeNode(object):
         for child in self.children:
             descendants.extend(child.get_descendants())
         return descendants
+
+    def select_descendants(self):
+        """Selects all children, grandchildren, etc."""
+        for child in self.children:
+            child.selected = True
+            child.select_descendants()
+
+    def deselect_descendants(self):
+        """Selects all children, grandchildren, etc."""
+        for child in self.children:
+            child.selected = False
+            child.deselect_descendants()
 
     def get_anscestors(self):
         """Returns a list of all parents, grandparents, etc for the current node."""
@@ -250,3 +292,32 @@ class TreeNode(object):
     def tier(self):
         """Returns the number of anscestors."""
         return len(self.get_ancestors())
+
+    def find_in_descendants(self, column_name, search_term, regex=False):
+        """Returns a list of descendant nodes with values matching search criteria.
+
+        Unless regex is enabled, the search_term requires an exact match.
+
+        :param column_name: (str) name of the column to search
+        :param search_term: (str, bool, int, or float) value to search for
+        :param regex: (bool) use regular expression"""
+
+        found = []
+
+        for child in self.children:
+
+            if not getattr(child.values, column_name):
+                continue
+
+            if regex:
+                result = re.search(search_term, child.values[column_name])
+
+            elif not regex:
+                result = child.values[column_name]
+
+            if result:
+                found.append(child)
+
+            found.extend(child.find_in_descendants)
+
+        return found
