@@ -45,8 +45,9 @@ class Lumberjack(object):
     `Lumberjack().children[n].delete_descendants()`
     `Lumberjack().children[n].row_color = row_color_string`
     `Lumberjack().children[n].input_region = region_name`
-    `Lumberjack().children[n].descendants()`
-    `Lumberjack().children[n].ancestors()`
+    `Lumberjack().children[n].children`
+    `Lumberjack().children[n].get_descendants()`
+    `Lumberjack().children[n].get_ancestors()`
     `Lumberjack().children[n].tier() # returns number of ancestors`
 
     Nodes have a `values` property containing keys for each column in the
@@ -198,6 +199,14 @@ class Lumberjack(object):
 
             # arbitrary, unique, four-letter, all-caps identifier
             'ident':            'MTV1'
+
+            # a list of column names for node values. Values in each node's
+            # values dictionary must correspond with these strings
+            'column_names': [
+                'enabled',
+                'name',
+                'value'
+            ]
 
             # list of regions for input remapping. These can be implemented from
             # within the data object itself as described in TreeData(), and used
