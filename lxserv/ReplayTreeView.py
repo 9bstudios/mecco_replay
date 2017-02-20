@@ -23,9 +23,6 @@ class ReplayLumberjack(lumberjack.Lumberjack):
             ]
         }
 
-    def notifiers(self):
-        return
-
 ReplayLumberjack().bless()
 
 ###################

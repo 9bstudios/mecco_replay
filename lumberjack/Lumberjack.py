@@ -6,26 +6,83 @@ from TreeNode import TreeNode
 from TreeView import TreeView
 
 class Lumberjack(object):
-    """Metaclass containing everything necessary to create a working treeview in MODO.
+    """Metaclass containing everything necessary to create
+    and manage a working treeview in MODO.
 
-    A Lumberjack object contains all of the necessary methods to:
-        - bless a treeview object
-        - create and maintain a class-wide persistent data object for tree data
-        - generate a node object for use in the treeview object
-        - update the data object, nodes, and treeview to keep all three in sync
-        - auto-generate input mapping regions
-        - easily implement common list-management commands, like:
-            - refresh data
-            - add node
-            - delete node
-            - reparent node
-            - explicit reorder
-            - drag/drop reorder
-        - retrieve any and all up-to-date tree data by:
-            - tree selection state
-            - internal active state
-            - node id
-            - node search"""
+    COMMON OPERATIONS
+    -----------------
+
+    TreeView object must be blessed in order to be available in MODO.
+    Several parameters are required as a prerequisite of blessing, see
+    blessing_parameters() method for more. TreeView can only be blessed
+    once per session.
+
+    `Lumberjack().bless()`
+
+    The Lumberjack() root node is available with the `.root` property, but
+    all of its methods are also available on the Lumberjack() object itself
+    for convenience and readability.
+
+    Lumberjack()`.root # gets root node`
+    `Lumberjack().add_child(kwargs**) # equiv of .root.add_child()`
+    `Lumberjack().addCommandNode(kwargs**)`
+
+    Nodes have methods for various manipulations and properties for meta
+    properties like row color. Note that input mapping regions can be added
+    to rows or individual values (i.e. cells) as needed.
+
+    `Lumberjack().children[n].selectable = False`
+    `Lumberjack().children[n].selected = True`
+    `Lumberjack().children[n].primary = True`
+    `Lumberjack().children[n].setParent(node)`
+    `Lumberjack().children[n].clear_children(node)`
+    `Lumberjack().children[n].reorder(index)`
+    `Lumberjack().children[n].reorder_up()`
+    `Lumberjack().children[n].reorder_down()`
+    `Lumberjack().children[n].reorder_top()`
+    `Lumberjack().children[n].reorder_bottom()`
+    `Lumberjack().children[n].delete()`
+    `Lumberjack().children[n].delete_descendants()`
+    `Lumberjack().children[n].row_color = row_color_string`
+    `Lumberjack().children[n].input_region = region_name`
+    `Lumberjack().children[n].descendants()`
+    `Lumberjack().children[n].ancestors()`
+    `Lumberjack().children[n].tier() # returns number of ancestors`
+
+    Nodes have a `values` property containing keys for each column in the
+    TreeView. The value property has set/get built-in, but also contains
+    properties for metadata like color, font_weight, font_style, etc.
+    An optional display_value overrides the value parameter for display
+    in the TreeView UI, but the `value` is always used internally.
+
+    `Lumberjack().children[n].values[col_name] = value`
+    `Lumberjack().children[n].values[col_name].value = value # equiv of above`
+    `Lumberjack().children[n].values[col_name].display_value = display_value`
+    `Lumberjack().children[n].values[col_name].input_region = region_name`
+    `Lumberjack().children[n].values[col_name].color = color_string`
+    `Lumberjack().children[n].values[col_name].font_weight = 'bold'`
+    `Lumberjack().children[n].values[col_name].font_style = 'italic'`
+
+    Attributes are TreeNodes that appear under the `+` sign in the MODO UI.
+    They have the same columns as other nodes, but are separate from the
+    node's children.
+
+    `Lumberjack().children[n].addAttribute(kwargs**)`
+    `Lumberjack().children[n].attribute[attribute_name] = attribute_value`
+
+    Various tree-wide properties and methods are available for the TreeView
+    from the Lumberjack object itself.
+
+    `Lumberjack().selected # list of selected nodes`
+    `Lumberjack().primary # most recently selected node (usually)`
+    `Lumberjack().nodes # all nodes in tree`
+    `Lumberjack().node(ident) # node by ident`
+    `Lumberjack().find(column_name, search_term) # list of matches`
+    'Lumberjack().clear_selection()'
+
+    Rebuild and Refresh methods are built into the various manipulation
+    methods in Lumberjack, so there is no need to manually Refresh or Rebuild
+    the treeview."""
 
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
