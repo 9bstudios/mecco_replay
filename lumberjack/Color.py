@@ -25,7 +25,7 @@ class Color(object):
         self._internal_rgb = [r, g, b]
 
     def set_with_hex(self, h):
-        """Sets internal RGB using a 16-bit hex code string, e.g. "#ffffff""""
+        """Sets internal RGB using a 16-bit hex code string, e.g. "#ffffff"""
         h = h.strip()
         if h[0] == '#':
             h = h[1:]

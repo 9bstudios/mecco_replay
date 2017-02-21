@@ -1,6 +1,6 @@
 # python
 
-import re.search
+from re import search
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
@@ -25,38 +25,38 @@ class TreeNode(object):
     _callbacks_for_rebuild = []
 
     # Whether selectable in GUI
-    _selectable = bool()
+    _selectable = True
 
     # Whether selected in GUI
-    _selected = bool()
+    _selected = False
 
     # Whether "primary" in GUI, aka most recently selected
-    _primary = bool()
+    _primary = False
 
     # Dict of TreeValue objects for each column; {column_name: TreeValue()}
-    _values = dict()
+    _values = {}
 
     # TreeNode parent. All TreeNode() objects except root should have a parent.
     _parent = None
 
     # List of TreeNode objects (listed under carrot twirl in GUI; Attributes
     # are also TreeNode objects, but listed under the + sign in the GUI.)
-    _children = list()
+    _children = []
 
     # List of TreeNode objects (listed under the + in GUI; Children
     # are also TreeNode objects, but listed under the triangular twirl in the GUI.)
-    _attributes = list()
+    _attributes = []
 
     # List of TreeNode objects appended to the bottom of the node's list
     # of children, e.g. (new group), (new form), and (new command) in Form Editor
-    _tail_commands = list()
+    _tail_commands = []
 
     # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
     _state = None
 
     # String for use in input remapping. Must correspond with one of the region
     # strings provided in the Lumberjack blessing_parameters() method.
-    _input_region = str()
+    _input_region = None
 
     def __init__(self, **kwargs):
         self._columns = getattr(kwargs, 'columns', [])
@@ -79,7 +79,7 @@ class TreeNode(object):
     # PROPERTIES
     # ----------
 
-    def columns(self):
+    def columns():
         doc = """List of column names for the node tree. Common to all nodes.
         Set during `Lumberjack().bless()`"""
         def fget(self):
@@ -90,7 +90,7 @@ class TreeNode(object):
 
     columns = property(**columns())
 
-    def callbacks_for_refresh(self):
+    def callbacks_for_refresh():
         doc = "Method to call when cell values are updated."
         def fget(self):
             return self._callbacks_for_refresh
@@ -100,7 +100,7 @@ class TreeNode(object):
 
     callbacks_for_refresh = property(**callbacks_for_refresh())
 
-    def callbacks_for_rebuild(self):
+    def callbacks_for_rebuild():
         doc = "Method to call when tree structure is updated."
         def fget(self):
             return self._callbacks_for_rebuild
@@ -110,7 +110,7 @@ class TreeNode(object):
 
     callbacks_for_rebuild = property(**callbacks_for_rebuild())
 
-    def selectable(self):
+    def selectable():
         doc = "Whether the node is selectable in the GUI. (boolean)"
         def fget(self):
             return self._selectable
@@ -123,7 +123,7 @@ class TreeNode(object):
 
     selectable = property(**selectable())
 
-    def selected(self):
+    def selected():
         doc = "Whether the node is selected in the GUI. (boolean)"
         def fget(self):
             return self._selected
@@ -133,7 +133,7 @@ class TreeNode(object):
 
     selected = property(**selected())
 
-    def primary(self):
+    def primary():
         doc = """Whether the node is primary in the GUI. (boolean)
 
         Typically the most recently selected or created node will be primary.
@@ -148,7 +148,7 @@ class TreeNode(object):
 
     primary = property(**primary())
 
-    def values(self):
+    def values():
         doc = """The values for each column in the node. (dictionary)
 
         The dictionary should have one key for each column name defined in the
@@ -160,14 +160,14 @@ class TreeNode(object):
         ignored."""
         def fget(self):
             return self._values
-        def fset(self, values = {}):
+        def fset(self, values):
             self._values = values
             self.callback_refresh()
         return locals()
 
     values = property(**values())
 
-    def parent(self):
+    def parent():
         doc = """The parent node of the current `TreeNode()` object. The root
         node's parent is `None`."""
         def fget(self):
@@ -179,7 +179,7 @@ class TreeNode(object):
 
     parent = property(**parent())
 
-    def index(self):
+    def index():
         doc = "The index of the node amongst its siblings (parent's children)."
         def fget(self):
             return self._parent.children.index(self)
@@ -192,7 +192,7 @@ class TreeNode(object):
 
     index = property(**index())
 
-    def children(self):
+    def children():
         doc = """A list of `TreeNode()` objects that are children of the current
         node. Note that children appear under the triangular twirl in the listview
         GUI, while attributes appear under the + sign."""
@@ -205,7 +205,7 @@ class TreeNode(object):
 
     children = property(**children())
 
-    def attributes(self):
+    def attributes():
         doc = """A list of `TreeNode()` objects that are attributes of the current
         node. Note that attributes appear under the + sign in the listview
         GUI, while children appear under the triangular twirl."""
@@ -218,7 +218,7 @@ class TreeNode(object):
 
     attributes = property(**attributes())
 
-    def tail_commands(self):
+    def tail_commands():
         doc = """List of TreeNode objects appended to the bottom of the node's list
         of children, e.g. (new group), (new form), and (new command) in Form Editor.
         Command must be mapped using normal input remapping to the node's input region."""
@@ -231,7 +231,7 @@ class TreeNode(object):
 
     tail_commands = property(**tail_commands())
 
-    def state(self):
+    def state():
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.
         Leave these alone."""
         def fget(self):
@@ -242,7 +242,7 @@ class TreeNode(object):
 
     state = property(**state())
 
-    def input_region(self):
+    def input_region():
         doc = """String for use in input remapping. Must correspond with one of the region
         strings provided in the Lumberjack blessing_parameters() method."""
         def fget(self):
@@ -293,7 +293,7 @@ class TreeNode(object):
             child.selected = False
             child.deselect_descendants()
 
-    def get_anscestors(self):
+    def get_ancestors(self):
         """Returns a list of all parents, grandparents, etc for the current node."""
         if self.parent:
             return self.parent.get_anscestors().extend(self.parent)
@@ -366,7 +366,7 @@ class TreeNode(object):
                 continue
 
             if regex:
-                result = re.search(search_term, child.values[column_name])
+                result = search(search_term, child.values[column_name])
 
             elif not regex:
                 result = child.values[column_name]

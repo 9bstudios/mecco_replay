@@ -14,15 +14,15 @@ class TreeValue(object):
     _tooltip = None
 
     def __init__(self, **kwargs):
-        self._value = value
-        self._datatype = datatype
-        self._display_value = display_value
-        self._input_region = input_region
-        self._color = color
-        self._font = font
-        self._tooltip = tooltip
+        self._value = value if value in kwargs else None
+        self._datatype = datatype if datatype in kwargs else None
+        self._display_value = display_value if display_value in kwargs else None
+        self._input_region = input_region if input_region in kwargs else None
+        self._color = color if color in kwargs else None
+        self._font = font if font in kwargs else None
+        self._tooltip = tooltip if tooltip in kwargs else None
 
-    def value():
+    def value(self):
         doc = """The actual cell value. Note that this can be overridden by
         `display_value()` when displayed in a TreeView."""
         def fget(self):
@@ -33,7 +33,7 @@ class TreeValue(object):
 
     value = property(**value())
 
-    def datatype():
+    def datatype(self):
         doc = """The datatype for the value. Can be any of the normal MODO value
         display types expressed as lowercase strings: 'acceleration', 'angle',
         'angle3', 'axis', 'boolean', 'color', 'color1', 'date', 'datetime',
@@ -47,7 +47,7 @@ class TreeValue(object):
 
     datatype = property(**datatype())
 
-    def display_value():
+    def display_value(self):
         doc = """The value as it will be used in the treeview, including any formatting,
         fonts, colors, etc.
 
@@ -74,7 +74,7 @@ class TreeValue(object):
 
     display_value = property(**display_value())
 
-    def intput_region():
+    def intput_region(self):
         doc = """Region for input-mapping. Must correspond to one of the input_region
         strings provided during the `Lumberjack().bless()` operation."""
         def fget(self):
@@ -85,7 +85,7 @@ class TreeValue(object):
 
     intput_region = property(**intput_region())
 
-    def color():
+    def color(self):
         doc = "Should be a Lumberjack `Color()` object. Default: None"
         def fget(self):
             return self._color
@@ -95,7 +95,7 @@ class TreeValue(object):
 
     color = property(**color())
 
-    def font():
+    def font(self):
         doc = "Should be a Lumberjack `Font()` object. Default: None"
         def fget(self):
             return self._font
@@ -105,7 +105,7 @@ class TreeValue(object):
 
     font = property(**font())
 
-    def tooltip():
+    def tooltip(self):
         doc = """Tooltip to display for the cell. Should be a message table lookup
         if at all possible. (e.g. @table@message@)"""
         def fget(self):

@@ -14,10 +14,10 @@ INTERNAL_NAME = 'internal_name'
 GRAY = '\03(c:4113)'
 
 # Font Styles
-FONT_DEFAULT = '\03(f:FONT_DEFAULT')
-FONT_NORMAL = '\03(f:FONT_NORMAL')
-FONT_BOLD = '\03(f:FONT_BOLD')
-FONT_ITALIC = '\03(f:FONT_ITALIC')
+FONT_DEFAULT = '\03(f:FONT_DEFAULT'
+FONT_NORMAL = '\03(f:FONT_NORMAL'
+FONT_BOLD = '\03(f:FONT_BOLD'
+FONT_ITALIC = '\03(f:FONT_ITALIC'
 
 LXfTREEITEM_ATTRIB =                    0x00000001 # Means listed under + instead of > in list.
 LXfTREEITEM_EXPANDED =                  0x00000002

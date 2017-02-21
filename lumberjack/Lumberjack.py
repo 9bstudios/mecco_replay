@@ -1,7 +1,6 @@
 # python
 
-from var import *
-from TreeData import TreeData
+import lx, traceback
 from TreeNode import TreeNode
 from TreeView import TreeView
 
@@ -84,12 +83,17 @@ class Lumberjack(object):
     methods in Lumberjack, so there is no need to manually Refresh or Rebuild
     the treeview."""
 
-    # In case there are multiple Lumberjack subclasses floating around,
-    # we create our own subclass of TreeView for the blessing. That way
-    # the blessed class is sure not to interfere with any other Lumberjack
-    # subclasses.
+    # A given MODO instance may create multiple TreeView class instances for display
+    # in the UI. As such, we use class variables within the TreeView to keep those
+    # various views in sync.
 
-    _TreeViewSubclass = type('_TreeViewSubclass', (TreeView,), {})
+    # This means, however, that if we use the Lumberjack wrapper to bless multiple
+    # different TreeViews, they will conflict with one another unless we create
+    # a subclass of TreeView that is unique to the Lumberjack() object in question.
+
+    # Life. It's complicated.
+    class _TreeViewSubclass(TreeView):
+        pass
 
     _root = None
     _tree_view = None
@@ -159,7 +163,7 @@ class Lumberjack(object):
 
         # Can only be blessed once per session.
         if cls._blessed:
-            raise Exception('%s class has already been blessed.' % self.__class__.__name__)
+            raise Exception('%s class has already been blessed.' % cls.__name__)
 
         # The TreeNode() object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
@@ -169,7 +173,7 @@ class Lumberjack(object):
         cls._root.callbacks_for_refresh.append(cls.refresh)
 
         # Our internal handle for the view itself.
-        cls._tree_view = _TreeViewSubclass(cls._root)
+        cls._tree_view = cls._TreeViewSubclass(cls._root)
 
         # NOTE: MODO has three different strings for SERVERNAME, sSRV_USERNAME,
         # and name to be used in config files. In practice, these should really
@@ -214,6 +218,12 @@ class Lumberjack(object):
             cls._blessed = True
 
         except:
+            traceback.print_exc()
+            lx.out("----------")
+            lx.out("server_name = ", server_name)
+            lx.out("tags = ", tags)
+            lx.out("_TreeViewSubclass = ", cls._TreeViewSubclass)
+            lx.out("----------")
             raise Exception('Unable to bless %s.' % cls.__name__)
 
     @property
@@ -248,7 +258,7 @@ class Lumberjack(object):
         """Returns the selected TreeNode() objects in the tree."""
         return self.root.deselect_descendants()
 
-    def columns(self):
+    def columns():
         doc = """List of columns and their widths for the treeview in the
         format ('name', width), where width can be a positive integer in pixels
         or a negative integer representing a width relative to the total of all
@@ -263,7 +273,7 @@ class Lumberjack(object):
 
     columns = property(**columns())
 
-    def children(self):
+    def children():
         doc = """A list of `TreeNode()` objects that are children of the current
         node. Note that children appear under the triangular twirl in the listview
         GUI, while attributes appear under the + sign."""
@@ -276,7 +286,7 @@ class Lumberjack(object):
 
     children = property(**children())
 
-    def tail_commands(self):
+    def tail_commands():
         doc = """List of TreeNode objects appended to the bottom of the node's list
         of children, e.g. (new group), (new form), and (new command) in Form Editor.
         Command must be mapped using normal input remapping to the node's input region."""

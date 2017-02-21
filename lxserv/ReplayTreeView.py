@@ -16,7 +16,7 @@ ReplayLumberjack().bless(
         'enable',
         'name',
         'value'
-    ]
+    ],
     input_regions = [
         '(anywhere)', # 0 is reserved ".anywhere" region index
         'Command', #1

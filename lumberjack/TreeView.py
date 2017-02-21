@@ -2,26 +2,34 @@
 
 import lxifc, lx
 
-from TreeData import *
-from TreeNode import *
-from util import *
-from var import *
-
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
                 lxifc.Attributes ):
 
+    """TreeView interface for the MODO API. Boilerplate pulled from:
+    http://modo.sdk.thefoundry.co.uk/wiki/Python_Treeview_Example
+
+    There is a lot of dark magic involved in the MODO API. Don't mess
+    with this unless you know what you're doing."""
+
     # Gloabal list of all created tree views.
     # These are used for shape and attribute changes
     _listenerClients = {}
 
-    # The root TreeNode() object
-    _root = None
-
     def __init__(self, node, curIndex = 0):
         self.m_currentNode = node
         self.m_currentIndex = curIndex
+
+        # The root TreeNode() object
+        # Fun fact about MODO API inheritance: if our TreeView class were to
+        # inherit `object` as is the norm, everything breaks. This causes various
+        # problems with inheritance. For one, class variables are only reliable
+        # if they are defined during `__init__()`, NOT up above it as normal.
+        try:
+            self._root
+        except AttributeError:
+            self.__class__._root = None
 
         # The only node without a parent is the root
         if not self.m_currentNode.parent:
@@ -224,7 +232,7 @@ class TreeView( lxifc.TreeView,
 
     def treeview_ToolTip(self, columnIndex):
         columns = self._root.columns
-        tooltip = self.targetNode().values[columns[n]].tooltip
+        tooltip = self.targetNode().values[columns[columnIndex]].tooltip
         if tooltip:
             return tooltip
         lx.notimpl()
