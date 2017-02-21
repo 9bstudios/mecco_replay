@@ -1,11 +1,10 @@
-import lx, modo, replay_commander
+import lx, modo, replay_commander, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay_commander.CommanderClass):
-    _commander_last_used = []
 
     def commander_arguments(self):
         return [
@@ -27,10 +26,7 @@ class CommandClass(replay_commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-        dish1 = self.commander_arg_value(0)
-        dish2 = self.commander_arg_value(1)
-
-        modo.dialogs.alert("breakfast", ' and '.join([dish1, dish2]))
+        pass
 
 
-lx.bless(CommandClass, 'mecco_replay.breakfast')
+lx.bless(CommandClass, 'replay.fileExport')

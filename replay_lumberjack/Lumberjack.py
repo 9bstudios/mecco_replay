@@ -133,7 +133,7 @@ class Lumberjack(object):
 
         :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
 
-        :param columns:    a list of column names for node values. Values in each
+        :param columns:         a list of dictionaries for each column in the tree. Keys in each
                                 node's values dictionary must correspond with these strings
 
         :param input_regions:   list of regions for input remapping. These can be implemented from
