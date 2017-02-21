@@ -50,6 +50,7 @@ class TreeNode(object):
     _input_region = str()
 
     def __init__(self, **kwargs):
+        self._column_names = getattr(kwargs, 'column_names', [])
         self._selectable = getattr(kwargs, 'selectable', True)
         self._selected = getattr(kwargs, 'selected', False)
         self._values = getattr(kwargs, 'values', {})

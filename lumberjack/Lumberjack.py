@@ -94,6 +94,11 @@ class Lumberjack(object):
     _root = None
     _tree_view = None
     _blessed = False
+    _column_names = []
+    _internal_name = ""
+    _ident = ""
+    _nice_name = ""
+    _viewport_type = ""
 
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
@@ -189,6 +194,12 @@ class Lumberjack(object):
         # and name to be used in config files. In practice, these should really
         # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
         # string for use in each of these fields.
+
+        self.__class__._column_names = column_names
+        self.__class__._internal_name = internal_name
+        self.__class__._ident = ident
+        self.__class__._nice_name = nice_name
+        self.__class__._viewport_type = viewport_type
 
         config_name = internal_name
         server_username = internal_name
