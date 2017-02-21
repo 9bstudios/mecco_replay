@@ -11,7 +11,7 @@ ReplayLumberjack().bless(
     # :param viewport_type:   category in the MODO UI popup
     #                         vpapplication, vp3DEdit, vptoolbars, vpproperties, vpdataLists,
     #                         vpinfo, vpeditors, vputility, or vpembedded
-    viewport_type = 'vpapplication',
+    viewport_type = 'vputility',
 
     # :param nice_name:       display name for the treeview in window title bars, etc
     #                         should ideally be a message table lookup '@table@message@'
