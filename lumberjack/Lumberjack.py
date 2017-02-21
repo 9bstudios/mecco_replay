@@ -94,7 +94,7 @@ class Lumberjack(object):
     _root = None
     _tree_view = None
     _blessed = False
-    _column_names = []
+    _columns = []
     _internal_name = ""
     _ident = ""
     _nice_name = ""
@@ -113,7 +113,7 @@ class Lumberjack(object):
         pass
 
     @classmethod
-    def bless(cls, viewport_type, nice_name, internal_name, ident, column_names, input_regions, notifiers):
+    def bless(cls, viewport_type, nice_name, internal_name, ident, columns, input_regions, notifiers):
         """Blesses the TreeView into existence in the MODO GUI.
 
         Requires seven arguments.
@@ -129,7 +129,7 @@ class Lumberjack(object):
 
         :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
 
-        :param column_names:    a list of column names for node values. Values in each
+        :param columns:    a list of column names for node values. Values in each
                                 node's values dictionary must correspond with these strings
 
         :param input_regions:   list of regions for input remapping. These can be implemented from
@@ -164,6 +164,7 @@ class Lumberjack(object):
         # The TreeNode() object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = TreeNode()
+        cls._root.columns = columns
         cls._root.callbacks_for_rebuild.append(cls.rebuild)
         cls._root.callbacks_for_refresh.append(cls.refresh)
 
@@ -175,7 +176,7 @@ class Lumberjack(object):
         # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
         # string for use in each of these fields.
 
-        cls._column_names = column_names
+        cls._columns = columns
         cls._internal_name = internal_name
         cls._ident = ident
         cls._nice_name = nice_name
@@ -247,6 +248,21 @@ class Lumberjack(object):
         """Returns the selected TreeNode() objects in the tree."""
         return self.root.deselect_descendants()
 
+    def columns(self):
+        doc = """List of columns and their widths for the treeview in the
+        format ('name', width), where width can be a positive integer in pixels
+        or a negative integer representing a width relative to the total of all
+        netagive values."""
+        def fget(self):
+            return self._columns
+        def fset(self, value):
+            self._columns = value
+            self._root.columns = value
+            self.rebuild()
+        return locals()
+
+    columns = property(**columns())
+
     def children(self):
         doc = """A list of `TreeNode()` objects that are children of the current
         node. Note that children appear under the triangular twirl in the listview
@@ -255,6 +271,7 @@ class Lumberjack(object):
             return self.root.children
         def fset(self, value):
             self.root.children = value
+            self.rebuild()
         return locals()
 
     children = property(**children())
@@ -267,6 +284,7 @@ class Lumberjack(object):
             return self.root.tail_commands
         def fset(self, value):
             self.root.tail_commands = value
+            self.rebuild()
         return locals()
 
     tail_commands = property(**tail_commands())
@@ -274,6 +292,7 @@ class Lumberjack(object):
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
         self.root.children.append(TreeNode(**kwargs))
+        self.rebuild()
         return self.root.children[-1]
 
     def nodes(self):

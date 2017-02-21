@@ -15,6 +15,9 @@ class TreeNode(object):
     End-users of the Lumberjack class will probably never interact with TreeView
     objects. They will, however, interact frequently with TreeNode objects."""
 
+    # Column names are common to all nodes, defined during Lumberjack subclass `bless()`
+    _columns = []
+
     # Methods will be called when cell values update
     _callbacks_for_refresh = []
 
@@ -56,7 +59,7 @@ class TreeNode(object):
     _input_region = str()
 
     def __init__(self, **kwargs):
-        self._column_names = getattr(kwargs, 'column_names', [])
+        self._columns = getattr(kwargs, 'columns', [])
         self._selectable = getattr(kwargs, 'selectable', True)
         self._selected = getattr(kwargs, 'selected', False)
         self._values = getattr(kwargs, 'values', {})
@@ -75,6 +78,17 @@ class TreeNode(object):
 
     # PROPERTIES
     # ----------
+
+    def columns(self):
+        doc = """List of column names for the node tree. Common to all nodes.
+        Set during `Lumberjack().bless()`"""
+        def fget(self):
+            return self._columns
+        def fset(self, value):
+            self._columns = value
+        return locals()
+
+    columns = property(**columns())
 
     def callbacks_for_refresh(self):
         doc = "Method to call when cell values are updated."
@@ -138,7 +152,7 @@ class TreeNode(object):
         doc = """The values for each column in the node. (dictionary)
 
         The dictionary should have one key for each column name defined in the
-        Lumberjack blessing_parameters `'column_names'` key. The values themselves
+        Lumberjack blessing_parameters `'columns'` key. The values themselves
         are `TreeValue()` objects, each with a `value` property for the internal
         value, but also containing metadata like font, color, etc.
 

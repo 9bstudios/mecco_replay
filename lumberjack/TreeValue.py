@@ -10,102 +10,108 @@ class TreeValue(object):
     _display_value = None
     _input_region = None
     _color = None
-    _font_weight = None
-    _font-style = None
+    _font = None
     _tooltip = None
 
+    def __init__(self, **kwargs):
+        self._value = value
+        self._datatype = datatype
+        self._display_value = display_value
+        self._input_region = input_region
+        self._color = color
+        self._font = font
+        self._tooltip = tooltip
+
     def value():
-        doc = "The value property."
+        doc = """The actual cell value. Note that this can be overridden by
+        `display_value()` when displayed in a TreeView."""
         def fget(self):
             return self._value
         def fset(self, value):
             self._value = value
-        def fdel(self):
-            del self._value
         return locals()
 
     value = property(**value())
 
     def datatype():
-        doc = "The datatype property."
+        doc = """The datatype for the value. Can be any of the normal MODO value
+        display types expressed as lowercase strings: 'acceleration', 'angle',
+        'angle3', 'axis', 'boolean', 'color', 'color1', 'date', 'datetime',
+        'filepath', 'float', 'float3', 'force', 'integer', 'light', 'mass',
+        'percent', 'percent3', 'speed', 'string', 'time', 'uvcoord', 'vertmapname'"""
         def fget(self):
             return self._datatype
         def fset(self, value):
             self._datatype = value
-        def fdel(self):
-            del self._datatype
         return locals()
 
     datatype = property(**datatype())
 
     def display_value():
-        doc = "The display_value property."
+        doc = """The value as it will be used in the treeview, including any formatting,
+        fonts, colors, etc.
+
+        MODO uses a "rich text" system to encode color and font information:
+        Colors are done with "\03(c:color)", where "color" is a string representing a
+        decimal integer computed with 0x01000000 | ((r << 16) | (g << 8) | b).
+        Italics and bold are done with "\03(c:font)", where "font" is the string
+        FONT_DEFAULT, FONT_NORMAL, FONT_BOLD or FONT_ITALIC.
+
+        All of this should be handled internally by the value object unless explicitly
+        overridden.
+
+        Setting this value sets a literal string to be displayed
+        in the cell regardless of the actual cell value. Automatically prepends the
+        `Value` object's color and font markup as appropriate."""
         def fget(self):
-            return self._display_value
+            display_string = self._display_value if self._display_value else self.value
+            markup = self._font.markup() if self._font else ''
+            markup += self._color.markup() if self._color else ''
+            return display_string
         def fset(self, value):
             self._display_value = value
-        def fdel(self):
-            del self._display_value
         return locals()
 
     display_value = property(**display_value())
 
     def intput_region():
-        doc = "The intput_region property."
+        doc = """Region for input-mapping. Must correspond to one of the input_region
+        strings provided during the `Lumberjack().bless()` operation."""
         def fget(self):
             return self._intput_region
         def fset(self, value):
             self._intput_region = value
-        def fdel(self):
-            del self._intput_region
         return locals()
 
     intput_region = property(**intput_region())
 
     def color():
-        doc = "The color property."
+        doc = "Should be a Lumberjack `Color()` object. Default: None"
         def fget(self):
             return self._color
         def fset(self, value):
             self._color = value
-        def fdel(self):
-            del self._color
         return locals()
 
     color = property(**color())
 
-    def font_weight():
-        doc = "The font_weight property."
+    def font():
+        doc = "Should be a Lumberjack `Font()` object. Default: None"
         def fget(self):
-            return self._font_weight
+            return self._font
         def fset(self, value):
-            self._font_weight = value
-        def fdel(self):
-            del self._font_weight
+            self._font = value
         return locals()
 
-    font_weight = property(**font_weight())
-
-    def font_style():
-        doc = "The font_style property."
-        def fget(self):
-            return self._font_style
-        def fset(self, value):
-            self._font_style = value
-        def fdel(self):
-            del self._font_style
-        return locals()
-
-    font_style = property(**font_style())
+    font = property(**font())
 
     def tooltip():
-        doc = "The tooltip property."
+        doc = """Tooltip to display for the cell. Should be a message table lookup
+        if at all possible. (e.g. @table@message@)"""
         def fget(self):
             return self._tooltip
         def fset(self, value):
             self._tooltip = value
-        def fdel(self):
-            del self._tooltip
         return locals()
 
     tooltip = property(**tooltip())

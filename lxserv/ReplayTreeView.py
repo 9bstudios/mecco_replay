@@ -12,7 +12,7 @@ ReplayLumberjack().bless(
     nice_name = 'Replay',
     internal_name = 'replayTreeView',
     ident = 'RMTV',
-    column_names = [
+    columns = [
         'enable',
         'name',
         'value'

@@ -33,20 +33,15 @@ class TreeView( lxifc.TreeView,
 
     @classmethod
     def addListenerClient(cls,listener):
-        """
-            Whenever a new tree view is created, we will add
-            a copy of its listener so that it can be notified
-            of attribute or shape changes
-        """
+        """Whenever a new tree view is created, we will add a copy of its
+        listener so that it can be notified of attribute or shape changes"""
         treeListenerObj = lx.object.TreeListener(listener)
         cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
 
     @classmethod
     def removeListenerClient(cls,listener):
-        """
-            When a view is destroyed, it will be removed from
-            the list of clients that need notification.
-        """
+        """When a view is destroyed, it will be removed from the list of clients
+        that need notification."""
         treeListenerObject = lx.object.TreeListener(listener)
         if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
             del  cls._listenerClients[treeListenerObject.__peekobj__()]
@@ -66,17 +61,13 @@ class TreeView( lxifc.TreeView,
     #---  --------------------------------------------------------------------
 
     def lport_AddListener(self,obj):
-        """
-            Called from core code with the object that wants to
-            bind to the listener port
-        """
+        """Called from core code with the object that wants to
+        bind to the listener port"""
         self.addListenerClient(obj)
 
     def lport_RemoveListener(self,obj):
-        """
-            Called from core when a listener needs to be removed from
-            the port.
-        """
+        """Called from core when a listener needs to be removed from
+        the port."""
         self.removeListenerClient(obj)
 
     # --------------------------------------------------------------------------------------------------
@@ -84,9 +75,7 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
 
     def targetNode(self):
-        """
-            Returns the targeted layer node in the current tier
-        """
+        """Returns the targeted layer node in the current tier"""
         return self.m_currentNode.children[ self.m_currentIndex ]
 
     # --------------------------------------------------------------------------------------------------
@@ -95,9 +84,7 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
 
     def tree_Spawn(self, mode):
-        """
-            Spawn a new instance of this tier in the tree.
-        """
+        """Spawn a new instance of this tier in the tree."""
 
         # create an instance of our current location in the tree
         newTree = TreeView(self.m_currentNode,self.m_currentIndex)
@@ -120,10 +107,8 @@ class TreeView( lxifc.TreeView,
         return newTreeObj
 
     def tree_ToParent(self):
-        """
-            Step up to the parent tier and set the selection in this
-            tier to the current items index
-        """
+        """Step up to the parent tier and set the selection in this tier to the
+        current items index"""
         m_parent = self.m_currentNode.parent
 
         if m_parent:
@@ -131,68 +116,48 @@ class TreeView( lxifc.TreeView,
             self.m_currentNode = m_parent
 
     def tree_ToChild(self):
-        """
-            Move to the child tier and set the selected node
-        """
+        """Move to the child tier and set the selected node"""
         self.m_currentNode = self.m_currentNode.children[self.m_currentIndex]
 
     def tree_ToRoot(self):
-        """
-            Move back to the root tier of the tree
-        """
+        """Move back to the root tier of the tree"""
         self.m_currentNode = self._root
 
     def tree_IsRoot(self):
-        """
-            Check if the current tier in the tree is the root tier
-        """
+        """Check if the current tier in the tree is the root tier"""
         if self.m_currentNode == self._root:
             return True
         else:
             return False
 
     def tree_ChildIsLeaf(self):
-        """
-            If the current tier has no children then it is
-            considered a leaf
-        """
+        """If the current tier has no children then it is
+        considered a leaf"""
         if len( self.m_currentNode.children ) > 0:
             return False
         else:
             return True
 
     def tree_Count(self):
-        """
-            Returns the number of nodes in this tier of
-            the tree
-        """
+        """Returns the number of nodes in this tier of
+        the tree"""
         return len( self.m_currentNode.children )
 
     def tree_Current(self):
-        """
-            Returns the index of the currently targeted item in
-            this tier
-        """
+        """Returns the index of the currently targeted item in
+        this tier"""
         return self.m_currentIndex
 
     def tree_SetCurrent(self, index):
-        """
-            Sets the index of the item to target in this tier
-        """
+        """Sets the index of the item to target in this tier"""
         self.m_currentIndex = index
 
     def tree_ItemState(self, guid):
-        """
-            Returns the item flags that define the state.
-
-        """
+        """Returns the item flags that define the state."""
         return self.targetNode().state
 
     def tree_SetItemState(self, guid, state):
-        """
-            Set the item flags that define the state.
-
-        """
+        """Set the item flags that define the state."""
         self.targetNode().state = state
 
 
@@ -213,43 +178,55 @@ class TreeView( lxifc.TreeView,
         return self._root.columns[columnIndex]
 
     def treeview_ToPrimary(self):
-        """
-            Move the tree to the primary selection
-        """
-        if self.m_currentNode._Primary:
-            self.m_currentNode = self.m_currentNode._Primary
+        """Move the tree to the primary selection"""
+        if self.m_currentNode.primary:
+            self.m_currentNode = True
             self.tree_ToParent()
             return True
         return False
 
     def treeview_IsSelected(self):
-        return self.targetNode().isSelected()
+        return self.targetNode().selected
 
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self._root.ClearSelection()
-            self.targetNode().SetSelected()
+            self._root.deselect_descendants()
+            self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
-            self.targetNode().SetSelected()
+            self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
-            self.targetNode().SetSelected(False)
+            self.targetNode().selected = False
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self._root.ClearSelection()
+            self._root.deselect_descendants()
 
     def treeview_CellCommand(self, columnIndex):
+        # TODO
+        # Support cell command queries (must be queries).
+        # Must also implement BatcchCommand, cannot do one without the other.
+        # Usually the cell and batch commands are the same, but the cell
+        # command has an optional argument set that tells the command to target
+        # a specific row instead of the entire selection.
+
+        # Such as, "item.channel enable ? item:someItemID" for the cell command,
+        # vs "item.channel enable ?" for the batch command -- the batch version
+        # targets all selected rows by looking at the selection.
+
+        # Colors aren't currently supported, BTW; it's just strings, ints,
+        # floats and popups.  And async monitors.
         lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        toolTip = self.targetNode().getToolTip(columnIndex)
-        if toolTip:
-            return toolTip
+        columns = self._root.columns
+        tooltip = self.targetNode().values[columns[n]].tooltip
+        if tooltip:
+            return tooltip
         lx.notimpl()
 
     def treeview_BadgeType(self, columnIndex, badgeIndex):
@@ -278,11 +255,14 @@ class TreeView( lxifc.TreeView,
         return len(self._root.columns)
 
     def attr_GetString(self, index):
+        columns = self._root.columns
         node = self.targetNode()
 
-        if index == 0:
-            return node.m_name
-        elif node.m_price > 0.0:
-            return "%.2f" % node.m_price
-        else:
-            return ""
+        for n in range(len(columns)):
+            if index == n:
+                try:
+                    # Print the `display_value` in the cell
+                    return node.values[columns[n]].display_value
+                except:
+                    # Column is empty
+                    pass
