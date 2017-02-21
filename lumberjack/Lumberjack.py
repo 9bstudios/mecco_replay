@@ -286,11 +286,11 @@ class Lumberjack(object):
     def find(self, column_name, search_term, regex=False):
         """Returns a list of nodes with values matching search criteria.
 
-        If the search term is a string, it is treated as a regular expression.
-        If it is any other value, search will require an exact match.
+        Unless regex is enabled, the search_term requires an exact match.
 
-        :param column_name: name of the column to search
-        :param search_term: regular expression or value to search for"""
+        :param column_name: (str) name of the column to search
+        :param search_term: (str, bool, int, or float) value to search for
+        :param regex: (bool) use regular expression"""
 
         return self.root.find_in_descendants(column_name, search_term, regex)
 
