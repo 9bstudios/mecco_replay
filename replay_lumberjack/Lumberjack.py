@@ -22,9 +22,9 @@ class Lumberjack(object):
     all of its methods are also available on the Lumberjack() object itself
     for convenience and readability.
 
-    Lumberjack()`.root # gets root node`
+    `Lumberjack().root # gets root node`
     `Lumberjack().add_child(kwargs**) # equiv of .root.add_child()`
-    `Lumberjack().tail_commands = [TreeNode()] # add UI commands to bottom of children
+    `Lumberjack().tail_commands = [TreeNode()] # add UI commands to bottom of children`
 
     Nodes have methods for various manipulations and properties for meta
     properties like row color. Note that input mapping regions can be added
@@ -59,9 +59,9 @@ class Lumberjack(object):
     `Lumberjack().children[n].values[col_name].value = value # equiv of above`
     `Lumberjack().children[n].values[col_name].display_value = display_value`
     `Lumberjack().children[n].values[col_name].input_region = region_name`
-    `Lumberjack().children[n].values[col_name].color = color_string`
-    `Lumberjack().children[n].values[col_name].font_weight = 'bold'`
-    `Lumberjack().children[n].values[col_name].font_style = 'italic'`
+    `Lumberjack().children[n].values[col_name].color.set_with_hex("#ffffff")`
+    `Lumberjack().children[n].values[col_name].font.set_bold()`
+    `Lumberjack().children[n].values[col_name].font.set_italic()`
 
     Attributes are TreeNodes that appear under the `+` sign in the MODO UI.
     They have the same columns as other nodes, but are separate from the
@@ -133,7 +133,7 @@ class Lumberjack(object):
 
         :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
 
-        :param columns:         a list of dictionaries, one for each column. Keys in each
+        :param columns:    a list of column names for node values. Values in each
                                 node's values dictionary must correspond with these strings
 
         :param input_regions:   list of regions for input remapping. These can be implemented from

@@ -22,6 +22,12 @@ class TreeValue(object):
         self._font = font if font in kwargs else None
         self._tooltip = tooltip if tooltip in kwargs else None
 
+    def __set__(self, instance, value):
+        self._value = value
+
+    def __get__(self, instance, owner):
+        return self._value
+
     def value(self):
         doc = """The actual cell value. Note that this can be overridden by
         `display_value()` when displayed in a TreeView."""

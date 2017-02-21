@@ -1,10 +1,10 @@
-import lx, modo, mecco_replay
+import lx, modo, replay_commander
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 
-class CommandClass(mecco_replay.CommanderClass):
+class CommandClass(replay_commander.CommanderClass):
     _commander_last_used = []
 
     def commander_arguments(self):

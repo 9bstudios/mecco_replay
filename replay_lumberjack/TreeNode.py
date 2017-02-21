@@ -16,6 +16,10 @@ class TreeNode(object):
     objects. They will, however, interact frequently with TreeNode objects."""
 
     # Column names are common to all nodes, defined during Lumberjack subclass `bless()`
+    # Each column is a dictionary with at least two keys: 'name', and 'width'. Width
+    # values can be positive integers for literal pixel widths, or negative integers
+    # for ratios of the sum-total of all other negative integers. (If one column is
+    # width -1 and another is -3, the first is 25%, the second is 75%.)
     _columns = []
 
     # Methods will be called when cell values update
@@ -81,7 +85,12 @@ class TreeNode(object):
 
     def columns():
         doc = """List of column names for the node tree. Common to all nodes.
-        Set during `Lumberjack().bless()`"""
+        Set during `Lumberjack().bless()`
+
+        Each column is a dictionary with at least two keys: 'name', and 'width'. Width
+        values can be positive integers for literal pixel widths, or negative integers
+        for ratios of the sum-total of all other negative integers. (If one column is
+        width -1 and another is -3, the first is 25%, the second is 75%.)"""
         def fget(self):
             return self._columns
         def fset(self, value):
