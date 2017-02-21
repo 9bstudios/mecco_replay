@@ -110,7 +110,7 @@ class Lumberjack(object):
         self._root = TreeNode()
 
         # Our internal handle for the view itself.
-        self._tree_view = _TreeViewSubclass()
+        self._tree_view = _TreeViewSubclass(self._root)
 
     def rebuild(self, data):
         """Rebuilds the lumberjack TreeNode object from a dictionary

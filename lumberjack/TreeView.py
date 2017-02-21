@@ -7,175 +7,231 @@ from TreeNode import *
 from util import *
 from var import *
 
-class TreeView(
-        lxifc.TreeView,
-        lxifc.Tree,
-        lxifc.ListenerPort,
-        lxifc.Attributes
-    ):
+class TreeView( lxifc.TreeView,
+                lxifc.Tree,
+                lxifc.ListenerPort,
+                lxifc.Attributes ):
 
-    def __init__(self, node=None, current_index=0):
-        if node is None:
-            node = root_TreeNode()
+    # Gloabal list of all created tree views.
+    # These are used for shape and attribute changes
+    _listenerClients = {}
 
+    def __init__(self, node, curIndex = 0):
         self.m_currentNode = node
-        self.m_currentIndex = current_index
+        self.m_currentIndex = curIndex
 
-        try:
-            self._listener_clients
-        except AttributeError:
-            self.__class__._listener_clients = {}
-
-    def root_TreeNode(self):
-        """Required method. Returns a TreeNode() object for display.
-        This method must be overridden by each TreeView subclass."""
-        return
+    # --------------------------------------------------------------------------------------------------
+    # Listener port
+    # --------------------------------------------------------------------------------------------------
 
     @classmethod
-    def addListenerClient(cls, listener):
-        """Whenever a new tree view is created, we will add
-        a copy of its listener so that it can be notified
-        of attribute or shape changes"""
-
-        tree_listener_obj = lx.object.TreeListener(listener)
-        cls._listener_clients[tree_listener_obj.__peekobj__()] = tree_listener_obj
+    def addListenerClient(cls,listener):
+        """
+            Whenever a new tree view is created, we will add
+            a copy of its listener so that it can be notified
+            of attribute or shape changes
+        """
+        treeListenerObj = lx.object.TreeListener(listener)
+        cls._listenerClients[treeListenerObj.__peekobj__()] = treeListenerObj
 
     @classmethod
-    def removeListenerClient(cls, listener):
-        """When a view is destroyed, it will be removed from
-        the list of clients that need notification."""
-
-        tree_listener_object = lx.object.TreeListener(listener)
-        if tree_listener_object.__peekobj__() in cls._listener_clients:
-            del cls._listener_clients[tree_listener_object.__peekobj__()]
+    def removeListenerClient(cls,listener):
+        """
+            When a view is destroyed, it will be removed from
+            the list of clients that need notification.
+        """
+        treeListenerObject = lx.object.TreeListener(listener)
+        if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
+            del  cls._listenerClients[treeListenerObject.__peekobj__()]
 
     @classmethod
     def notify_NewShape(cls):
-        for client in cls._listener_clients.values():
+        for client in cls._listenerClients.values():
             if client.test():
                 client.NewShape()
 
     @classmethod
     def notify_NewAttributes(cls):
-        for client in cls._listener_clients.values():
+        for client in cls._listenerClients.values():
             if client.test():
                 client.NewAttributes()
 
-    def lport_AddListener(self, obj):
+    #---  --------------------------------------------------------------------
+
+    def lport_AddListener(self,obj):
+        """
+            Called from core code with the object that wants to
+            bind to the listener port
+        """
         self.addListenerClient(obj)
 
-    def lport_RemoveListener(self, obj):
+    def lport_RemoveListener(self,obj):
+        """
+            Called from core when a listener needs to be removed from
+            the port.
+        """
         self.removeListenerClient(obj)
 
+    # --------------------------------------------------------------------------------------------------
+    # Target layer in the tree
+    # --------------------------------------------------------------------------------------------------
+
     def targetNode(self):
-        return self.m_currentNode.children()[self.m_currentIndex]
+        """
+            Returns the targeted layer node in the current tier
+        """
+        return self.m_currentNode.m_children[ self.m_currentIndex ]
+
+    # --------------------------------------------------------------------------------------------------
+    # Each time the tree is spawned, we create a copy of ourselves at current
+    # location in the tree and return it
+    # --------------------------------------------------------------------------------------------------
 
     def tree_Spawn(self, mode):
-        new_tree = TreeView(self.m_currentNode, self.m_currentIndex)
-        new_tree_obj = lx.object.Tree(new_tree)
+        """
+            Spawn a new instance of this tier in the tree.
+        """
+
+        # create an instance of our current location in the tree
+        newTree = WhiskyTreeView(self.m_currentNode,self.m_currentIndex)
+
+        # Convert to a tree interface
+        newTreeObj = lx.object.Tree(newTree)
 
         if mode == lx.symbol.iTREE_PARENT:
-            new_tree_obj.ToParent()
+            # move the tree to the parent tier
+            newTreeObj.ToParent()
 
         elif mode == lx.symbol.iTREE_CHILD:
-            new_tree_obj.ToChild()
+            # move tree to child tier
+            newTreeObj.ToChild()
 
         elif mode == lx.symbol.iTREE_ROOT:
-            new_tree_obj.ToRoot()
+            #move tree to root tier
+            newTreeObj.ToRoot()
 
-        return new_tree_obj
+        return newTreeObj
 
     def tree_ToParent(self):
-        m_parent = self.m_currentNode.parent()
+        """
+            Step up to the parent tier and set the selection in this
+            tier to the current items index
+        """
+        m_parent = self.m_currentNode.m_parent
 
         if m_parent:
-            self.m_currentIndex = m_parent.children().index(self.m_currentNode)
+            self.m_currentIndex = m_parent.m_children.index(self.m_currentNode)
             self.m_currentNode = m_parent
 
     def tree_ToChild(self):
-        self.m_currentNode = self.m_currentNode.children()[self.m_currentIndex]
+        """
+            Move to the child tier and set the selected node
+        """
+        self.m_currentNode = self.m_currentNode.m_children[self.m_currentIndex]
 
     def tree_ToRoot(self):
-        self.m_currentNode = _BATCH.tree()
+        """
+            Move back to the root tier of the tree
+        """
+        self.m_currentNode = _theTree
 
     def tree_IsRoot(self):
-        if self.m_currentNode == _BATCH.tree():
+        """
+            Check if the current tier in the tree is the root tier
+        """
+        if self.m_currentNode == _theTree:
             return True
         else:
             return False
 
     def tree_ChildIsLeaf(self):
-        if len(self.m_currentNode.children()) > 0:
+        """
+            If the current tier has no children then it is
+            considered a leaf
+        """
+        if len( self.m_currentNode.m_children ) > 0:
             return False
         else:
             return True
 
     def tree_Count(self):
-        return len(self.m_currentNode.children())
+        """
+            Returns the number of nodes in this tier of
+            the tree
+        """
+        return len( self.m_currentNode.m_children )
 
     def tree_Current(self):
+        """
+            Returns the index of the currently targeted item in
+            this tier
+        """
         return self.m_currentIndex
 
     def tree_SetCurrent(self, index):
+        """
+            Sets the index of the item to target in this tier
+        """
         self.m_currentIndex = index
 
     def tree_ItemState(self, guid):
-        return self.targetNode().state()
+        """
+            Returns the item flags that define the state.
+
+        """
+        return self.targetNode().state
 
     def tree_SetItemState(self, guid, state):
-        # TODO
-        # We have to store this in the data object and be prepared
-        # to return it, lest Bad Things happen.
-        self.targetNode().set_state(state)
+        """
+            Set the item flags that define the state.
+
+        """
+        self.targetNode().state = state
+
+
+    # --------------------------------------------------------------------------------------------------
+    # Tree view
+    # --------------------------------------------------------------------------------------------------
+
+    def treeview_StoreState(self, uid):
+        lx.notimpl()
+
+    def treeview_RestoreState(self, uid):
+        lx.notimpl()
 
     def treeview_ColumnCount(self):
-        return len(_BATCH.tree().columns())
+        return len(_theTree.columns)
 
     def treeview_ColumnByIndex(self, columnIndex):
-        return _BATCH.tree().columns()[columnIndex]
+        return _theTree.columns[columnIndex]
 
     def treeview_ToPrimary(self):
-        if self.m_currentNode.primary():
-            self.m_currentNode = self.m_currentNode.primary()
+        """
+            Move the tree to the primary selection
+        """
+        if self.m_currentNode._Primary:
+            self.m_currentNode = self.m_currentNode._Primary
             self.tree_ToParent()
             return True
         return False
 
     def treeview_IsSelected(self):
-        return self.targetNode().is_selected()
+        return self.targetNode().isSelected()
 
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            _BATCH.tree().clear_selection()
+            _theTree.ClearSelection()
+            self.targetNode().SetSelected()
 
-            if self.targetNode().selectable():
-                self.targetNode().set_selected()
-            else:
-                self.targetNode().parent().set_selected()
-
-        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD and self.targetNode().selectable():
-            self.targetNode().set_selected()
+        elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
+            self.targetNode().SetSelected()
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_REMOVE:
-            self.targetNode().set_selected(False)
+            self.targetNode().SetSelected(False)
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            _BATCH.tree().clear_selection()
-
-    def treeview_ToolTip(self, column_index):
-        tooltip = self.targetNode().tooltip(column_index)
-        if tooltip:
-            return tooltip
-        lx.notimpl()
-
-    def treeview_IsInputRegion(self, column_index, regionID):
-        if regionID == 0:
-            return True
-        if self.targetNode().node_region() == REGIONS[regionID]:
-            return True
-
-        return False
+            _theTree.ClearSelection()
 
     def treeview_CellCommand(self, columnIndex):
         lx.notimpl()
@@ -204,19 +260,22 @@ class TreeView(
     def treeview_GetDragDropSourceObject(self, columnIndex, type):
         lx.notimpl()
 
-    def treeview_GetDragDropDestinationObject(self, columnIndex):
+    def treeview_GetDragDropDestinationObject(self, columnIndex, location):
         lx.notimpl()
 
+    # --------------------------------------------------------------------------------------------------
+    # Attributes
+    # --------------------------------------------------------------------------------------------------
+
     def attr_Count(self):
-        return len(_BATCH.tree().columns())
+        return len(_theTree.columns)
 
     def attr_GetString(self, index):
-        """needs to be fast"""
+        node = self.targetNode()
+
         if index == 0:
-            return self.targetNode().display_name()
-
-        elif self.targetNode().display_value():
-            return self.targetNode().display_value()
-
+            return node.m_name
+        elif node.m_price > 0.0:
+            return "%.2f" % node.m_price
         else:
-            return EMPTY
+            return ""
