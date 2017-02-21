@@ -15,6 +15,12 @@ class TreeNode(object):
     End-users of the Lumberjack class will probably never interact with TreeView
     objects. They will, however, interact frequently with TreeNode objects."""
 
+    # Methods will be called when cell values update
+    _callbacks_for_refresh = []
+
+    # Methods will be called when tree structure updates
+    _callbacks_for_rebuild = []
+
     # Whether selectable in GUI
     _selectable = bool()
 
@@ -70,6 +76,26 @@ class TreeNode(object):
     # PROPERTIES
     # ----------
 
+    def callbacks_for_refresh(self):
+        doc = "Method to call when cell values are updated."
+        def fget(self):
+            return self._callbacks_for_refresh
+        def fset(self, value):
+            self._callbacks_for_refresh = value
+        return locals()
+
+    callbacks_for_refresh = property(**callbacks_for_refresh())
+
+    def callbacks_for_rebuild(self):
+        doc = "Method to call when tree structure is updated."
+        def fget(self):
+            return self._callbacks_for_rebuild
+        def fset(self, value):
+            self._callbacks_for_rebuild = value
+        return locals()
+
+    callbacks_for_rebuild = property(**callbacks_for_rebuild())
+
     def selectable(self):
         doc = "Whether the node is selectable in the GUI. (boolean)"
         def fget(self):
@@ -122,6 +148,7 @@ class TreeNode(object):
             return self._values
         def fset(self, values = {}):
             self._values = values
+            self.callback_refresh()
         return locals()
 
     values = property(**values())
@@ -133,6 +160,7 @@ class TreeNode(object):
             return self._parent
         def fset(self, node):
             self._parent = node
+            self.callback_rebuild()
         return locals()
 
     parent = property(**parent())
@@ -145,6 +173,7 @@ class TreeNode(object):
             child_list = self._parent.children
             old_index = child_list.index(self)
             child_list.insert(index, child_list.pop(old_index))
+            self.callback_rebuild()
         return locals()
 
     index = property(**index())
@@ -157,6 +186,7 @@ class TreeNode(object):
             return self._children
         def fset(self, value):
             self._children = value
+            self.callback_rebuild()
         return locals()
 
     children = property(**children())
@@ -169,6 +199,7 @@ class TreeNode(object):
             return self._attributes
         def fset(self, value):
             self._attributes = value
+            self.callback_rebuild()
         return locals()
 
     attributes = property(**attributes())
@@ -181,6 +212,7 @@ class TreeNode(object):
             return self._tail_commands
         def fset(self, value):
             self._tail_commands = value
+            self.callback_rebuild()
         return locals()
 
     tail_commands = property(**tail_commands())
@@ -214,11 +246,13 @@ class TreeNode(object):
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
         self._children.append(TreeNode(**kwargs))
+        self.callback_rebuild()
         return self._children[-1]
 
     def add_attribute(self, **kwargs):
         """Adds an attribute `TreeNode()` to the current node and returns it."""
         self._attributes.append(TreeNode(**kwargs))
+        self.callback_rebuild()
         return self._attributes[-1]
 
     def get_siblings(self):
@@ -256,8 +290,10 @@ class TreeNode(object):
         """Deletes the current node and reparents all of its children to its parent."""
         self.selected = False
         self.primary = False
+        # Reparent children to parent. (Does not delete hierarchy.)
         for sibling in self.parent.children:
             sibling.parent = self.parent
+        self.callback_rebuild()
 
     def delete_descendants(self):
         """Deletes all children, grandchildren etc from the current node. To delete
@@ -265,12 +301,14 @@ class TreeNode(object):
         if len(self._children) > 0:
             for child in self._children:
                 self._children.remove(child)
+            self.callback_rebuild()
 
     def reorder_up(self):
         """Reorder the current node up one index in the tree.
         Returns the new index."""
         if self.index > 0:
             self.index -= 1
+        self.callback_rebuild()
         return self.index
 
     def reorder_down(self):
@@ -278,16 +316,19 @@ class TreeNode(object):
         Returns the new index."""
         if self.index + 1 < len(self.get_siblings()):
             self.index += 1
+        self.callback_rebuild()
         return self.index
 
     def reorder_top(self):
         """Reorder the current node to the top of its branch in the tree."""
         self.index = 0
+        self.callback_rebuild()
 
     def reorder_bottom(self):
         """Reorder the current node to the bottom of its branch in the tree.
         Returns the new index."""
         self.index = len(self.get_siblings()) - 1
+        self.callback_rebuild()
         return self.index
 
     def tier(self):
@@ -322,3 +363,16 @@ class TreeNode(object):
             found.extend(child.find_in_descendants)
 
         return found
+
+    def callback_refresh(self):
+        """Calls each callback method in `callbacks_for_refresh`. Runs any time
+        a cell value is updated anywhere in the node tree."""
+        for callback in self.callbacks_for_refresh:
+            callback()
+
+    def callback_rebuild(self):
+        """Calls each callback method in `callbacks_for_rebuild`. Runs any time
+        the node tree structure is modified in any way (add/remove/reparent nodes,
+        etc.)"""
+        for callback in self.callbacks_for_rebuild:
+            callback()

@@ -110,39 +110,10 @@ class Lumberjack(object):
         The TreeData object is the data moel, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
-        # The TreeNode() object is the root of the tree, and all other nodes
-        # will be children of this node. The root node is NOT visible in the GUI.
-        self._root = TreeNode()
+        pass
 
-        # Our internal handle for the view itself.
-        self._tree_view = _TreeViewSubclass(self._root)
-
-    def rebuild(self, data):
-        """Rebuilds the lumberjack TreeNode object from a dictionary
-        and notifies the TreeView of the change.
-
-        :param data: Valid lumberjack TreeNode object or compatible dictionary."""
-
-        # We can accept either a dictionary, or a TreeNode object.
-        # If it's a dict, just pump it straight into our data object:
-        if isinstance(data, dict):
-            # TODO Build the tree
-
-        # If it's a TreeData object, grab its internal data:
-        elif isinstance (data, TreeNode):
-            self._root = data
-
-        # Rebuild the tree
-        self._tree_view.notify_NewShape()
-
-    def refresh(self):
-        """Called by TreeNodes when a value is updated. Refreshes the treeview
-        cell values without rebuilding the entire tree."""
-
-        # Refresh the tree
-        self._tree_view.notify_NewAttributes()
-
-    def bless(self, viewport_type, nice_name, internal_name, ident, column_names, input_regions, notifiers):
+    @classmethod
+    def bless(cls, viewport_type, nice_name, internal_name, ident, column_names, input_regions, notifiers):
         """Blesses the TreeView into existence in the MODO GUI.
 
         Requires seven arguments.
@@ -187,19 +158,28 @@ class Lumberjack(object):
         """
 
         # Can only be blessed once per session.
-        if self._blessed:
+        if cls._blessed:
             raise Exception('%s class has already been blessed.' % self.__class__.__name__)
+
+        # The TreeNode() object is the root of the tree, and all other nodes
+        # will be children of this node. The root node is NOT visible in the GUI.
+        cls._root = TreeNode()
+        cls._root.callbacks_for_rebuild.append(cls.rebuild)
+        cls._root.callbacks_for_refresh.append(cls.refresh)
+
+        # Our internal handle for the view itself.
+        cls._tree_view = _TreeViewSubclass(cls._root)
 
         # NOTE: MODO has three different strings for SERVERNAME, sSRV_USERNAME,
         # and name to be used in config files. In practice, these should really
         # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
         # string for use in each of these fields.
 
-        self.__class__._column_names = column_names
-        self.__class__._internal_name = internal_name
-        self.__class__._ident = ident
-        self.__class__._nice_name = nice_name
-        self.__class__._viewport_type = viewport_type
+        cls._column_names = column_names
+        cls._internal_name = internal_name
+        cls._ident = ident
+        cls._nice_name = nice_name
+        cls._viewport_type = viewport_type
 
         config_name = internal_name
         server_username = internal_name
@@ -227,23 +207,29 @@ class Lumberjack(object):
         try:
             # We create a Lumberjack-specific subclass of our TreeView class for
             # the blessing, just in case more than one Lumberjack subclass exists.
-            lx.bless(self._TreeViewSubclass, server_name, tags)
+            lx.bless(cls._TreeViewSubclass, server_name, tags)
 
             # Make sure it doesn't happen again.
-            self._blessed = True
+            cls._blessed = True
 
         except:
-            raise Exception('Unable to bless %s.' % self.__class__.__name__)
+            raise Exception('Unable to bless %s.' % cls.__name__)
 
     @property
     def root(self):
         """Returns the class TreeData object."""
-        return self.__class__._root
+        try:
+            return self.__class__._root
+        except AttributeError:
+            raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
     def view(self):
         """Returns the class TreeView object."""
-        return self.__class__._tree_view
+        try:
+            return self.__class__._tree_view
+        except AttributeError:
+            raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
     def primary(self):
@@ -254,21 +240,21 @@ class Lumberjack(object):
     @property
     def selected(self):
         """Returns the selected TreeNode() objects in the tree."""
-        return self._root.selected
+        return self.root.selected
 
     @property
     def clear_selection(self):
         """Returns the selected TreeNode() objects in the tree."""
-        return self._root.deselect_descendants()
+        return self.root.deselect_descendants()
 
     def children(self):
         doc = """A list of `TreeNode()` objects that are children of the current
         node. Note that children appear under the triangular twirl in the listview
         GUI, while attributes appear under the + sign."""
         def fget(self):
-            return self._root.children
+            return self.root.children
         def fset(self, value):
-            self._root.children = value
+            self.root.children = value
         return locals()
 
     children = property(**children())
@@ -278,22 +264,22 @@ class Lumberjack(object):
         of children, e.g. (new group), (new form), and (new command) in Form Editor.
         Command must be mapped using normal input remapping to the node's input region."""
         def fget(self):
-            return self._root.tail_commands
+            return self.root.tail_commands
         def fset(self, value):
-            self._root.tail_commands = value
+            self.root.tail_commands = value
         return locals()
 
     tail_commands = property(**tail_commands())
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
-        self._root.children.append(TreeNode(**kwargs))
-        return self._root.children[-1]
+        self.root.children.append(TreeNode(**kwargs))
+        return self.root.children[-1]
 
     def nodes(self):
         """Returns a list of all nodes in the tree."""
         nodes = []
-        for child in self._root.children:
+        for child in self.root.children:
             nodes.extend(child.get_descendants())
         return nodes
 
@@ -306,4 +292,20 @@ class Lumberjack(object):
         :param column_name: name of the column to search
         :param search_term: regular expression or value to search for"""
 
-        return self._root.find_in_descendants(column_name, search_term, regex)
+        return self.root.find_in_descendants(column_name, search_term, regex)
+
+    def rebuild(self):
+        """Rebuilds the TreeView object from scratch. Must run every time any
+        structural change occurs in the node tree. Note: if cell values have changed
+        but the overal structure of the node tree has not changed, use `refresh()`
+        for performance."""
+
+        return self.view.notify_NewShape()
+
+    def refresh(self):
+        """Refreshes TreeView cell values, but not structure. Must run every
+        time a cell value changes in the node tree. Note: structural changes
+        (e.g. adding/removing nodes, reordering, reparenting) require the
+        `rebuild()`` method."""
+
+        return self.view.notify_NewAttributes()
