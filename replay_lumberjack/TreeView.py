@@ -118,7 +118,7 @@ class TreeView( lxifc.TreeView,
         """Spawn a new instance of this tier in the tree."""
 
         # create an instance of our current location in the tree
-        newTree = TreeView(self.m_currentNode,self.m_currentIndex)
+        newTree = TreeView(self.m_currentNode, self.m_currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)

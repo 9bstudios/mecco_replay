@@ -212,7 +212,7 @@ class Lumberjack(object):
         }
 
         try:
-            # We create a Lumberjack-specific subclass of our TreeView class for
+            # Remember: we've created a Lumberjack-specific subclass of our TreeView class for
             # the blessing, just in case more than one Lumberjack subclass exists.
             lx.bless(cls._TreeViewSubclass, server_name, tags)
 

@@ -86,7 +86,7 @@ class TreeNode(object):
     # These should be deleted if they turn out to be unnecessary.
 
     def AddNode(self, **kwargs):
-        self.add_child(**kwargs)
+        return self.add_child(**kwargs)
 
     def ClearSelection(self):
         self.clear_tree_selection
