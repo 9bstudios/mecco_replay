@@ -1,8 +1,10 @@
 # python
 
 class Color(object):
-    _internal_rgb = []
-    _special = None
+
+    def __init__(self):
+        self._internal_rgb = []
+        self._special = None
 
     def markup(self):
         """Returns the markup string for use in treeview cells."""

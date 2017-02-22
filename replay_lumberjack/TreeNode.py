@@ -73,6 +73,52 @@ class TreeNode(object):
         for column in self._columns:
             self._values[column['name']] = TreeValue()
 
+    ########################################################################
+
+    # WHISKYTREE BOILERPLATE
+    # ----------
+
+    # TODO
+    # It is not at all clear, but it seems as if MODO may be trying to use
+    # specific method names for some calls to TreeNode. For safety I have
+    # included modified versions of each of the ones from Whiskytree here.
+
+    # These should be deleted if they turn out to be unnecessary.
+
+    def AddNode(self, **kwargs):
+        self.add_child(**kwargs)
+
+    def ClearSelection(self):
+        self.clear_tree_selection
+
+    def SetSelected(self, val=True):
+        if val:
+            self.setPrimary(self)
+        self.selected = val
+
+    def isSelected(self):
+        return self.selected
+
+    @classmethod
+    def setPrimary(cls, primary=None):
+        cls.primary = primary
+
+    @classmethod
+    def getPrimary(cls):
+        return cls.primary
+
+    def setState(self, flag):
+        self.state = self.state | flag
+
+    def setToolTip(self, index, tip):
+        self.values[index].tooltip = tip
+
+    def getToolTip(self, index):
+        if index < len(self.values):
+            return self.values[index].tooltip
+
+    ########################################################################
+
 
     # PROPERTIES
     # ----------

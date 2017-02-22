@@ -17,16 +17,27 @@ class TreeView( lxifc.TreeView,
     # These are used for shape and attribute changes
     _listenerClients = {}
 
-    def __init__(self, node, curIndex = 0):
-        # The root TreeNode() object
+    def __init__(self, node = None, curIndex = 0):
+
+        # `self.root` returns the root TreeNode() object for the treeview.
         # Fun fact about MODO API inheritance: if our TreeView class were to
         # inherit `object` as is the norm, everything breaks. This causes various
         # problems with inheritance. For one, class variables are only reliable
         # if they are defined during `__init__()`, NOT up above it as normal.
         try:
-            self._root
+            # If self.root exists, we're good.
+            self.root
         except AttributeError:
-            self.__class__._root = node
+            # If self.root is undefined, that means the TreeView class is uninitiated.
+            # Since a TreeView can't exist without a root TreeNode, we require
+            # one on instantiation. Without that, barf.
+            if node:
+                self.root = node
+            else:
+                raise Exception('%s requires a root TreeNode object.' % self.__class__.__name__)
+
+        if node is None:
+            node = self.root
 
         self.m_currentNode = node
         self.m_currentIndex = curIndex
@@ -34,6 +45,17 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
     # Listener port
     # --------------------------------------------------------------------------------------------------
+
+    def root():
+        doc = """Root TreeNode object for the TreeView. This is typically set only
+        once during the Lumberjack blessing."""
+        def fget(self):
+            return self._root
+        def fset(self, value):
+            self.__class__._root = value
+        return locals()
+
+    root = property(**root())
 
     @classmethod
     def addListenerClient(cls,listener):
@@ -52,12 +74,17 @@ class TreeView( lxifc.TreeView,
 
     @classmethod
     def notify_NewShape(cls):
+        """Called whenever nodal hierarchy changes in any way. Slower than
+        `notify_NewAttributes`, but necessary when nodes are added/removed/reparented."""
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewShape()
 
     @classmethod
     def notify_NewAttributes(cls):
+        """Called when cell values are updated, but nodal hierarchy is unchanged.
+        Faster than `notify_NewShape`, but does not update added/removed/reparented
+        nodes."""
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewAttributes()
@@ -125,11 +152,11 @@ class TreeView( lxifc.TreeView,
 
     def tree_ToRoot(self):
         """Move back to the root tier of the tree"""
-        self.m_currentNode = self._root
+        self.m_currentNode = self.root
 
     def tree_IsRoot(self):
         """Check if the current tier in the tree is the root tier"""
-        if self.m_currentNode == self._root:
+        if self.m_currentNode == self.root:
             return True
         else:
             return False
@@ -176,12 +203,12 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ColumnCount(self):
-        return len(self._root.columns)
+        return len(self.root.columns)
 
     def treeview_ColumnByIndex(self, columnIndex):
         try:
-            name = self._root.columns[columnIndex]['name']
-            width = self._root.columns[columnIndex]['width']
+            name = self.root.columns[columnIndex]['name']
+            width = self.root.columns[columnIndex]['width']
             return (name, width)
         except:
             raise Exception('treeview_ColumnByIndex failed. Possibly malformed column dictionary.')
@@ -200,7 +227,7 @@ class TreeView( lxifc.TreeView,
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self._root.clear_tree_selection()
+            self.root.clear_tree_selection()
             self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
@@ -210,7 +237,7 @@ class TreeView( lxifc.TreeView,
             self.targetNode().selected = False
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self._root.clear_tree_selection()
+            self.root.clear_tree_selection()
 
     def treeview_CellCommand(self, columnIndex):
         # TODO
@@ -232,7 +259,7 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        columns = self._root.columns
+        columns = self.root.columns
         try:
             tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
             if tooltip:
@@ -264,10 +291,10 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(self._root.columns)
+        return len(self.root.columns)
 
     def attr_GetString(self, index):
-        columns = self._root.columns
+        columns = self.root.columns
         node = self.targetNode()
 
         for n in range(len(columns)):

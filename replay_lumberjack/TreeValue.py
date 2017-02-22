@@ -5,14 +5,6 @@ class TreeValue(object):
     cell value, including internal value, display value, and metadata
     like color and font information."""
 
-    _value = None
-    _datatype = None
-    _display_value = None
-    _input_region = None
-    _color = None
-    _font = None
-    _tooltip = None
-
     def __init__(self, **kwargs):
         self._value = value if 'value' in kwargs else None
         self._datatype = datatype if 'datatype' in kwargs else None
