@@ -120,7 +120,7 @@ class TreeView( lxifc.TreeView,
         m_parent = self.m_currentNode.parent
 
         if m_parent:
-            self.m_currentIndex = m_parent.children.index(self.m_currentNode)
+            self.m_currentIndex = self.m_currentNode.index
             self.m_currentNode = m_parent
 
     def tree_ToChild(self):

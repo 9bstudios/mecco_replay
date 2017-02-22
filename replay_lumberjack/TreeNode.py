@@ -28,51 +28,41 @@ class TreeNode(object):
     # Methods will be called when tree structure updates
     _callbacks_for_rebuild = []
 
-    # Whether selectable in GUI
-    _selectable = True
-
-    # Whether selected in GUI
-    _selected = False
-
-    # Whether "primary" in GUI, aka most recently selected
-    _primary = False
-
-    # Dict of TreeValue objects for each column; {column_name: TreeValue()}
-    _values = {}
-
-    # TreeNode parent. All TreeNode() objects except root should have a parent.
-    _parent = None
-
-    # List of TreeNode objects (listed under carrot twirl in GUI; Attributes
-    # are also TreeNode objects, but listed under the + sign in the GUI.)
-    _children = []
-
-    # List of TreeNode objects (listed under the + in GUI; Children
-    # are also TreeNode objects, but listed under the triangular twirl in the GUI.)
-    _attributes = []
-
-    # List of TreeNode objects appended to the bottom of the node's list
-    # of children, e.g. (new group), (new form), and (new command) in Form Editor
-    _tail_commands = []
-
-    # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
-    _state = None
-
-    # String for use in input remapping. Must correspond with one of the region
-    # strings provided in the Lumberjack blessing_parameters() method.
-    _input_region = None
+    # Node that is "primary" in the GUI, aka most recently selected
+    _primary = None
 
     def __init__(self, **kwargs):
         self._columns = getattr(kwargs, 'columns', [])
+
+        # Whether selectable in GUI
         self._selectable = getattr(kwargs, 'selectable', True)
+
+        # Whether selected in GUI
         self._selected = getattr(kwargs, 'selected', False)
+
+        # Dict of TreeValue objects for each column; {column_name: TreeValue()}
         self._values = getattr(kwargs, 'values', {})
+
+        # TreeNode parent. All TreeNode() objects except root should have a parent.
         self._parent = getattr(kwargs, 'parent', None)
-        self._index = getattr(kwargs, 'index', 0)
+
+        # List of TreeNode objects (listed under carrot twirl in GUI; Attributes
+        # are also TreeNode objects, but listed under the + sign in the GUI.)
         self._children = getattr(kwargs, 'children', [])
+
+        # List of TreeNode objects (listed under the + in GUI; Children
+        # are also TreeNode objects, but listed under the triangular twirl in the GUI.)
         self._attributes = getattr(kwargs, 'attributes', [])
+
+        # List of TreeNode objects appended to the bottom of the node's list
+        # of children, e.g. (new group), (new form), and (new command) in Form Editor
         self._tail_commands = getattr(kwargs, 'tail_commands', [])
+
+        # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
         self._state = getattr(kwargs, 'state', None)
+
+        # String for use in input remapping. Must correspond with one of the region
+        # strings provided in the Lumberjack blessing_parameters() method.
         self._input_region = getattr(kwargs, 'input_region', None)
 
         # Primary is usually the most recently selected node. If we initialize
@@ -126,7 +116,7 @@ class TreeNode(object):
         def fset(self, value):
             if value == False:
                 self._selected = False
-                self._primary = False
+                self._primary = None
             self._selectable = value
         return locals()
 
@@ -151,8 +141,7 @@ class TreeNode(object):
         def fget(self):
             return self._primary
         def fset(self, value):
-            self.__class__._primary = False
-            self._primary = value
+            self.__class__._primary = value
         return locals()
 
     primary = property(**primary())
@@ -312,7 +301,7 @@ class TreeNode(object):
     def delete(self):
         """Deletes the current node and reparents all of its children to its parent."""
         self.selected = False
-        self.primary = False
+        self.primary = None
         # Reparent children to parent. (Does not delete hierarchy.)
         for sibling in self.parent.children:
             sibling.parent = self.parent
