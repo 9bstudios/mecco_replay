@@ -28,7 +28,7 @@ class TreeValue(object):
     def __get__(self, instance, owner):
         return self._value
 
-    def value(self):
+    def value():
         doc = """The actual cell value. Note that this can be overridden by
         `display_value()` when displayed in a TreeView."""
         def fget(self):
@@ -39,7 +39,7 @@ class TreeValue(object):
 
     value = property(**value())
 
-    def datatype(self):
+    def datatype():
         doc = """The datatype for the value. Can be any of the normal MODO value
         display types expressed as lowercase strings: 'acceleration', 'angle',
         'angle3', 'axis', 'boolean', 'color', 'color1', 'date', 'datetime',
@@ -53,7 +53,7 @@ class TreeValue(object):
 
     datatype = property(**datatype())
 
-    def display_value(self):
+    def display_value():
         doc = """The value as it will be used in the treeview, including any formatting,
         fonts, colors, etc.
 
@@ -80,7 +80,7 @@ class TreeValue(object):
 
     display_value = property(**display_value())
 
-    def intput_region(self):
+    def intput_region():
         doc = """Region for input-mapping. Must correspond to one of the input_region
         strings provided during the `Lumberjack().bless()` operation."""
         def fget(self):
@@ -91,7 +91,7 @@ class TreeValue(object):
 
     intput_region = property(**intput_region())
 
-    def color(self):
+    def color():
         doc = "Should be a Lumberjack `Color()` object. Default: None"
         def fget(self):
             return self._color
@@ -101,7 +101,7 @@ class TreeValue(object):
 
     color = property(**color())
 
-    def font(self):
+    def font():
         doc = "Should be a Lumberjack `Font()` object. Default: None"
         def fget(self):
             return self._font
@@ -111,7 +111,7 @@ class TreeValue(object):
 
     font = property(**font())
 
-    def tooltip(self):
+    def tooltip():
         doc = """Tooltip to display for the cell. Should be a message table lookup
         if at all possible. (e.g. @table@message@)"""
         def fget(self):

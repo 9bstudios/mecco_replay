@@ -9,7 +9,7 @@ class Task(object):
         self._suppress_dialogs = True
         self._suppress = False
 
-    def command(self):
+    def command():
         doc = """The command property."""
         def fget(self):
             return self._command
@@ -19,7 +19,7 @@ class Task(object):
 
     command = property(**command())
 
-    def arguments(self):
+    def arguments():
         doc = """The arguments property."""
         def fget(self):
             return self._arguments
@@ -29,7 +29,7 @@ class Task(object):
 
     arguments = property(**arguments())
 
-    def comment(self):
+    def comment():
         doc = """The comment property."""
         def fget(self):
             return self._comment
@@ -39,7 +39,7 @@ class Task(object):
 
     comment = property(**comment())
 
-    def meta(self):
+    def meta():
         doc = """The meta property."""
         def fget(self):
             return self._meta
@@ -49,7 +49,7 @@ class Task(object):
 
     meta = property(**meta())
 
-    def suppress_dialogs(self):
+    def suppress_dialogs():
         doc = """The suppress_dialogs property."""
         def fget(self):
             return self._suppress_dialogs
@@ -59,7 +59,7 @@ class Task(object):
 
     suppress_dialogs = property(**suppress_dialogs())
 
-    def suppress(self):
+    def suppress():
         doc = """The suppress property."""
         def fget(self):
             return self._suppress
