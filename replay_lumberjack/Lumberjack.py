@@ -45,9 +45,9 @@ class Lumberjack(object):
     `Lumberjack().children[n].row_color = row_color_string`
     `Lumberjack().children[n].input_region = region_name`
     `Lumberjack().children[n].children`
-    `Lumberjack().children[n].get_descendants()`
-    `Lumberjack().children[n].get_ancestors()`
-    `Lumberjack().children[n].tier() # returns number of ancestors`
+    `Lumberjack().children[n].descendants` # children, grandchildren, etc.
+    `Lumberjack().children[n].ancestors` # parents, grandparents, etc.
+    `Lumberjack().children[n].tier # returns number of ancestors`
 
     Nodes have a `values` property containing keys for each column in the
     TreeView. The value property has set/get built-in, but also contains
@@ -169,22 +169,24 @@ class Lumberjack(object):
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = TreeNode()
         cls._root.columns = columns
-        cls._root.callbacks_for_rebuild.append(cls.rebuild)
-        cls._root.callbacks_for_refresh.append(cls.refresh)
+        cls._root.callbacks_for_rebuild.append((cls, 'rebuild'))
+        cls._root.callbacks_for_refresh.append((cls, 'refresh'))
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(cls._root)
 
-        # NOTE: MODO has three different strings for SERVERNAME, sSRV_USERNAME,
-        # and name to be used in config files. In practice, these should really
-        # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
-        # string for use in each of these fields.
-
+        # We store these as read-only properties of the class, just in case
+        # we ever need them.
         cls._columns = columns
         cls._internal_name = internal_name
         cls._ident = ident
         cls._nice_name = nice_name
         cls._viewport_type = viewport_type
+
+        # NOTE: MODO has three different strings for SERVERNAME, sSRV_USERNAME,
+        # and name to be used in config files. In practice, these should really
+        # be the same thing. So lumberjack expects only a single "INTERNAL_NAME"
+        # string for use in each of these fields.
 
         config_name = internal_name
         server_username = internal_name
@@ -224,17 +226,17 @@ class Lumberjack(object):
     @property
     def root(self):
         """Returns the class TreeData object."""
-        try:
+        if self.__class__._root:
             return self.__class__._root
-        except AttributeError:
+        else:
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
     def view(self):
         """Returns the class TreeView object."""
-        try:
+        if self.__class__._tree_view:
             return self.__class__._tree_view
-        except AttributeError:
+        else:
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
@@ -281,6 +283,18 @@ class Lumberjack(object):
 
     children = property(**children())
 
+    def nodes():
+        doc = """Returns a list of all nodes in the tree."""
+        def fget(self):
+            nodes = []
+            for child in self.root.children:
+                nodes.append(child)
+                nodes.extend(child.descendants)
+            return nodes
+        return locals()
+
+    nodes = property(**nodes())
+
     def tail_commands():
         doc = """List of TreeNode objects appended to the bottom of the node's list
         of children, e.g. (new group), (new form), and (new command) in Form Editor.
@@ -296,16 +310,11 @@ class Lumberjack(object):
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
+        if not 'parent' in kwargs:
+            kwargs['parent'] = self.root
         self.root.children.append(TreeNode(**kwargs))
         self.rebuild()
         return self.root.children[-1]
-
-    def nodes(self):
-        """Returns a list of all nodes in the tree."""
-        nodes = []
-        for child in self.root.children:
-            nodes.extend(child.get_descendants())
-        return nodes
 
     def find(self, column_name, search_term, regex=False):
         """Returns a list of nodes with values matching search criteria.
@@ -324,7 +333,7 @@ class Lumberjack(object):
         but the overal structure of the node tree has not changed, use `refresh()`
         for performance."""
 
-        return self.view.notify_NewShape()
+        return self._tree_view.notify_NewShape()
 
     def refresh(self):
         """Refreshes TreeView cell values, but not structure. Must run every

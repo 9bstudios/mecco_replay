@@ -14,13 +14,13 @@ class TreeValue(object):
     _tooltip = None
 
     def __init__(self, **kwargs):
-        self._value = value if value in kwargs else None
-        self._datatype = datatype if datatype in kwargs else None
-        self._display_value = display_value if display_value in kwargs else None
-        self._input_region = input_region if input_region in kwargs else None
-        self._color = color if color in kwargs else None
-        self._font = font if font in kwargs else None
-        self._tooltip = tooltip if tooltip in kwargs else None
+        self._value = value if 'value' in kwargs else None
+        self._datatype = datatype if 'datatype' in kwargs else None
+        self._display_value = display_value if 'display_value' in kwargs else None
+        self._input_region = input_region if 'input_region' in kwargs else None
+        self._color = color if 'color' in kwargs else None
+        self._font = font if 'font' in kwargs else None
+        self._tooltip = tooltip if 'tooltip' in kwargs else None
 
     def __set__(self, instance, value):
         self._value = value
@@ -70,7 +70,12 @@ class TreeValue(object):
         in the cell regardless of the actual cell value. Automatically prepends the
         `Value` object's color and font markup as appropriate."""
         def fget(self):
-            display_string = self._display_value if self._display_value else self.value
+            if self._display_value:
+                display_string = self._display_value
+            elif self.value:
+                display_string = str(self.value)
+            else:
+                display_string = ''
             markup = self._font.markup() if self._font else ''
             markup += self._color.markup() if self._color else ''
             return display_string

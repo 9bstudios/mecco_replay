@@ -33,38 +33,37 @@ class TreeNode(object):
     _primary = None
 
     def __init__(self, **kwargs):
-        self.__class__._columns = getattr(kwargs, 'columns', [])
 
         # Whether selectable in GUI
-        self._selectable = getattr(kwargs, 'selectable', True)
+        self._selectable = kwargs.get('selectable', True)
 
         # Whether selected in GUI
-        self._selected = getattr(kwargs, 'selected', False)
+        self._selected = kwargs.get('selected', False)
 
         # Dict of TreeValue objects for each column; {column_name: TreeValue()}
-        self._values = getattr(kwargs, 'values', {})
+        self._values = kwargs.get('values', {})
 
         # TreeNode parent. All TreeNode() objects except root should have a parent.
-        self._parent = getattr(kwargs, 'parent', None)
+        self._parent = kwargs.get('parent', None)
 
         # List of TreeNode objects (listed under carrot twirl in GUI; Attributes
         # are also TreeNode objects, but listed under the + sign in the GUI.)
-        self._children = getattr(kwargs, 'children', [])
+        self._children = kwargs.get('children', [])
 
         # List of TreeNode objects (listed under the + in GUI; Children
         # are also TreeNode objects, but listed under the triangular twirl in the GUI.)
-        self._attributes = getattr(kwargs, 'attributes', [])
+        self._attributes = kwargs.get('attributes', [])
 
         # List of TreeNode objects appended to the bottom of the node's list
         # of children, e.g. (new group), (new form), and (new command) in Form Editor
-        self._tail_commands = getattr(kwargs, 'tail_commands', [])
+        self._tail_commands = kwargs.get('tail_commands', [])
 
         # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
-        self._state = getattr(kwargs, 'state', None)
+        self._state = kwargs.get('state', None)
 
         # String for use in input remapping. Must correspond with one of the region
         # strings provided in the Lumberjack blessing_parameters() method.
-        self._input_region = getattr(kwargs, 'input_region', None)
+        self._input_region = kwargs.get('input_region', None)
 
         # Primary is usually the most recently selected node. If we initialize
         # a new node, however, that one becomes primary.
@@ -72,7 +71,7 @@ class TreeNode(object):
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._columns:
-            self._values[column[0]] = TreeValue()
+            self._values[column['name']] = TreeValue()
 
 
     # PROPERTIES
@@ -89,7 +88,7 @@ class TreeNode(object):
         def fget(self):
             return self._columns
         def fset(self, value):
-            self._columns = value
+            self.__class__._columns = value
         return locals()
 
     columns = property(**columns())
@@ -138,7 +137,7 @@ class TreeNode(object):
     selected = property(**selected())
 
     def primary():
-        doc = """Whether the node is primary in the GUI. (boolean)
+        doc = """Class property teturns the primary TreeNode in the tree.
 
         Typically the most recently selected or created node will be primary.
         It is possible to set the primary node to False, meaning there is no
@@ -181,6 +180,16 @@ class TreeNode(object):
         return locals()
 
     parent = property(**parent())
+
+    def root():
+        doc = """The root node of the current `TreeNode()` hierarchy."""
+        def fget(self):
+            if not self.parent:
+                return self
+            return self.parent.root
+        return locals()
+
+    root = property(**root())
 
     def index():
         doc = "The index of the node amongst its siblings (parent's children)."
@@ -256,13 +265,55 @@ class TreeNode(object):
 
     input_region = property(**input_region())
 
+    def siblings():
+        doc = """Returns a list of all of the current node's siblings, i.e. parent's children.
+        (Including the current node.)"""
+        def fget(self):
+            return self._parent.children
+        return locals()
+
+    siblings = property(**siblings())
+
+    def descendants():
+        doc = """Returns a list of all children, grandchildren, etc for the current node."""
+        def fget(self):
+            descendants = []
+            for child in self.children:
+                descendants.append(child)
+                descendants.extend(child.descendants())
+            return descendants
+        return locals()
+
+    descendants = property(**descendants())
+
+    def ancestors():
+        doc = """Returns a list of all parents, grandparents, etc for the current node."""
+        def fget(self):
+            if self.parent:
+                return self.parent.ancestors.extend(self.parent)
+            elif not self.parent:
+                return []
+        return locals()
+
+    ancestors = property(**ancestors())
+
+    def tier():
+        doc = """Returns the number of anscestors."""
+        def fget(self):
+            return len(self.get_ancestors())
+        return locals()
+
+    tier = property(**tier())
+
 
     # METHODS
     # ----------
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
-        self._children.append(TreeNode(**kwargs))
+        if not 'parent' in kwargs:
+            kwargs['parent'] = self
+        self.children.append(TreeNode(**kwargs))
         self.callback_rebuild()
         return self._children[-1]
 
@@ -272,17 +323,10 @@ class TreeNode(object):
         self.callback_rebuild()
         return self._attributes[-1]
 
-    def get_siblings(self):
-        """Returns a list of all of the current node's siblings, i.e. parent's children.
-        (Including the current node.)"""
-        return self._parent.children
-
-    def get_descendants(self):
-        """Returns a list of all children, grandchildren, etc for the current node."""
-        descendants = []
-        for child in self.children:
-            descendants.extend(child.get_descendants())
-        return descendants
+    def clear_tree_selection(self):
+        """Deselects all TreeNodes in the current tree."""
+        for node in self.root.descendants:
+            node.selected = False
 
     def select_descendants(self):
         """Selects all children, grandchildren, etc."""
@@ -291,17 +335,10 @@ class TreeNode(object):
             child.select_descendants()
 
     def deselect_descendants(self):
-        """Selects all children, grandchildren, etc."""
+        """Deselects all children, grandchildren, etc."""
         for child in self.children:
             child.selected = False
             child.deselect_descendants()
-
-    def get_ancestors(self):
-        """Returns a list of all parents, grandparents, etc for the current node."""
-        if self.parent:
-            return self.parent.get_anscestors().extend(self.parent)
-        elif not self.parent:
-            return []
 
     def delete(self):
         """Deletes the current node and reparents all of its children to its parent."""
@@ -348,10 +385,6 @@ class TreeNode(object):
         self.callback_rebuild()
         return self.index
 
-    def tier(self):
-        """Returns the number of anscestors."""
-        return len(self.get_ancestors())
-
     def find_in_descendants(self, column_name, search_term, regex=False):
         """Returns a list of descendant nodes with values matching search criteria.
 
@@ -365,7 +398,7 @@ class TreeNode(object):
 
         for child in self.children:
 
-            if not getattr(child.values, column_name):
+            if not child.values.get(column_name, None):
                 continue
 
             if regex:
@@ -383,13 +416,16 @@ class TreeNode(object):
 
     def callback_refresh(self):
         """Calls each callback method in `callbacks_for_refresh`. Runs any time
-        a cell value is updated anywhere in the node tree."""
-        for callback in self.callbacks_for_refresh:
-            callback()
+        a cell value is updated anywhere in the node tree. Expects each callback
+        to be a tuple with an object and the method name in the form
+        (object, method_name)."""
+        for obj, attr in self.callbacks_for_refresh:
+            getattr(obj, attr)(obj())
 
     def callback_rebuild(self):
         """Calls each callback method in `callbacks_for_rebuild`. Runs any time
         the node tree structure is modified in any way (add/remove/reparent nodes,
-        etc.)"""
-        for callback in self.callbacks_for_rebuild:
-            callback()
+        etc.) Expects each callback to be a tuple with an object and the method
+        name in the form (object, method_name)."""
+        for obj, attr in self.callbacks_for_refresh:
+            getattr(obj, attr)(obj())

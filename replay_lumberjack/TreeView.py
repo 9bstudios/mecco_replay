@@ -18,9 +18,6 @@ class TreeView( lxifc.TreeView,
     _listenerClients = {}
 
     def __init__(self, node, curIndex = 0):
-        self.m_currentNode = node
-        self.m_currentIndex = curIndex
-
         # The root TreeNode() object
         # Fun fact about MODO API inheritance: if our TreeView class were to
         # inherit `object` as is the norm, everything breaks. This causes various
@@ -29,11 +26,10 @@ class TreeView( lxifc.TreeView,
         try:
             self._root
         except AttributeError:
-            self.__class__._root = None
+            self.__class__._root = node
 
-        # The only node without a parent is the root
-        if not self.m_currentNode.parent:
-            self.__class__._root = self
+        self.m_currentNode = node
+        self.m_currentIndex = curIndex
 
     # --------------------------------------------------------------------------------------------------
     # Listener port
@@ -193,7 +189,7 @@ class TreeView( lxifc.TreeView,
     def treeview_ToPrimary(self):
         """Move the tree to the primary selection"""
         if self.m_currentNode.primary:
-            self.m_currentNode = True
+            self.m_currentNode = self.m_currentNode.primary
             self.tree_ToParent()
             return True
         return False
@@ -204,7 +200,7 @@ class TreeView( lxifc.TreeView,
     def treeview_Select(self, mode):
 
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self._root.deselect_descendants()
+            self._root.clear_tree_selection()
             self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
@@ -214,7 +210,7 @@ class TreeView( lxifc.TreeView,
             self.targetNode().selected = False
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self._root.deselect_descendants()
+            self._root.clear_tree_selection()
 
     def treeview_CellCommand(self, columnIndex):
         # TODO
@@ -237,9 +233,12 @@ class TreeView( lxifc.TreeView,
 
     def treeview_ToolTip(self, columnIndex):
         columns = self._root.columns
-        tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
-        if tooltip:
-            return tooltip
+        try:
+            tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
+            if tooltip:
+                return tooltip
+        except:
+            pass
         lx.notimpl()
 
     def treeview_BadgeType(self, columnIndex, badgeIndex):
@@ -278,4 +277,4 @@ class TreeView( lxifc.TreeView,
                     return node.values[columns[n]['name']].display_value
                 except:
                     # Column is empty
-                    pass
+                    return ""
