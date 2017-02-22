@@ -1,6 +1,9 @@
 # python
 
 from re import search
+from TreeValue import TreeValue
+
+import wingdbstub
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
@@ -32,7 +35,7 @@ class TreeNode(object):
     _primary = None
 
     def __init__(self, **kwargs):
-        self._columns = getattr(kwargs, 'columns', [])
+        self.__class__._columns = getattr(kwargs, 'columns', [])
 
         # Whether selectable in GUI
         self._selectable = getattr(kwargs, 'selectable', True)
@@ -68,6 +71,10 @@ class TreeNode(object):
         # Primary is usually the most recently selected node. If we initialize
         # a new node, however, that one becomes primary.
         self.__class__._primary = self
+
+        # Add empty TreeValue objects for each column, ready to accept values.
+        for column in self._columns:
+            self._values[column[0]] = TreeValue()
 
 
     # PROPERTIES

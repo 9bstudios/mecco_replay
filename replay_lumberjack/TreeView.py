@@ -2,6 +2,8 @@
 
 import lxifc, lx
 
+import wingdbstub
+
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
