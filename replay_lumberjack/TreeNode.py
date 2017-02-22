@@ -3,8 +3,6 @@
 from re import search
 from TreeValue import TreeValue
 
-import wingdbstub
-
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
     to draw the node in the TreeView UI is contained in the TreeNode, as well

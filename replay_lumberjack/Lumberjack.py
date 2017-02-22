@@ -219,11 +219,6 @@ class Lumberjack(object):
 
         except:
             traceback.print_exc()
-            lx.out("----------")
-            lx.out("server_name = ", server_name)
-            lx.out("tags = ", tags)
-            lx.out("_TreeViewSubclass = ", cls._TreeViewSubclass)
-            lx.out("----------")
             raise Exception('Unable to bless %s.' % cls.__name__)
 
     @property
