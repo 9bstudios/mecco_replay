@@ -13,17 +13,17 @@ class Lumberjack(object):
 
     TreeView object must be blessed in order to be available in MODO.
     Several parameters are required as a prerequisite of blessing, see
-    blessing_parameters() method for more. TreeView can only be blessed
+    bless() method for more. TreeView can only be blessed
     once per session.
 
-    `Lumberjack().bless()`
+    `Lumberjack().bless({})`
 
     The Lumberjack() root node is available with the `.root` property, but
     all of its methods are also available on the Lumberjack() object itself
     for convenience and readability.
 
     `Lumberjack().root # gets root node`
-    `Lumberjack().add_child(kwargs**) # equiv of .root.add_child()`
+    `Lumberjack().add_child(**kwargs) # equiv of .root.add_child()`
     `Lumberjack().tail_commands = [TreeNode()] # add UI commands to bottom of children`
 
     Nodes have methods for various manipulations and properties for meta
@@ -67,7 +67,7 @@ class Lumberjack(object):
     They have the same columns as other nodes, but are separate from the
     node's children.
 
-    `Lumberjack().children[n].addAttribute(kwargs**)`
+    `Lumberjack().children[n].addAttribute(**kwargs)`
     `Lumberjack().children[n].attribute[attribute_name] = attribute_value`
 
     Various tree-wide properties and methods are available for the TreeView
@@ -108,10 +108,10 @@ class Lumberjack(object):
         """A lumberjack class is a self-contained model-view-controller system.
 
         It maintains:
-        - a TreeData() object
-        - a TreeView() object
+        - a `TreeNode()` object
+        - a `TreeView()` object
 
-        The TreeData object is the data moel, the TreeView is the view model,
+        The TreeNode object is the data moel, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
         pass
@@ -165,7 +165,7 @@ class Lumberjack(object):
         if cls._blessed:
             raise Exception('%s class has already been blessed.' % cls.__name__)
 
-        # The TreeNode() object is the root of the tree, and all other nodes
+        # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = TreeNode()
         cls._root.columns = columns
@@ -212,7 +212,7 @@ class Lumberjack(object):
         }
 
         try:
-            # Remember: we've created a Lumberjack-specific subclass of our TreeView class for
+            # Remember: we've created a Lumberjack-specific subclass of our `TreeView()` class for
             # the blessing, just in case more than one Lumberjack subclass exists.
             lx.bless(cls._TreeViewSubclass, server_name, tags)
 
@@ -225,7 +225,7 @@ class Lumberjack(object):
 
     @property
     def root(self):
-        """Returns the class TreeData object."""
+        """Returns the class `TreeNode()` object."""
         if self.__class__._root:
             return self.__class__._root
         else:
@@ -233,7 +233,7 @@ class Lumberjack(object):
 
     @property
     def view(self):
-        """Returns the class TreeView object."""
+        """Returns the class `TreeView()` object."""
         if self.__class__._tree_view:
             return self.__class__._tree_view
         else:
@@ -241,23 +241,23 @@ class Lumberjack(object):
 
     @property
     def primary(self):
-        """Returns the primary TreeNode() object in the tree.
+        """Returns the primary `TreeNode()` object in the tree.
         Usually this is the most recently selected or created."""
         return self._root.primary
 
     @property
     def selected(self):
-        """Returns the selected TreeNode() objects in the tree."""
+        """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.selected
 
     @property
     def clear_selection(self):
-        """Returns the selected TreeNode() objects in the tree."""
+        """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
 
     def columns():
         doc = """List of columns and their widths for the treeview in the
-        format ('name', width), where width can be a positive integer in pixels
+        format `('name', width)`, where width can be a positive integer in pixels
         or a negative integer representing a width relative to the total of all
         netagive values."""
         def fget(self):
@@ -296,7 +296,7 @@ class Lumberjack(object):
     nodes = property(**nodes())
 
     def tail_commands():
-        doc = """List of TreeNode objects appended to the bottom of the node's list
+        doc = """List of `TreeNode()` objects appended to the bottom of the node's list
         of children, e.g. (new group), (new form), and (new command) in Form Editor.
         Command must be mapped using normal input remapping to the node's input region."""
         def fget(self):
@@ -317,7 +317,7 @@ class Lumberjack(object):
         return self.root.children[-1]
 
     def find(self, column_name, search_term, regex=False):
-        """Returns a list of nodes with values matching search criteria.
+        """Returns a list of `TreeNode()` objects with values matching search criteria.
 
         Unless regex is enabled, the search_term requires an exact match.
 
@@ -328,7 +328,7 @@ class Lumberjack(object):
         return self.root.find_in_descendants(column_name, search_term, regex)
 
     def rebuild(self):
-        """Rebuilds the TreeView object from scratch. Must run every time any
+        """Rebuilds the `TreeView()` object from scratch. Must run every time any
         structural change occurs in the node tree. Note: if cell values have changed
         but the overal structure of the node tree has not changed, use `refresh()`
         for performance."""
@@ -336,7 +336,7 @@ class Lumberjack(object):
         return self._tree_view.notify_NewShape()
 
     def refresh(self):
-        """Refreshes TreeView cell values, but not structure. Must run every
+        """Refreshes `TreeView()` cell values, but not structure. Must run every
         time a cell value changes in the node tree. Note: structural changes
         (e.g. adding/removing nodes, reordering, reparenting) require the
         `rebuild()`` method."""
