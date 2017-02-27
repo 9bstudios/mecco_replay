@@ -173,7 +173,7 @@ class Lumberjack(object):
         cls._root.callbacks_for_refresh.append((cls, 'refresh'))
 
         # Our internal handle for the view itself.
-        cls._tree_view = cls._TreeViewSubclass(cls._root)
+        cls._tree_view = cls._TreeViewSubclass(root=cls._root)
 
         # We store these as read-only properties of the class, just in case
         # we ever need them.

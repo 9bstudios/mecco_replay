@@ -17,24 +17,29 @@ class TreeView( lxifc.TreeView,
     # These are used for shape and attribute changes
     _listenerClients = {}
 
-    def __init__(self, node = None, curIndex = 0):
+    def __init__(self, node = None, curIndex = 0, root = None):
 
         # `self.root` returns the root TreeNode() object for the treeview.
         # Fun fact about MODO API inheritance: if our TreeView class were to
         # inherit `object` as is the norm, everything breaks. This causes various
         # problems with inheritance. For one, class variables are only reliable
         # if they are defined during `__init__()`, NOT up above it as normal.
+
+        # Note: TreeView classes require a root TreeNode object. Without this,
+        # Bad Things happen. Be sure to add one using TreeView().root = MyTreeNode
+        # immediately after initializing.
+
+        # Because TreeView() does not inherit `object`, you cannot put the _root
+        # classvariable declaration outside of __init__() without affecting all
+        # subclasses.
+
+        if root:
+            self.__class__._root = root
+
         try:
-            # If self.root exists, we're good.
-            self.root
+            self._root
         except AttributeError:
-            # If self.root is undefined, that means the TreeView class is uninitiated.
-            # Since a TreeView can't exist without a root TreeNode, we require
-            # one on instantiation. Without that, barf.
-            if node:
-                self.root = node
-            else:
-                raise Exception('%s requires a root TreeNode object.' % self.__class__.__name__)
+            raise Exception('%s requires a root TreeNode on init.' % cls.__name__)
 
         if node is None:
             node = self.root
