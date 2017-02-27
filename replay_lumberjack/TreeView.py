@@ -26,23 +26,21 @@ class TreeView( lxifc.TreeView,
         # if they are defined during `__init__()`, NOT up above it as normal.
 
         # Note: TreeView classes require a root TreeNode object. Without this,
-        # Bad Things happen. Be sure to add one using TreeView().root = MyTreeNode
-        # immediately after initializing.
+        # Bad Things happen. Be sure to include this parameter when instantiating
+        # the class for the first time.
+        if root:
+            self.__class__._root = root
 
         # Because TreeView() does not inherit `object`, you cannot put the _root
         # classvariable declaration outside of __init__() without affecting all
         # subclasses.
-
-        if root:
-            self.__class__._root = root
-
         try:
             self._root
         except AttributeError:
-            raise Exception('%s requires a root TreeNode on init.' % cls.__name__)
+            raise Exception('%s requires a root TreeNode on init.' % self.__name__)
 
         if node is None:
-            node = self.root
+            node = self._root
 
         self.m_currentNode = node
         self.m_currentIndex = curIndex
@@ -123,7 +121,7 @@ class TreeView( lxifc.TreeView,
         """Spawn a new instance of this tier in the tree."""
 
         # create an instance of our current location in the tree
-        newTree = TreeView(self.m_currentNode, self.m_currentIndex)
+        newTree = self.__class__(self.m_currentNode, self.m_currentIndex)
 
         # Convert to a tree interface
         newTreeObj = lx.object.Tree(newTree)

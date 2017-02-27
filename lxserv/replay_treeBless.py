@@ -21,7 +21,7 @@ ReplayLumberjack().bless(
     internal_name = 'replayTreeView',
 
     # :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
-    ident = 'RMTV',
+    ident = 'RRTV',
 
     # :param columns:         a list of dictionaries, one for each column. Values in each
     #                         node's values dictionary must correspond with these strings

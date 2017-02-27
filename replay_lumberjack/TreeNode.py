@@ -89,7 +89,7 @@ class TreeNode(object):
         return self.add_child(**kwargs)
 
     def ClearSelection(self):
-        self.clear_tree_selection
+        self.clear_tree_selection()
 
     def SetSelected(self, val=True):
         if val:
@@ -359,13 +359,13 @@ class TreeNode(object):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if not 'parent' in kwargs:
             kwargs['parent'] = self
-        self.children.append(TreeNode(**kwargs))
+        self.children.append(self.__class__(**kwargs))
         self.callback_rebuild()
         return self._children[-1]
 
     def add_attribute(self, **kwargs):
         """Adds an attribute `TreeNode()` to the current node and returns it."""
-        self._attributes.append(TreeNode(**kwargs))
+        self._attributes.append(self.__class__(**kwargs))
         self.callback_rebuild()
         return self._attributes[-1]
 
