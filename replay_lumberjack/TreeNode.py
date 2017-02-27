@@ -240,7 +240,10 @@ class TreeNode(object):
     def index():
         doc = "The index of the node amongst its siblings (parent's children)."
         def fget(self):
-            return self._parent.children.index(self)
+            if self._parent:
+                return self._parent.children.index(self)
+            elif not self._parent:
+                return 0
         def fset(self, index):
             child_list = self._parent.children
             old_index = child_list.index(self)
@@ -326,7 +329,7 @@ class TreeNode(object):
             descendants = []
             for child in self.children:
                 descendants.append(child)
-                descendants.extend(child.descendants())
+                descendants.extend(child.descendants)
             return descendants
         return locals()
 
@@ -335,9 +338,9 @@ class TreeNode(object):
     def ancestors():
         doc = """Returns a list of all parents, grandparents, etc for the current node."""
         def fget(self):
-            if self.parent:
-                return self.parent.ancestors.extend(self.parent)
-            elif not self.parent:
+            if self._parent:
+                return self._parent.ancestors.append(self.parent)
+            elif not self._parent:
                 return []
         return locals()
 
@@ -350,6 +353,17 @@ class TreeNode(object):
         return locals()
 
     tier = property(**tier())
+
+    @property
+    def selected_descendants(self):
+        """Returns a list of all currently-selected children, grandchildren, etc
+        of the current node."""
+        selected_nodes = []
+        for child in self.children:
+            if child.selected:
+                selected_nodes.append(child)
+            selected_nodes.extend(child.selected_descendants)
+        return selected_nodes
 
 
     # METHODS
@@ -393,6 +407,7 @@ class TreeNode(object):
         # Reparent children to parent. (Does not delete hierarchy.)
         for sibling in self.parent.children:
             sibling.parent = self.parent
+        self.parent.children.remove(self)
         self.callback_rebuild()
 
     def delete_descendants(self):

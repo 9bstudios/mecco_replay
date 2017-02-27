@@ -75,7 +75,7 @@ class Lumberjack(object):
 
     `Lumberjack().selected # list of selected nodes`
     `Lumberjack().primary # most recently selected node (usually)`
-    `Lumberjack().nodes # all nodes in tree`
+    `Lumberjack().all_nodes # all nodes in tree`
     `Lumberjack().find(column_name, search_term) # list of matches`
     'Lumberjack().clear_selection()'
 
@@ -246,12 +246,11 @@ class Lumberjack(object):
         return self._root.primary
 
     @property
-    def selected(self):
+    def selected_descendants(self):
         """Returns the selected `TreeNode()` objects in the tree."""
-        return self.root.selected
+        return self.root.selected_descendants
 
-    @property
-    def clear_selection(self):
+    def clear_tree_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
 
@@ -283,17 +282,17 @@ class Lumberjack(object):
 
     children = property(**children())
 
-    def nodes():
-        doc = """Returns a list of all nodes in the tree."""
+    def all_nodes():
+        doc = """Returns a list of all all_nodes in the tree."""
         def fget(self):
-            nodes = []
+            all_nodes = []
             for child in self.root.children:
-                nodes.append(child)
-                nodes.extend(child.descendants)
-            return nodes
+                all_nodes.append(child)
+                all_nodes.extend(child.descendants)
+            return all_nodes
         return locals()
 
-    nodes = property(**nodes())
+    all_nodes = property(**all_nodes())
 
     def tail_commands():
         doc = """List of `TreeNode()` objects appended to the bottom of the node's list
