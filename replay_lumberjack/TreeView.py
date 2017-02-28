@@ -204,25 +204,45 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ColumnCount(self):
+        """Returns the number of columns in the treeview."""
         return len(self.root.columns)
 
-    # def treeview_ColumnInternalName():
-    #     pass
-    #
-    # def treeview_ColumnIconResource(self):
-    #     pass
-    #
-    # def treeview_ColumnJustification(self, columnIndex, justification):
-    #     """Justification:
-    #     #define LXiTREEJUST_LEFT                0
-    #     #define LXiTREEJUST_CENTER              1
-    #     #define LXiTREEJUST_RIGHT               2"""
-    #     pass
-    #
-    # def treeview_PrimaryColumnPosition(self, columnIndex):
-    #     pass
+    def treeview_ColumnInternalName(self, columnIndex):
+        """Returns the internal name of a given column for use in configs, etc.
+        Important that these never change."""
+        if columnIndex < len(self.root.columns):
+            return self.root.columns[columnIndex].get('name')
+
+    def treeview_ColumnIconResource(self, columnIndex):
+        """Returns the name of a 13px icon resource for the column header."""
+        if columnIndex < len(self.root.columns):
+            icon_resource = self.root.columns[columnIndex].get('icon_resource')
+            if icon_resource:
+                return icon_resource
+        # Without lx.notimpl(), MODO will crash.
+        lx.notimpl()
+
+    def treeview_ColumnJustification(self, columnIndex):
+        """Returns the desired justification setting for a given column.
+        #define LXiTREEJUST_LEFT                0
+        #define LXiTREEJUST_CENTER              1
+        #define LXiTREEJUST_RIGHT               2"""
+        lookup = {
+            'left': 0,
+            'center': 1,
+            'right': 2
+        }
+        if columnIndex < len(self.root.columns):
+            string_value = self.root.columns[columnIndex].get('justify', 'left')
+            return lookup[string_value]
+
+    def treeview_PrimaryColumnPosition(self):
+        """Returns True for the column that should be 'primary', i.e. should have the carrot
+        display for children, etc."""
+        return 2
 
     def treeview_ColumnByIndex(self, columnIndex):
+        """Returns a tuple with the name and width of a given column."""
         try:
             name = self.root.columns[columnIndex]['name']
             width = self.root.columns[columnIndex]['width']
