@@ -67,9 +67,9 @@ class TreeValue(object):
         in the cell regardless of the actual cell value. Automatically prepends the
         `Value` object's color and font markup as appropriate."""
         def fget(self):
-            if self._display_value:
+            if self._display_value is not None:
                 display_string = str(self._display_value)
-            elif self.value:
+            elif self.value is not None:
                 display_string = str(self.value)
             else:
                 display_string = ''

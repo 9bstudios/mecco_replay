@@ -36,6 +36,7 @@ class TreeView( lxifc.TreeView,
         try:
             self._root
         except AttributeError:
+            lx.out ('%s requires a root TreeNode on init.' % self.__name__)
             raise Exception('%s requires a root TreeNode on init.' % self.__name__)
 
         if node is None:
@@ -72,7 +73,7 @@ class TreeView( lxifc.TreeView,
         that need notification."""
         treeListenerObject = lx.object.TreeListener(listener)
         if cls._listenerClients.has_key(treeListenerObject.__peekobj__()):
-            del  cls._listenerClients[treeListenerObject.__peekobj__()]
+            del cls._listenerClients[treeListenerObject.__peekobj__()]
 
     @classmethod
     def notify_NewShape(cls):
@@ -149,6 +150,8 @@ class TreeView( lxifc.TreeView,
         if m_parent:
             self.m_currentIndex = self.m_currentNode.index
             self.m_currentNode = m_parent
+            return True
+        return False
 
     def tree_ToChild(self):
         """Move to the child tier and set the selected node"""
@@ -160,18 +163,12 @@ class TreeView( lxifc.TreeView,
 
     def tree_IsRoot(self):
         """Check if the current tier in the tree is the root tier"""
-        if self.m_currentNode == self.root:
-            return True
-        else:
-            return False
+        return (self.m_currentNode == self.root)
 
     def tree_ChildIsLeaf(self):
         """If the current tier has no children then it is
         considered a leaf"""
-        if len( self.m_currentNode.children ) > 0:
-            return False
-        else:
-            return True
+        return (len( self.m_currentNode.children ) == 0)
 
     def tree_Count(self):
         """Returns the number of nodes in this tier of
@@ -228,6 +225,13 @@ class TreeView( lxifc.TreeView,
     def treeview_IsSelected(self):
         return self.targetNode().selected
 
+    def treeview_IsDescendantSelected (self):
+        # Backwards for some reason...
+        # for child in self.targetNode().children:
+        #     if child.selected:
+        #         return False
+        return True
+
     def treeview_Select(self, mode):
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             self.root.clear_tree_selection()
@@ -262,13 +266,13 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        columns = self.root.columns
-        try:
-            tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
-            if tooltip:
-                return tooltip
-        except:
-            pass
+        # columns = self.root.columns
+        # try:
+        #     tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
+        #     if tooltip:
+        #         return tooltip
+        # except:
+        #     pass
         lx.notimpl()
 
     def treeview_BadgeType(self, columnIndex, badgeIndex):
@@ -297,7 +301,6 @@ class TreeView( lxifc.TreeView,
         return len(self.root.columns)
 
     def attr_GetString(self, index):
-        lx.out("attr_GetString: ", str(index))
         columns = self.root.columns
         node = self.targetNode()
 

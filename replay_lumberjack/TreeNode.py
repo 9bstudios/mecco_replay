@@ -59,7 +59,7 @@ class TreeNode(object):
         self._tail_commands = kwargs.get('tail_commands', [])
 
         # Bitwise flags for GUI states like expand/collapse etc. Leave this alone.
-        self._state = kwargs.get('state', None)
+        self._state = kwargs.get('state', 0)
 
         # String for use in input remapping. Must correspond with one of the region
         # strings provided in the Lumberjack blessing_parameters() method.
@@ -324,11 +324,12 @@ class TreeNode(object):
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
-        if not 'parent' in kwargs:
+        if 'parent' not in kwargs:
             kwargs['parent'] = self
-        self.children.append(self.__class__(**kwargs))
+        newNode = self.__class__(**kwargs)
+        kwargs['parent'].children.append(newNode)
         self.callback_rebuild()
-        return self._children[-1]
+        return newNode
 
     def add_attribute(self, **kwargs):
         """Adds an attribute `TreeNode()` to the current node and returns it."""
@@ -441,5 +442,5 @@ class TreeNode(object):
         the node tree structure is modified in any way (add/remove/reparent nodes,
         etc.) Expects each callback to be a tuple with an object and the method
         name in the form (object, method_name)."""
-        for obj, attr in self.callbacks_for_refresh:
+        for obj, attr in self.callbacks_for_rebuild:
             getattr(obj, attr)(obj())
