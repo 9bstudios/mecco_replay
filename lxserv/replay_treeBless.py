@@ -34,7 +34,8 @@ ReplayLumberjack().bless(
             'name':'name',
             # negative integers are summed and then divided for relative widths.
             # in this example, -1 + -3 == -4, so -1/-4 is 25%.
-            'width':-1
+            'width':-1,
+            'primary':True
         }, {
             'name':'value',
             'width':-3

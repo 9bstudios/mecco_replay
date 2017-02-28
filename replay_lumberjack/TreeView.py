@@ -206,6 +206,22 @@ class TreeView( lxifc.TreeView,
     def treeview_ColumnCount(self):
         return len(self.root.columns)
 
+    # def treeview_ColumnInternalName():
+    #     pass
+    #
+    # def treeview_ColumnIconResource(self):
+    #     pass
+    #
+    # def treeview_ColumnJustification(self, columnIndex, justification):
+    #     """Justification:
+    #     #define LXiTREEJUST_LEFT                0
+    #     #define LXiTREEJUST_CENTER              1
+    #     #define LXiTREEJUST_RIGHT               2"""
+    #     pass
+    #
+    # def treeview_PrimaryColumnPosition(self, columnIndex):
+    #     pass
+
     def treeview_ColumnByIndex(self, columnIndex):
         try:
             name = self.root.columns[columnIndex]['name']
@@ -221,6 +237,7 @@ class TreeView( lxifc.TreeView,
             self.tree_ToParent()
             return True
         return False
+
 
     def treeview_IsSelected(self):
         return self.targetNode().selected
