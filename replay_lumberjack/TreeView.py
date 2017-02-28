@@ -18,7 +18,6 @@ class TreeView( lxifc.TreeView,
     _listenerClients = {}
 
     def __init__(self, node = None, curIndex = 0, root = None):
-
         # `self.root` returns the root TreeNode() object for the treeview.
         # Fun fact about MODO API inheritance: if our TreeView class were to
         # inherit `object` as is the norm, everything breaks. This causes various
@@ -79,6 +78,7 @@ class TreeView( lxifc.TreeView,
     def notify_NewShape(cls):
         """Called whenever nodal hierarchy changes in any way. Slower than
         `notify_NewAttributes`, but necessary when nodes are added/removed/reparented."""
+        lx.out("notify_NewShape: ", str(cls))
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewShape()
@@ -88,6 +88,7 @@ class TreeView( lxifc.TreeView,
         """Called when cell values are updated, but nodal hierarchy is unchanged.
         Faster than `notify_NewShape`, but does not update added/removed/reparented
         nodes."""
+        lx.out("notify_NewAttributes: ", str(cls))
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewAttributes()
@@ -228,7 +229,6 @@ class TreeView( lxifc.TreeView,
         return self.targetNode().selected
 
     def treeview_Select(self, mode):
-
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
             self.root.clear_tree_selection()
             self.targetNode().selected = True
@@ -297,6 +297,7 @@ class TreeView( lxifc.TreeView,
         return len(self.root.columns)
 
     def attr_GetString(self, index):
+        lx.out("attr_GetString: ", str(index))
         columns = self.root.columns
         node = self.targetNode()
 
@@ -308,3 +309,5 @@ class TreeView( lxifc.TreeView,
                 except:
                     # Column is empty
                     return ""
+
+        return ""

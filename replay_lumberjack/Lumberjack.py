@@ -4,6 +4,15 @@ import lx, traceback
 from TreeNode import TreeNode
 from TreeView import TreeView
 
+# TODO: Need a "batch update" mode for making changes without rebuilding
+# or refreshing the tree every time. Something like:
+
+# Lumberjack().batch_edit_begin()
+# ...
+# Lumberjack().batch_edit_end()
+
+# Would auto-detect if rebuild is needed.
+
 class Lumberjack(object):
     """Metaclass containing everything necessary to create
     and manage a working treeview in MODO.
@@ -171,6 +180,7 @@ class Lumberjack(object):
         cls._root.columns = columns
         cls._root.callbacks_for_rebuild.append((cls, 'rebuild'))
         cls._root.callbacks_for_refresh.append((cls, 'refresh'))
+
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(root=cls._root)

@@ -14,12 +14,6 @@ class TreeValue(object):
         self._font = font if 'font' in kwargs else None
         self._tooltip = tooltip if 'tooltip' in kwargs else None
 
-    def __set__(self, instance, value):
-        self._value = value
-
-    def __get__(self, instance, owner):
-        return self._value
-
     def value():
         doc = """The actual cell value. Note that this can be overridden by
         `display_value()` when displayed in a TreeView."""
@@ -38,7 +32,18 @@ class TreeValue(object):
         'filepath', 'float', 'float3', 'force', 'integer', 'light', 'mass',
         'percent', 'percent3', 'speed', 'string', 'time', 'uvcoord', 'vertmapname'"""
         def fget(self):
-            return self._datatype
+            if self._datatype:
+                return self._datatype
+            else:
+                internal_type = type(self._value)
+                if isinstance(internal_type, basestring):
+                    return 'string'
+                elif isinstance(internal_type, int):
+                    return 'integer'
+                elif isinstance(internal_type, float):
+                    return 'float'
+                elif isinstance(internal_type, bool):
+                    return 'boolean'
         def fset(self, value):
             self._datatype = value
         return locals()
@@ -63,7 +68,7 @@ class TreeValue(object):
         `Value` object's color and font markup as appropriate."""
         def fget(self):
             if self._display_value:
-                display_string = self._display_value
+                display_string = str(self._display_value)
             elif self.value:
                 display_string = str(self.value)
             else:
@@ -72,7 +77,7 @@ class TreeValue(object):
             markup += self._color.markup() if self._color else ''
             return display_string
         def fset(self, value):
-            self._display_value = value
+            self._display_value = str(value)
         return locals()
 
     display_value = property(**display_value())
