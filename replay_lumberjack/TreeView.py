@@ -283,10 +283,11 @@ class TreeView( lxifc.TreeView,
         return self.targetNode().selected
 
     def treeview_IsDescendantSelected (self):
+        # TODO: This doesn't seem to work.
         # Backwards for some reason...
-        # for child in self.targetNode().children:
-        #     if child.selected:
-        #         return False
+        for child in self.targetNode().children:
+            if child.selected:
+                return False
         return True
 
     def treeview_Select(self, mode):
