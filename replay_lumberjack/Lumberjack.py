@@ -107,7 +107,6 @@ class Lumberjack(object):
     _root = None
     _tree_view = None
     _blessed = False
-    _columns = []
     _internal_name = ""
     _ident = ""
     _nice_name = ""
@@ -142,8 +141,49 @@ class Lumberjack(object):
 
         :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
 
-        :param columns:         a list of dictionaries for each column in the tree. Keys in each
-                                node's values dictionary must correspond with these strings
+        :param columns:         A dictionary containing, at minimum, a key called 'list' containing a list
+                                of dictionaries corresponding to each column in the view. The 'name' strings
+                                for each column must correspond with the value entries for each node.
+
+                                Columns are semi-static in the Python API: they can be changed, but those
+                                changes only update when a new treeview is initiated. Don't expect to change
+                                columns on the fly.
+
+                                Example:
+
+                                ```
+                                columns = {
+                                    'primary_position': 1,
+                                    'list': [
+                                            {
+                                                'name':'name',
+                                                # negative integers are summed and then divided for relative widths.
+                                                # in this example, -1 + -3 == -4, so -1/-4 is 25%.
+                                                'width':-1
+                                            }, {
+                                                'name':'enable',
+                                                # positive integers are pixel values (i.e. 20px)
+                                                'width':20
+                                            }, {
+                                                'name':'value',
+                                                'width':-3
+                                            }
+                                        ]
+                                }
+                                ```
+
+                                Somewhat confusingly, the "primary" column (i.e. the one with the carrot twirldown
+                                for revealing child nodes) is not necessarily the left-most column. The items
+                                list is a good example of this.
+
+                                The TreeView API wants us to provide the "primary" column as the first item
+                                in the list, but then _move_ it to a different slot using the `treeview_PrimaryColumnPosition()`
+                                method. Confusing. As. Hell. And apparently it works differently internally.
+                                Grumble grumble.
+
+                                So we hack it. In the above example, we might want to move the 'name' column
+                                to the right of the 'enable' column using the 'primary_position' key, which sets the
+                                value returned by `treeview_PrimaryColumnPosition()`.
 
         :param input_regions:   list of regions for input remapping. These can be implemented from
                                 within the data object itself as described in TreeData(), and used
@@ -155,19 +195,21 @@ class Lumberjack(object):
 
                                 NOTE: slot zero [0] in the list is reserved for the .anywhere region.
                                 Don't use it.
-
+                                ```
                                 [
                                     '(anywhere)',       # 0 reserved for .anywhere
                                     'regionNameOne',    # 1
                                     'regionNameTwo'     # 2
                                 ]
+                                ```
 
         :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.
-
+                                ```
                                 [
                                     ("select.event", "polygon +ldt"),
                                     ("select.event", "item +ldt")
                                 ]
+                                ```
         """
 
         # Can only be blessed once per session.
@@ -177,17 +219,17 @@ class Lumberjack(object):
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = TreeNode()
-        cls._root.columns = columns
+        cls._root.columns = columns.get('list', [])
         cls._root.callbacks_for_rebuild.append((cls, 'rebuild'))
         cls._root.callbacks_for_refresh.append((cls, 'refresh'))
 
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(root=cls._root)
+        cls._tree_view.set_primary_column_position(columns.get('primary_position', 0))
 
         # We store these as read-only properties of the class, just in case
         # we ever need them.
-        cls._columns = columns
         cls._internal_name = internal_name
         cls._ident = ident
         cls._nice_name = nice_name
@@ -270,9 +312,8 @@ class Lumberjack(object):
         or a negative integer representing a width relative to the total of all
         netagive values."""
         def fget(self):
-            return self._columns
+            return self._root.columns
         def fset(self, value):
-            self._columns = value
             self._root.columns = value
             self.rebuild()
         return locals()
@@ -311,7 +352,7 @@ class Lumberjack(object):
         def fget(self):
             return self.root.tail_commands
         def fset(self, value):
-            self.root.tail_commands = value
+            self.root.tail_commands = valuegg
             self.rebuild()
         return locals()
 

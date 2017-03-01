@@ -22,6 +22,7 @@ class TreeNode(object):
     # for ratios of the sum-total of all other negative integers. (If one column is
     # width -1 and another is -3, the first is 25%, the second is 75%.)
     _columns = []
+    _columns_move_primary = 0
 
     # Methods will be called when cell values update
     _callbacks_for_refresh = []

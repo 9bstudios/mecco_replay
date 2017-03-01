@@ -2,6 +2,7 @@
 
 from replay import ReplayLumberjack
 
+
 # In order to be available in the GUI, a treeview needs to be "blessed" (same as
 # MODO commands.) Lumberjack does all of this automatically with a single
 # `bless()` method. It can only be fired once per session.
@@ -25,23 +26,24 @@ ReplayLumberjack().bless(
 
     # :param columns:         a list of dictionaries, one for each column. Values in each
     #                         node's values dictionary must correspond with these strings
-    columns = [
-        {
-            'name':'enable',
-            # positive integers are pixel values (i.e. 20px)
-            'width':20
-        }, {
-            'name':'name',
-            # negative integers are summed and then divided for relative widths.
-            # in this example, -1 + -3 == -4, so -1/-4 is 25%.
-            'width':-1,
-            # Important that only ONE column have this attribute.
-            'primary':True
-        }, {
-            'name':'value',
-            'width':-3
-        }
-    ],
+    columns = {
+        'primary_position': 1,
+        'list': [
+                {
+                    'name':'name',
+                    # negative integers are summed and then divided for relative widths.
+                    # in this example, -1 + -3 == -4, so -1/-4 is 25%.
+                    'width':-1
+                }, {
+                    'name':'enable',
+                    # positive integers are pixel values (i.e. 20px)
+                    'width':20
+                }, {
+                    'name':'value',
+                    'width':-3
+                }
+            ]
+    },
 
     # :param input_regions:   list of regions for input remapping. These can be implemented from
     #                         within the data object itself as described in TreeData(), and used

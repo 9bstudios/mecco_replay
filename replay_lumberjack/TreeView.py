@@ -42,12 +42,33 @@ class TreeView( lxifc.TreeView,
         if node is None:
             node = self._root
 
+        # Because TreeView() does not inherit `object`, you cannot put the
+        # classvariable declaration outside of __init__() without affecting all
+        # subclasses.
+        try:
+            self._primary_column_position
+        except AttributeError:
+            self.__class__._primary_column_position = 0
+
         self.m_currentNode = node
         self.m_currentIndex = curIndex
 
     # --------------------------------------------------------------------------------------------------
     # Listener port
     # --------------------------------------------------------------------------------------------------
+
+    # Wanted to use a property for this instead of a setter method, but wasn't able
+    # to make it work for some reason.
+    def set_primary_column_position(self, value):
+        """Moves the primary column to the specified column index.
+
+        The "primary" column (i.e. the one with the twirly carrot icon for hide/show
+        node children) is always the first column in the columns list, but is not
+        necessarily left-most in the TreeView (witness the items list).
+
+        To move it over to the selcond-from-left slot, for example, provide this
+        function a value of 1."""
+        self.__class__._primary_column_position = value
 
     def root():
         doc = """Root TreeNode object for the TreeView. This is typically set only
@@ -79,7 +100,6 @@ class TreeView( lxifc.TreeView,
     def notify_NewShape(cls):
         """Called whenever nodal hierarchy changes in any way. Slower than
         `notify_NewAttributes`, but necessary when nodes are added/removed/reparented."""
-        lx.out("notify_NewShape: ", str(cls))
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewShape()
@@ -89,7 +109,6 @@ class TreeView( lxifc.TreeView,
         """Called when cell values are updated, but nodal hierarchy is unchanged.
         Faster than `notify_NewShape`, but does not update added/removed/reparented
         nodes."""
-        lx.out("notify_NewAttributes: ", str(cls))
         for client in cls._listenerClients.values():
             if client.test():
                 client.NewAttributes()
@@ -219,8 +238,8 @@ class TreeView( lxifc.TreeView,
             icon_resource = self.root.columns[columnIndex].get('icon_resource')
             if icon_resource:
                 return icon_resource
-        # Without lx.notimpl(), MODO will crash.
-        lx.notimpl()
+        # Without returning something, MODO will crash.
+        return ""
 
     def treeview_ColumnJustification(self, columnIndex):
         """Returns the desired justification setting for a given column.
@@ -239,7 +258,8 @@ class TreeView( lxifc.TreeView,
     def treeview_PrimaryColumnPosition(self):
         """Returns True for the column that should be 'primary', i.e. should have the carrot
         display for children, etc."""
-        return 2
+        lx.out("treeview_PrimaryColumnPosition: ", self._primary_column_position)
+        return self._primary_column_position
 
     def treeview_ColumnByIndex(self, columnIndex):
         """Returns a tuple with the name and width of a given column."""
