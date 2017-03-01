@@ -215,7 +215,6 @@ class TreeNode(object):
             return self._children
         def fset(self, value):
             self._children = value
-            self.callback_rebuild()
         return locals()
 
     children = property(**children())
@@ -228,7 +227,6 @@ class TreeNode(object):
             return self._attributes
         def fset(self, value):
             self._attributes = value
-            self.callback_rebuild()
         return locals()
 
     attributes = property(**attributes())
@@ -334,9 +332,12 @@ class TreeNode(object):
 
     def add_attribute(self, **kwargs):
         """Adds an attribute `TreeNode()` to the current node and returns it."""
-        self._attributes.append(self.__class__(**kwargs))
+        if 'parent' not in kwargs:
+            kwargs['parent'] = self
+        newNode = self.__class__(**kwargs)
+        kwargs['parent'].attributes.append(newNode)
         self.callback_rebuild()
-        return self._attributes[-1]
+        return newNode
 
     def clear_tree_selection(self):
         """Deselects all TreeNodes in the current tree."""
