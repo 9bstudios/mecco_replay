@@ -5,6 +5,7 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay_commander.CommanderClass):
+    """Populates the `ReplayLumberjack()` class with fake values for testing."""
 
     def commander_execute(self, msg, flags):
         a = replay.ReplayLumberjack()

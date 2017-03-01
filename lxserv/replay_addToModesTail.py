@@ -17,22 +17,24 @@ class FCLClass(replay_commander.CommanderClass):
             }
         ]
 
-    def commander_execute(self, msg, flags):
-        pass
-
     def list_commands(self):
+        """Returns a list of commands to append to the MODO modes tail (see
+        forms_userFCL.cfg). Must return a list of _valid_ MODO commands. If any
+        command is invalid, MODO will crash.
+
+        Retrieves a list stored by `replay.AddToModesTail` below."""
         return ['noop']
 
 lx.bless(FCLClass, 'replay.ModesTailFCL')
 
 
 class CommandClass(replay_commander.CommanderClass):
-    """Appends an FCL in the modes tail with an @ syntax script call."""
+    """Appends an FCL in the modes tail with the supplied command."""
 
     def commander_arguments(self):
         return [
             {
-                'name': 'path',
+                'name': 'command',
                 'datatype': 'string'
             }
         ]
@@ -41,7 +43,7 @@ class CommandClass(replay_commander.CommanderClass):
         pass
 
     def append_to_fcl(self):
-        # appends a list of elements that is available to FCLClass.list_commands(),
+        # appends a list of commands that is available to FCLClass.list_commands(),
         # and is also stored between sessions (probably using user values)
         pass
 
