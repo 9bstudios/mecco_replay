@@ -1,5 +1,9 @@
 # python
 
+import lx
+
+import re
+
 class ReplayMacroCommand(object):
     """Contains everything necessary to read, construct, write, and translate a
     MODO command for use in macros or Python scripts. Note that if the `command`
@@ -120,7 +124,27 @@ class ReplayMacroCommand(object):
     def parse_string(self, command_string):
         """Parse a normal MODO command string into its constituent parts, and
         stores those in the `command` and `args` properties for the object."""
-        pass
+
+        # Get the prefix and the command:
+        full_command = re.search(r'([!?+]*)(\S+)', command_string)
+
+        # Get the prefix, if any:
+        if full_command.group(1): self.prefix = full_command.group(1)
+
+        # Get the command, and trim it if given as argName:command.name:
+        command = full_command.group(2)
+        index = command.find(':')
+        if index > 0: command = command[index+1:]
+        self.command = command
+
+        # Get the arguments for this command:
+        self.retreive_args()
+        
+        print "parse_string"
+        print self.prefix
+        print self.command
+        for arg in self.args:
+           print arg
 
     def meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
@@ -189,8 +213,9 @@ class ReplayMacroCommand(object):
         ]
 
         # Populate the list.
-        for n, term in enumerate(query_terms):
-            self.args[n][term] = x.eval('query commandservice command.%s ? %s' % (term, self.command))
+        for n in range(len(argNames)):
+            for term in query_terms:
+                self.args[n][term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))
 
 
 class ReplayMacro(object):
@@ -241,9 +266,13 @@ class ReplayMacro(object):
 
     def parse_LXM(self, input_file):
         """Parse an LXM file and store its commands in the `commands` property."""
-        
-        input_string = input_file.read()
-        
+
+        for input_line in input_file:
+
+            if not input_line: continue
+            if input_line[0] == "#": continue
+            
+            self._commands.append(ReplayMacroCommand(input_line))
 
     def parse_Python(self):
         """Parse a Python file and store its commands in the `commands` property.
