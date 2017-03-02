@@ -9,8 +9,11 @@ class CommandClass(replay_commander.CommanderClass):
     parse methods."""
 
     def commander_execute(self, msg, flags):
-        # prompt for file open using http://modo.sdk.thefoundry.co.uk/td-sdk/dialogs.html#custom-file-dialog
-        pass
 
+        input_path = modo.dialogs.customFile(dtype = 'fileOpen', title = 'Open LXM file', \
+           names = ('LXM',), unames = ('LXM file'), patterns = ('*.LXM', '*.lxm'))
+
+        input_file = open(input_path, 'r')
+        input_string = input_file.read()
 
 lx.bless(CommandClass, 'replay.fileOpen')
