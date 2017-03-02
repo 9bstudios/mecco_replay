@@ -139,12 +139,6 @@ class ReplayMacroCommand(object):
 
         # Get the arguments for this command:
         self.retreive_args()
-        
-        print "parse_string"
-        print self.prefix
-        print self.command
-        for arg in self.args:
-           print arg
 
     def command_meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
@@ -215,7 +209,7 @@ class ReplayMacroCommand(object):
         # Populate the list.
         for n in range(len(argNames)):
             for term in query_terms:
-                self.args[n][term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))
+                self.args[n][term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
 
 
 class ReplayMacro(object):
@@ -267,11 +261,14 @@ class ReplayMacro(object):
     def parse_LXM(self, input_file):
         """Parse an LXM file and store its commands in the `commands` property."""
 
+        # Loop over the lines to get all the command strings:
         for input_line in input_file:
-
             if not input_line: continue
+
+            # Skip comments:
             if input_line[0] == "#": continue
-            
+
+            # Parse the command and store it in the commands list:
             self._commands.append(ReplayMacroCommand(input_line))
 
     def parse_Python(self):
