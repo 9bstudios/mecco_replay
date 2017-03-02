@@ -1,5 +1,8 @@
 # python
 
+from Color import Color
+from Font import Font
+
 class TreeValue(object):
     """Contains all of the necessary properties for a TreeView
     cell value, including internal value, display value, and metadata
@@ -12,8 +15,8 @@ class TreeValue(object):
         self._datatype = datatype if 'datatype' in kwargs else None
         self._display_value = display_value if 'display_value' in kwargs else None
         self._input_region = input_region if 'input_region' in kwargs else None
-        self._color = color if 'color' in kwargs else None
-        self._font = font if 'font' in kwargs else None
+        self._color = color if 'color' in kwargs else Color()
+        self._font = font if 'font' in kwargs else Font()
         self._tooltip = tooltip if 'tooltip' in kwargs else None
 
     def value():
