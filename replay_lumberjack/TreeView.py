@@ -305,22 +305,18 @@ class TreeView( lxifc.TreeView,
             self.root.clear_tree_selection()
 
     def treeview_CellCommand(self, columnIndex):
-        # TODO
-        # Support cell command queries (must be queries).
-        # Must also implement BatcchCommand, cannot do one without the other.
-        # Usually the cell and batch commands are the same, but the cell
-        # command has an optional argument set that tells the command to target
-        # a specific row instead of the entire selection.
-
-        # Such as, "item.channel enable ? item:someItemID" for the cell command,
-        # vs "item.channel enable ?" for the batch command -- the batch version
-        # targets all selected rows by looking at the selection.
-
-        # Colors aren't currently supported, BTW; it's just strings, ints,
-        # floats and popups.  And async monitors.
+        """Cells can contain commands similar to Forms, and this is especially
+        useful with query commands like booleans. Note that in order for the `treeview_CellCommand`
+        to work, we must also specify a `treeview_BatchCommand` for multi-selections."""
+        if None not in [self.m_currentNode.cell_command, self.m_currentNode.batch_command]:
+            return self.m_currentNode.cell_command
         lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
+        """Similar to `treeview_CellCommand`, except this one is fired on batch selections.
+        For `treeview_CellCommand` to work properly, an accompanying `treeview_BatchCommand` is required."""
+        if None not in [self.m_currentNode.cell_command, self.m_currentNode.batch_command]:
+            return self.m_currentNode.batch_command
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):

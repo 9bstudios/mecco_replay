@@ -7,6 +7,8 @@ class TreeValue(object):
 
     def __init__(self, **kwargs):
         self._value = value if 'value' in kwargs else None
+        self._cell_command = cell_command if 'cell_command' in kwargs else None
+        self._batch_command = batch_command if 'batch_command' in kwargs else None
         self._datatype = datatype if 'datatype' in kwargs else None
         self._display_value = display_value if 'display_value' in kwargs else None
         self._input_region = input_region if 'input_region' in kwargs else None
@@ -16,7 +18,8 @@ class TreeValue(object):
 
     def value():
         doc = """The actual cell value. Note that this can be overridden by
-        `display_value()` when displayed in a TreeView."""
+        `display_value()` when displayed in a TreeView, and will be ignored
+        if a `cell_command` is defined."""
         def fget(self):
             return self._value
         def fset(self, value):
@@ -24,6 +27,29 @@ class TreeValue(object):
         return locals()
 
     value = property(**value())
+
+    def cell_command():
+        doc = """Cells can contain commands similar to Forms, and this is especially
+        useful with query commands like booleans. Note that in order for the `cell_command`
+        to work, we must also specify a `batch_command` for multi-selections."""
+        def fget(self):
+            return self._cell_command
+        def fset(self, cell_command):
+            self._cell_command = cell_command
+        return locals()
+
+    cell_command = property(**cell_command())
+
+    def batch_command():
+        doc = """Similar to `cell_command`, except this one is fired on batch selections.
+        For `cell_command` to work properly, an accompanying `batch_command` is required."""
+        def fget(self):
+            return self._batch_command
+        def fset(self, batch_command):
+            self._batch_command = batch_command
+        return locals()
+
+    batch_command = property(**batch_command())
 
     def datatype():
         doc = """The datatype for the value. Can be any of the normal MODO value
