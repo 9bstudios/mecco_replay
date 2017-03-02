@@ -2,12 +2,16 @@
 
 class ReplayMacroCommand(object):
     """Contains everything necessary to read, construct, write, and translate a
-    MODO command for use in macros or Python scripts."""
+    MODO command for use in macros or Python scripts. Note that if the `command`
+    property is `None`, the `comment_before` property will still be rendered, but
+    the command will be ignored. (This way you can add comment-only lines.)"""
 
     _command = None
     _args = {}
     _suppress = False
     _comment_before = None
+    _prefix = None
+    _meta = {}
 
     def __init__(self, command_string=None):
         if command_string is not None:
@@ -23,8 +27,27 @@ class ReplayMacroCommand(object):
 
     command = property(**command())
 
+    def prefix():
+        doc = """Usually one or two characters to prepend to the command string to
+        suppress or force dialogs, etc. e.g. `!mesh.cleanup`
+
+        `'!'`   - Suppress dialogs.
+        `'!!'`  - Suppress all dialogs.
+        `'+'`   - Show dialogs.
+        `'++'`  - Show all dialogs.
+        `'?'`   - Show command dialog.
+
+        See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
+        def fget(self):
+            return self._prefix
+        def fset(self, value):
+            self._prefix = value
+        return locals()
+
+    prefix = property(**prefix())
+
     def args():
-        doc = "A dictionary of arguments and their values."
+        doc = "A dictionary of arguments and values. {'argName': value}"
         def fget(self):
             return self._args
         def fset(self, value):
@@ -56,7 +79,14 @@ class ReplayMacroCommand(object):
     comment_before = property(**comment_before())
 
     def meta():
-        doc = "Suppresses (comments) the command by appending a `#` before it."
+        doc = """A dictionary of metadata values for use in the GUI editor. These are stored
+        as specially-formatted comments within the code itself. These could include things like
+        row color.
+
+        e.g. {'row_color': 'red'}
+
+        Renders as:
+        # replay meta row_color: 'red'"""
         def fget(self):
             return self._meta
         def fset(self, value):
@@ -93,6 +123,12 @@ class ReplayMacro(object):
         return locals()
 
     commands = property(**commands())
+
+    def run(self):
+        """Runs the macro."""
+        for command in self.commands:
+            # See http://modo.sdk.thefoundry.co.uk/wiki/Python#lx.command
+            pass
 
     def render_LXM(self):
         """Generates an LXM string for export."""
