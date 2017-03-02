@@ -48,7 +48,17 @@ class ReplayMacroCommand(object):
     prefix = property(**prefix())
 
     def args():
-        doc = "A dictionary of arguments and values. {'argName': value}"
+        doc = """A list of dictionaries with arguments, values, and datatypes.
+        [
+            {
+                'argName': 'argname',
+                'argUsername': 'Argument Name',
+                'argType': 0, # 0 for generic objects, 1 for integers, 2 for floats an 3 for strings
+                'argTypeName': 'boolean',
+                'argDesc': 'What the argument does.',
+                'argExample': 'Example if available.'
+            }
+        ]"""
         def fget(self):
             return self._args
         def fset(self, value):
@@ -107,10 +117,54 @@ class ReplayMacroCommand(object):
 
     meta = property(**meta())
 
-    def parse_string(command_string):
+    def parse_string(self, command_string):
         """Parse a normal MODO command string into its constituent parts, and
         stores those in the `command` and `args` properties for the object."""
         pass
+
+    def retreive_args(self):
+        """Retrieve a list of arguments and datatypes from MODO's commandservice.
+        See http://sdk.luxology.com/wiki/Commandservice#command.argNames
+
+        Example:
+        [
+            {
+                'argName': 'argname',
+                'argUsername': 'Argument Name',
+                'argType': 0, # 0 for generic objects, 1 for integers, 2 for floats an 3 for strings
+                'argTypeName': 'boolean',
+                'argDesc': 'What the argument does.',
+                'argExample': 'Example if available.'
+            }
+        ]"""
+
+        if not self.command:
+            raise Exception("Command string not set.")
+            return
+
+        # Names of the arguments for the current command.
+        argNames = lx.eval('query commandservice command.argNames ? %s' % self.command):
+
+        # No arguments to report
+        if not argNames:
+            return
+
+        # Create placeholders for each arg
+        self.args = [{}] * len(argNames)
+
+        # These are the ones I care about for now. If there are others later, we can add them.
+        query_terms = [
+            'argNames',
+            'argUsernames',
+            'argTypes',
+            'argTypeNames',
+            'argDescs',
+            'argExamples'
+        ]
+
+        # Populate the list.
+        for n, term in enumerate(query_terms):
+            self.args[n][term] = x.eval('query commandservice command.%s ? %s' % (term, self.command))
 
 
 class ReplayMacro(object):
