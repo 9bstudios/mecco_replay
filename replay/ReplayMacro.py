@@ -122,6 +122,32 @@ class ReplayMacroCommand(object):
         stores those in the `command` and `args` properties for the object."""
         pass
 
+    def meta(self):
+        """Returns a dict of metadata for the command from the MODO commandservice,
+        as listed here: http://sdk.luxology.com/wiki/Commandservice#command.username."""
+
+        if not self.command:
+            raise Exception("Command string not set.")
+            return
+
+        query_terms = [
+            'desc',
+            'usage',
+            'example',
+            'flags',
+            'username',
+            'tooltip',
+            'help',
+            'icon'
+        ]
+
+        meta = {}
+
+        for term in query_terms:
+            meta[term] = lx.eval("query commandservice command.%s ? %s" % (term, self.command))
+
+        return meta
+
     def retreive_args(self):
         """Retrieve a list of arguments and datatypes from MODO's commandservice.
         See http://sdk.luxology.com/wiki/Commandservice#command.argNames
