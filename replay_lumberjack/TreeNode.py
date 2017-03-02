@@ -44,6 +44,9 @@ class TreeNode(object):
         # Dict of TreeValue objects for each column; {column_name: TreeValue()}
         self._values = kwargs.get('values', {})
 
+        # Nodes can be either `child` or `attribute`, but must be one or the other.
+        self._is_attribute = kwargs.get('is_attribute', False)
+
         # TreeNode parent. All TreeNode() objects except root should have a parent.
         self._parent = kwargs.get('parent', None)
 
@@ -191,15 +194,31 @@ class TreeNode(object):
 
     root = property(**root())
 
+    def is_attribute():
+        doc = """If True, node will be considered an attribute of the parent node rather
+        than a full child (i.e. displayed under the + sign in the treeview.)."""
+        def fget(self):
+            return self._is_attribute
+        return locals()
+
+    is_attribute = property(**is_attribute())
+
     def index():
         doc = "The index of the node amongst its siblings (parent's children)."
         def fget(self):
             if self._parent:
-                return self._parent.children.index(self)
+                if not self.is_attribute:
+                    return self._parent.children.index(self)
+                elif self.is_attribute:
+                    return self._parent.attributes.index(self)
             elif not self._parent:
+                # index of root is 0
                 return 0
         def fset(self, index):
-            child_list = self._parent.children
+            if not self.is_attribute:
+                child_list = self._parent.children
+            elif self.is_attribute:
+                child_list = self._parent.attributes
             old_index = child_list.index(self)
             child_list.insert(index, child_list.pop(old_index))
             self.callback_rebuild()
@@ -270,7 +289,10 @@ class TreeNode(object):
         doc = """Returns a list of all of the current node's siblings, i.e. parent's children.
         (Including the current node.)"""
         def fget(self):
-            return self._parent.children
+            if not self.is_attribute:
+                return self._parent.children
+            elif self.is_attribute:
+                return self._parent.attributes
         return locals()
 
     siblings = property(**siblings())
@@ -334,6 +356,7 @@ class TreeNode(object):
         """Adds an attribute `TreeNode()` to the current node and returns it."""
         if 'parent' not in kwargs:
             kwargs['parent'] = self
+        kwargs['is_attribute'] = True
         newNode = self.__class__(**kwargs)
         kwargs['parent'].attributes.append(newNode)
         self.callback_rebuild()
@@ -360,9 +383,14 @@ class TreeNode(object):
         """Deletes the current node and reparents all of its children to its parent."""
         self.selected = False
         self.primary = None
+
+        # Delete all attributes
+        self.delete_attributes()
+
         # Reparent children to parent. (Does not delete hierarchy.)
         for sibling in self.parent.children:
             sibling.parent = self.parent
+
         self.parent.children.remove(self)
         self.callback_rebuild()
 
@@ -372,6 +400,14 @@ class TreeNode(object):
         if len(self._children) > 0:
             for child in self._children:
                 self._children.remove(child)
+            self.callback_rebuild()
+
+    def delete_attributes(self):
+        """Deletes all attributes from the current node. To delete
+        the node itself, use `delete()`"""
+        if len(self._attributes) > 0:
+            for attribute in self._attributes:
+                self._attributes.remove(attribute)
             self.callback_rebuild()
 
     def reorder_up(self):

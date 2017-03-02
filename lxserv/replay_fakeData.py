@@ -28,4 +28,9 @@ class CommandClass(replay_commander.CommanderClass):
             task.values['enable'].cell_command = 'select.typeFrom "item;pivot;center;edge;polygon;vertex;ptag" ?'
             task.values['enable'].batch_command = 'select.typeFrom "item;pivot;center;edge;polygon;vertex;ptag" ?'
 
+            for i in range(3):
+                att = task.add_child()
+                att.values['name'].value = "arg%s" % i
+                att.values['command'].value = "value%s" % i
+
 lx.bless(CommandClass, 'replay.fakeData')
