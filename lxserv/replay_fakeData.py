@@ -8,32 +8,12 @@ class CommandClass(replay_commander.CommanderClass):
     """Populates the `ReplayLumberjack()` class with fake values for testing."""
 
     def commander_execute(self, msg, flags):
-        a = replay.ReplayLumberjack()
+        jack = replay.ReplayLumberjack()
 
-        b = a.add_child()
-        b.values['name'].value = "Adam"
-        b.values['value'].value = 34
-        b.values['enable'].value = True
-
-        b = a.add_child()
-        b.values['name'].value = "Robin"
-        b.values['value'].value = 32
-        b.values['enable'].value = True
-
-        c = b.add_child()
-        c.values['name'].value = "Iris"
-        c.values['value'].value = 3
-        c.values['enable'].value = True
-
-        c = b.add_child()
-        c.values['name'].value = "Ian"
-        c.values['value'].value = 0
-        c.values['enable'].value = True
-
-        c = b.add_child()
-        c.values['name'].value = "Ignatius"
-        c.values['value'].value = 0
-        c.values['enable'].value = False
+        task = jack.add_child()
+        task.values['name'].value = "Render"
+        task.values['command'].value = 'render'
+        task.values['enable'].value = True
 
 
 

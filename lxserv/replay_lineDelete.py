@@ -5,8 +5,10 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay_commander.CommanderClass):
-
+    """Deletes the currently-selected command from the `ReplayMacro()` object."""
     def commander_execute(self, msg, flags):
+        # NOTE: We have to remove the command from the ReplayMacro() object, but also
+        # remove it from the ReplayLumberjack() treeview.
         pass
 
 

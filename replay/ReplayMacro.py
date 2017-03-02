@@ -9,6 +9,7 @@ class ReplayMacroCommand(object):
     _command = None
     _args = {}
     _suppress = False
+    _whitespace_before = None
     _comment_before = None
     _prefix = None
     _meta = {}
@@ -66,6 +67,17 @@ class ReplayMacroCommand(object):
 
     suppress = property(**suppress())
 
+    def whitespace_before():
+        doc = """Integer number of lines to insert before the current command when
+        exporting to code."""
+        def fget(self):
+            return self._whitespace_before
+        def fset(self, value):
+            self._whitespace_before = value
+        return locals()
+
+    whitespace_before = property(**whitespace_before())
+
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings
         will automatically be broken into lines of 80 characters or less. Appropriate
@@ -108,10 +120,24 @@ class ReplayMacro(object):
     To work around the lack of a gloal namespace in MODO, `ReplayMacro()` objects
     work entirely with class variables and classmethods."""
 
+    _file_path = None
     _commands = []
+    _export_formats = ['lxm', 'py', 'json']
 
     def __init__(self):
         pass
+
+    def file_path():
+        doc = """The file path for the current macro. If None, assume that the macro
+        is unsaved, and needs a save-as. When a macro is loaded and parsed, be
+        sure to set this value. (It will not be set automatically.)"""
+        def fget(self):
+            return self._file_path
+        def fset(self, value):
+            self._file_path = value
+        return locals()
+
+    file_path = property(**file_path())
 
     def commands():
         doc = """The list of `ReplayMacroCommand()` objects for the macro, in
@@ -123,6 +149,31 @@ class ReplayMacro(object):
         return locals()
 
     commands = property(**commands())
+
+    def export_formats():
+        doc = """The list of `ReplayMacroCommand()` objects for the macro, in
+        order from first to last."""
+        def fget(self):
+            return self._export_formats
+        return locals()
+
+    export_formats = property(**export_formats())
+
+    def parse_LXM(self):
+        """Parse an LXM file and store its commands in the `commands` property."""
+        pass
+
+    def parse_Python(self):
+        """Parse a Python file and store its commands in the `commands` property.
+        If the python code contains anything other than `lx.eval` and `lx.command`
+        calls, parse will raise an error."""
+        pass
+
+    def parse_json(self):
+        """Parse a json file and store its commands in the `commands` property.
+        Note that json must be formatted exactly as exported using the `render_json()`
+        method, else parse will raise an error."""
+        pass
 
     def run(self):
         """Runs the macro."""

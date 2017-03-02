@@ -5,6 +5,10 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay_commander.CommanderClass):
+    """Reorders the selected command within the `ReplayMacro()` object.
+    `mode` argument can move command `up` one space, `down` one space, to the `top`,
+    to the `bottom`, or to a specific `index` as specified in the `index` argument.
+    (`index` argument is ignored unless `mode` is set to `index`.)"""
 
     def commander_arguments(self):
         return [
@@ -17,7 +21,8 @@ class CommandClass(replay_commander.CommanderClass):
             }, {
                 'name': 'index',
                 'datatype': 'integer',
-                'default': 0
+                'default': 0,
+                'flags': ['optional']
             }
         ]
 

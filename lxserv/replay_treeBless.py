@@ -39,7 +39,7 @@ ReplayLumberjack().bless(
                     # positive integers are pixel values (i.e. 20px)
                     'width':20
                 }, {
-                    'name':'value',
+                    'name':'command',
                     'width':-3
                 }
             ]

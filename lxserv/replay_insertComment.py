@@ -5,6 +5,7 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay_commander.CommanderClass):
+    """Inserts a comment-only command object into the `ReplayMacro().commands` list."""
 
     def commander_arguments(self):
         return [
