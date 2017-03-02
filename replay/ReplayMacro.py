@@ -16,7 +16,7 @@ class ReplayMacroCommand(object):
     _whitespace_before = None
     _comment_before = None
     _prefix = None
-    _meta = {}
+    _replay_meta = {}
 
     def __init__(self, command_string=None):
         if command_string is not None:
@@ -104,7 +104,7 @@ class ReplayMacroCommand(object):
 
     comment_before = property(**comment_before())
 
-    def meta():
+    def replay_meta():
         doc = """A dictionary of metadata values for use in the GUI editor. These are stored
         as specially-formatted comments within the code itself. These could include things like
         row color.
@@ -112,14 +112,14 @@ class ReplayMacroCommand(object):
         e.g. {'row_color': 'red'}
 
         Renders as:
-        # replay meta row_color: 'red'"""
+        # replay_meta row_color: 'red'"""
         def fget(self):
-            return self._meta
+            return self._replay_meta
         def fset(self, value):
-            self._meta = value
+            self._replay_meta = value
         return locals()
 
-    meta = property(**meta())
+    replay_meta = property(**replay_meta())
 
     def parse_string(self, command_string):
         """Parse a normal MODO command string into its constituent parts, and
@@ -146,7 +146,7 @@ class ReplayMacroCommand(object):
         for arg in self.args:
            print arg
 
-    def meta(self):
+    def command_meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
         as listed here: http://sdk.luxology.com/wiki/Commandservice#command.username."""
 
