@@ -169,7 +169,7 @@ class ReplayMacroCommand(object):
             return
 
         # Names of the arguments for the current command.
-        argNames = lx.eval('query commandservice command.argNames ? %s' % self.command):
+        argNames = lx.eval("query commandservice command.argNames ? %s" % self.command)
 
         # No arguments to report
         if not argNames:
@@ -239,9 +239,11 @@ class ReplayMacro(object):
 
     export_formats = property(**export_formats())
 
-    def parse_LXM(self):
+    def parse_LXM(self, input_file):
         """Parse an LXM file and store its commands in the `commands` property."""
-        pass
+        
+        input_string = input_file.read()
+        
 
     def parse_Python(self):
         """Parse a Python file and store its commands in the `commands` property.

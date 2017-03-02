@@ -14,6 +14,7 @@ class CommandClass(replay_commander.CommanderClass):
            names = ('LXM',), unames = ('LXM file'), patterns = ('*.LXM', '*.lxm'))
 
         input_file = open(input_path, 'r')
-        input_string = input_file.read()
+
+        replay.ReplayMacro().parse_LXM(input_file)
 
 lx.bless(CommandClass, 'replay.fileOpen')
