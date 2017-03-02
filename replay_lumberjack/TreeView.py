@@ -365,13 +365,12 @@ class TreeView( lxifc.TreeView,
 
         for n in range(len(columns)):
             if index == n:
-                # Only return a value if there is not a valid CellCommand
                 try:
                     # Print the `display_value` in the cell
                     return node.values[columns[n]['name']].display_value
                 except:
                     break
-                    
+
         # Empty cells with a zero-length string do not display correctly in MODO.
         # To work around this problem, we always display a space if the field is empty. " "
         return " "

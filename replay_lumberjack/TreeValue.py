@@ -101,10 +101,10 @@ class TreeValue(object):
             elif self.value is not None:
                 display_string = str(self.value)
             else:
-                display_string = ''
+                display_string = ""
             markup = self._font.markup() if self._font else ''
             markup += self._color.markup() if self._color else ''
-            return display_string
+            return markup + display_string
         def fset(self, value):
             self._display_value = str(value)
         return locals()
