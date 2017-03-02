@@ -1,6 +1,7 @@
 # python
 
 import lx, lxu, traceback
+import replay, replay_commander
 
 class ChameleonCommandClass(replay_commander.CommanderClass):
     """Works in tandem with the `replay.Chameleon` class to display and return
@@ -16,4 +17,4 @@ class ChameleonCommandClass(replay_commander.CommanderClass):
     def commander_execute(self, msg, flags):
         replay.Chameleon().results = self.commander_args()
 
-lx.bless(RecordCommandClass, 'replay.chameleon')
+lx.bless(ChameleonCommandClass, 'replay.chameleon')
