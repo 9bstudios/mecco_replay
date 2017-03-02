@@ -258,7 +258,6 @@ class TreeView( lxifc.TreeView,
     def treeview_PrimaryColumnPosition(self):
         """Returns True for the column that should be 'primary', i.e. should have the carrot
         display for children, etc."""
-        lx.out("treeview_PrimaryColumnPosition: ", self._primary_column_position)
         return self._primary_column_position
 
     def treeview_ColumnByIndex(self, columnIndex):
@@ -308,15 +307,21 @@ class TreeView( lxifc.TreeView,
         """Cells can contain commands similar to Forms, and this is especially
         useful with query commands like booleans. Note that in order for the `treeview_CellCommand`
         to work, we must also specify a `treeview_BatchCommand` for multi-selections."""
-        if None not in [self.m_currentNode.cell_command, self.m_currentNode.batch_command]:
-            return self.m_currentNode.cell_command
+        column_name = self.root.columns[columnIndex]['name']
+        cell_value_obj = self.targetNode().values.get(column_name)
+        if cell_value_obj is not None:
+            if None not in [cell_value_obj.cell_command, cell_value_obj.batch_command]:
+                return cell_value_obj.cell_command
         lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
         """Similar to `treeview_CellCommand`, except this one is fired on batch selections.
         For `treeview_CellCommand` to work properly, an accompanying `treeview_BatchCommand` is required."""
-        if None not in [self.m_currentNode.cell_command, self.m_currentNode.batch_command]:
-            return self.m_currentNode.batch_command
+        column_name = self.root.columns[columnIndex]['name']
+        cell_value_obj = self.targetNode().values.get(column_name)
+        if cell_value_obj is not None:
+            if None not in [cell_value_obj.cell_command, cell_value_obj.batch_command]:
+                return cell_value_obj.batch_command
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
@@ -360,11 +365,13 @@ class TreeView( lxifc.TreeView,
 
         for n in range(len(columns)):
             if index == n:
+                # Only return a value if there is not a valid CellCommand
                 try:
                     # Print the `display_value` in the cell
                     return node.values[columns[n]['name']].display_value
                 except:
-                    # Column is empty
-                    return ""
-
-        return ""
+                    break
+                    
+        # Empty cells with a zero-length string do not display correctly in MODO.
+        # To work around this problem, we always display a space if the field is empty. " "
+        return " "
