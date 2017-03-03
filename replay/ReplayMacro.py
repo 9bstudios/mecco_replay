@@ -7,7 +7,9 @@ from ReplayMacroCommand import ReplayMacroCommand
 class ReplayMacro(replay_lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
     class will be instantiated any time MODO wants to use it, which can be
-    pretty often. Most of its methods are class-wide, so we don't need to
+    pretty often.
+
+    It is effectively a Singleton: most of its methods are class-wide, so we don't need to
     store a specific instance of the class, but rather work with the class itself.
 
     Also contains everything necessary to store, manage, and save a MODO maco or
@@ -28,7 +30,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
         super(self.__class__, self).__init__()
 
     def file_path():
-        doc = """The file path for ©he current macro. If None, assume that the macro
+        doc = """The file path for the current macro. If None, assume that the macro
         is unsaved, and needs a save-as. When a macro is loaded and parsed, be
         sure to set this value. (It will not be set automatically.)"""
         def fget(self):
@@ -65,9 +67,8 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
 
     is_empty = property(**is_empty())
 
-    @classmethod
-    def add_command(cls, command_string=None):
-        cls.add_child({'command_string':command_string})
+    def add_command(self, command_string=None):
+        self.root.children.append(ReplayMacroCommand({'command_string':command_string}))
 
     @classmethod
     def parse_LXM(cls, input_path):
@@ -91,7 +92,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
             if input_line[0] == "#": continue
 
             # Parse the command and store it in the commands list:
-            cls.add_child(ReplayMacroCommand(input_line))
+            cls.add_command(input_line)
 
         cls.rebuild()
 
