@@ -1,5 +1,5 @@
 # python
 
-from ReplayMacro import *
-from ReplayMacroCommand import *
+from Macro import *
+from MacroCommand import *
 from Chameleon import *

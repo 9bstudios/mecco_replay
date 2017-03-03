@@ -2,9 +2,9 @@
 
 import lx
 import re
-import replay_lumberjack
+import lumberjack
 
-class ReplayMacroCommand(replay_lumberjack.TreeNode):
+class MacroCommand(lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
     MODO command for use in macros or Python scripts. Note that if the `command`
     property is `None`, the `comment_before` property will still be rendered, but
@@ -21,17 +21,17 @@ class ReplayMacroCommand(replay_lumberjack.TreeNode):
         super(self.__class__, self).__init__(**kwargs)
 
         # Create default command value object and set formatting
-        self.values['command'] = replay_lumberjack.TreeValue()
+        self.values['command'] = lumberjack.TreeValue()
         # 4113 is a special gray color for grayed out text in MODO
         self.values['command'].color.special = 4113
 
         # Create default enable value object and set formatting
-        self.values['enable'] = replay_lumberjack.TreeValue()
+        self.values['enable'] = lumberjack.TreeValue()
         self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
         self.values['enable'].display_value = ''
 
         # Create default name value object
-        self.values['name'] = replay_lumberjack.TreeValue()
+        self.values['name'] = lumberjack.TreeValue()
 
         # If a command string has been passed in, parse it
         if isinstance(kwargs.get('command_string'), basestring):

@@ -1,11 +1,11 @@
-import lx, modo, replay_commander, replay
+import lx, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 
-class CommandClass(replay_commander.CommanderClass):
-    """Reorders the selected command within the `ReplayMacro()` object.
+class CommandClass(replay.commander.CommanderClass):
+    """Reorders the selected command within the `Macro()` object.
     `mode` argument can move command `up` one space, `down` one space, to the `top`,
     to the `bottom`, or to a specific `index` as specified in the `index` argument.
     (`index` argument is ignored unless `mode` is set to `index`.)"""

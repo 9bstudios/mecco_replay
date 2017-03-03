@@ -1,10 +1,10 @@
 # python
 
 import lx, re
-import replay_lumberjack
-from ReplayMacroCommand import ReplayMacroCommand
+import lumberjack
+from MacroCommand import MacroCommand
 
-class ReplayMacro(replay_lumberjack.Lumberjack):
+class Macro(lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
     class will be instantiated any time MODO wants to use it, which can be
     pretty often.
@@ -15,7 +15,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
     Also contains everything necessary to store, manage, and save a MODO maco or
     script using Replay. All macro management commands make use of this object class.
 
-    To work around the lack of a gloal namespace in MODO, `ReplayMacro()` objects
+    To work around the lack of a gloal namespace in MODO, `Macro()` objects
     work entirely with class variables and classmethods."""
 
     _file_path = None
@@ -24,7 +24,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
 
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
-    _TreeNodeClass = ReplayMacroCommand
+    _TreeNodeClass = MacroCommand
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -42,7 +42,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
     file_path = property(**file_path())
 
     def commands():
-        doc = """The list of `ReplayMacroCommand()` objects for the macro, in
+        doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
         def fget(self):
             return self._commands
@@ -51,7 +51,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
     commands = property(**commands())
 
     def export_formats():
-        doc = """The list of `ReplayMacroCommand()` objects for the macro, in
+        doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
         def fget(self):
             return self._export_formats

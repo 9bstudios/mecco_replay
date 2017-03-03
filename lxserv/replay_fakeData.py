@@ -1,14 +1,14 @@
-import lx, modo, replay_commander, replay
+import lx, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 
-class CommandClass(replay_commander.CommanderClass):
+class CommandClass(replay.commander.CommanderClass):
     """Populates the `ReplayLumberjack()` class with fake values for testing."""
 
     def commander_execute(self, msg, flags):
-        jack = replay.ReplayMacro()
+        macro = replay.Macro()
 
         commands = [
             ('Primitive', 'script.run "macro.scriptservice:27554333777:macro"'),
@@ -20,9 +20,9 @@ class CommandClass(replay_commander.CommanderClass):
         ]
 
         for command in commands:
-            node = jack.add_command()
-            node.values['name'].value = command[0]
-            node.values['command'].value = command[1]
-            jack.rebuild_view()
+            macro_command = macro.add_command()
+            macro_command.values['name'].value = command[0]
+            macro_command.values['command'].value = command[1]
+            macro.rebuild_view()
 
 lx.bless(CommandClass, 'replay.fakeData')

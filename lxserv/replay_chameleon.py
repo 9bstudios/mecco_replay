@@ -1,9 +1,9 @@
 # python
 
 import lx, lxu, traceback
-import replay, replay_commander
+import replay, replay.commander
 
-class ChameleonCommandClass(replay_commander.CommanderClass):
+class ChameleonCommandClass(replay.commander.CommanderClass):
     """Works in tandem with the `replay.Chameleon` class to display and return
     an arbitrary list of argument values in a command dialog.
 
