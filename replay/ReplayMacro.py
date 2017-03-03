@@ -68,7 +68,7 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
     is_empty = property(**is_empty())
 
     def add_command(self, command_string=None):
-        self.root.children.append(ReplayMacroCommand({'command_string':command_string}))
+        self.root.children.append(ReplayMacroCommand(command_string=command_string))
 
     def parse_LXM(self, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""

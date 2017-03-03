@@ -4,7 +4,7 @@ import lx
 import re
 import replay_lumberjack
 
-class ReplayMacroCommand(replay_lumberjack.TreeNode, object):
+class ReplayMacroCommand(replay_lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
     MODO command for use in macros or Python scripts. Note that if the `command`
     property is `None`, the `comment_before` property will still be rendered, but
@@ -37,8 +37,8 @@ class ReplayMacroCommand(replay_lumberjack.TreeNode, object):
             self.values['name'] = replay_lumberjack.TreeValue()
 
         # If a command string has been passed in, parse it
-        if kwargs.get('command_string'):
-            self.parse_string(command_string)
+        if isinstance(kwargs.get('command_string'), basestring):
+            self.parse_string(kwargs.get('command_string'))
 
 
     def command():
