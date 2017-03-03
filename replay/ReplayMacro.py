@@ -241,6 +241,22 @@ class ReplayMacroCommand(object):
             arg_dict['argValues'] = None
             self._args.append(arg_dict)
 
+    def render_LXM(self):
+        """Construct MODO command string from stored internal parts."""
+
+        result = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
+
+        def wrap_quote(value):
+            if re.search(r"\s", value):
+                return "\"{0}\"".format(value)
+            else:
+                return value
+
+        for arg_dict in self.args:
+            if arg_dict['argValues'] is not None:
+                result += " {name}:{value}".format(name=arg_dict['argNames'], value=wrap_quote(arg_dict['argValues']))
+        return result
+
 class ReplayMacro(object):
     """Contains everything necessary to store, manage, and save a MODO maco or
     script using Replay. All macro management commands make use of this object class.
