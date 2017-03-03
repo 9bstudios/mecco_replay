@@ -90,7 +90,7 @@ class Macro(lumberjack.Lumberjack):
             if input_line[0] == "#": continue
 
             # Parse the command and store it in the commands list:
-            self.add_command(input_line)
+            self.add_command(command_string=input_line)
 
     def parse_Python(self):
         """Parse a Python file and store its commands in the `commands` property.
