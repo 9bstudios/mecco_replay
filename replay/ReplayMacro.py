@@ -303,6 +303,14 @@ class ReplayMacro(object):
 
     export_formats = property(**export_formats())
 
+    def is_empty():
+        doc = """Return true if there are no recorded commands."""
+        def fget(self):
+            return len(self.commands) == 0
+        return locals()
+
+    is_empty = property(**is_empty())
+
     @classmethod
     def parse_LXM(cls, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""
@@ -311,7 +319,7 @@ class ReplayMacro(object):
         input_file = open(input_path, 'r')
 
         # Save input path
-        file_path = input_path
+        cls.file_path = input_path
 
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
