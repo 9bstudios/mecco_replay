@@ -24,9 +24,13 @@ class CommandClass(replay_commander.CommanderClass):
             task.values['name'].value = command[0]
             task.values['command'].value = command[1]
             task.values['command'].color.special = 4113
-            task.values['enable'].value = True
-            task.values['enable'].cell_command = 'select.typeFrom "item;pivot;center;edge;polygon;vertex;ptag" ?'
-            task.values['enable'].batch_command = 'select.typeFrom "item;pivot;center;edge;polygon;vertex;ptag" ?'
+            task.values['enable'].value = lx.eval(True)
+            # if task.values['enable'].value:
+            task.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+            task.values['enable'].display_value = ''
+            # task.values['enable'].cell_command = 'pref.value animation.chanControls ?'
+            # task.values['enable'].batch_command = 'pref.value animation.chanControls ?'
+            # task.values['enable'].use_cell_command_for_display = True
 
             for i in range(3):
                 att = task.add_child()

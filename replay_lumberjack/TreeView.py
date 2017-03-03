@@ -307,21 +307,38 @@ class TreeView( lxifc.TreeView,
         """Cells can contain commands similar to Forms, and this is especially
         useful with query commands like booleans. Note that in order for the `treeview_CellCommand`
         to work, we must also specify a `treeview_BatchCommand` for multi-selections."""
+
+        # Wisdom from Joe:
+        # If GetString() returns NOTIMPL, then the value of the cell comes from whatever
+        # is queried from the command cell. In core code, GetString() is just a Value() callback,
+        # and if it returns NULL then we know to use the queried command's value.
+        # It makes slightly more sense there.  The idea is that GetString() (Value()) are kind
+        # of the override, and the queried value from CommandCell() is the default.
+        # Mostly you use the override if you want an eyeball icon instead of a checkmark, for example.
+
         column_name = self.root.columns[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
-            if None not in [cell_value_obj.cell_command, cell_value_obj.batch_command]:
+            if cell_value_obj.cell_command is not None:
                 return cell_value_obj.cell_command
         lx.notimpl()
 
     def treeview_BatchCommand(self, columnIndex):
         """Similar to `treeview_CellCommand`, except this one is fired on batch selections.
         For `treeview_CellCommand` to work properly, an accompanying `treeview_BatchCommand` is required."""
+
+        # From Joe:
+        # BatchCommand() is used if you have multiple cells selected, and is
+        # used to change all of them with a single click.
+
         column_name = self.root.columns[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
-            if None not in [cell_value_obj.cell_command, cell_value_obj.batch_command]:
+            if cell_value_obj.batch_command is not None:
                 return cell_value_obj.batch_command
+            # If no BatchCommand() is implemented, fall back on CellCommand().
+            elif cell_value_obj.cell_command is not None:
+                return cell_value_obj.cell_command
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
@@ -360,17 +377,41 @@ class TreeView( lxifc.TreeView,
         return len(self.root.columns)
 
     def attr_GetString(self, index):
+        """Returns a rich text string to display in a cell. Rich text can include
+        flags for font, color, and/or icons inline with the rest of the text.
+
+        e.g. '\03(c:4113)Gray Text' < prints "Gray Text" in... gray.
+
+        We handle most of the rich text formatting in the TreeValue object and
+        its Font and Color sidecar objects. (TODO: Add icon objects.)
+
+        This value should be thought of as an override for `treeview_CellCommand()`.
+        If `attr_GetString()` fires `lx.notimpl()`, the tree will fallback on
+        the result of the `CellCommand`. If neither is implemented, the cell will
+        be blank.
+
+        (NOTE: Empty cells render with zero height in the tree. Ugly.)"""
+
         columns = self.root.columns
         node = self.targetNode()
 
+        # I'll be honest: I don't understand this loop. It's here for some
+        # reason, and the method fails if I try to do it without the loop.
+        # So it's here. If you can think of a better way, by all means.
         for n in range(len(columns)):
             if index == n:
+
+                # If we're using a treeview_CellCommand() query to render the cell,
+                # we don't send a string.
+                if node.values[columns[n]['name']].use_cell_command_for_display:
+                    lx.notimpl()
+
                 try:
                     # Print the `display_value` in the cell
                     return node.values[columns[n]['name']].display_value
                 except:
                     break
 
-        # Empty cells with a zero-length string do not display correctly in MODO.
-        # To work around this problem, we always display a space if the field is empty. " "
-        return " "
+        # If node.values[] doesn't contain a key for some reason,
+        # we need to fail gracefully lest we crash MODO.
+        lx.notimpl()
