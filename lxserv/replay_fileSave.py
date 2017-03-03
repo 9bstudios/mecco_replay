@@ -20,7 +20,7 @@ class CommandClass(replay.commander.CommanderClass):
         # If there is no associated file path prompt the user for new destination
         if file_path is None:
             file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \
-                   names = ('LXM',), unames = ('LXM file'), patterns = ('*.LXM', '*.lxm'))
+                   names = ('LXM',), unames = ('LXM file'), ext=('LXM',))
             # And save it for the next time
             replay.Macro().file_path = file_path
 

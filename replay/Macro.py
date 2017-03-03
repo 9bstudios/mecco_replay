@@ -92,15 +92,13 @@ class Macro(lumberjack.Lumberjack):
             # Parse the command and store it in the commands list:
             self.add_command(input_line)
 
-    @classmethod
-    def parse_Python(cls):
+    def parse_Python(self):
         """Parse a Python file and store its commands in the `commands` property.
         If the python code contains anything other than `lx.eval` and `lx.command`
         calls, parse will raise an error."""
         pass
 
-    @classmethod
-    def parse_json(cls):
+    def parse_json(self):
         """Parse a json file and store its commands in the `commands` property.
         Note that json must be formatted exactly as exported using the `render_json()`
         method, else parse will raise an error."""
@@ -112,24 +110,23 @@ class Macro(lumberjack.Lumberjack):
             # See http://modo.sdk.thefoundry.co.uk/wiki/Python#lx.command
             pass
 
-    @classmethod
-    def render_LXM(cls, output_path):
+    def render_LXM(self, output_path):
         """Generates an LXM string for export."""
 
         # Open the .lxm input file
         output_file = open(output_path, 'w')
 
         # Loop over the commands to get all the command strings:
-        for command in cls.commands:
-            text = connand.render_LXM()
+        for command in self.commands:
+            text = command.render_LXM()
             output_file.write(text + "\n")
 
-    @classmethod
-    def render_Python(cls):
+        output_file.close()
+
+    def render_Python(self):
         """Generates a Python string for export."""
         pass
 
-    @classmethod
-    def render_json(cls):
+    def render_json(self):
         """Generates a json string for export."""
         pass
