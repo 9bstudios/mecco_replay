@@ -303,7 +303,8 @@ class ReplayMacro(object):
 
     export_formats = property(**export_formats())
 
-    def parse_LXM(self, input_file):
+    @classmethod
+    def parse_LXM(cls, input_file):
         """Parse an LXM file and store its commands in the `commands` property."""
 
         # Loop over the lines to get all the command strings:
@@ -316,15 +317,17 @@ class ReplayMacro(object):
             if input_line[0] == "#": continue
 
             # Parse the command and store it in the commands list:
-            self._commands.append(ReplayMacroCommand(input_line))
+            cls._commands.append(ReplayMacroCommand(input_line))
 
-    def parse_Python(self):
+    @classmethod
+    def parse_Python(cls):
         """Parse a Python file and store its commands in the `commands` property.
         If the python code contains anything other than `lx.eval` and `lx.command`
         calls, parse will raise an error."""
         pass
 
-    def parse_json(self):
+    @classmethod
+    def parse_json(cls):
         """Parse a json file and store its commands in the `commands` property.
         Note that json must be formatted exactly as exported using the `render_json()`
         method, else parse will raise an error."""
