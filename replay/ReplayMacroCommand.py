@@ -21,20 +21,17 @@ class ReplayMacroCommand(replay_lumberjack.TreeNode):
         super(self.__class__, self).__init__(**kwargs)
 
         # Create default command value object and set formatting
-        if self.values.get('command') is None:
-            self.values['command'] = replay_lumberjack.TreeValue()
-            # 4113 is a special gray color for grayed out text in MODO
-            self.values['command'].color.special = 4113
+        self.values['command'] = replay_lumberjack.TreeValue()
+        # 4113 is a special gray color for grayed out text in MODO
+        self.values['command'].color.special = 4113
 
         # Create default enable value object and set formatting
-        if self.values.get('enable') is None:
-            self.values['enable'] = replay_lumberjack.TreeValue()
-            self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
-            self.values['enable'].display_value = ''
+        self.values['enable'] = replay_lumberjack.TreeValue()
+        self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+        self.values['enable'].display_value = ''
 
         # Create default name value object
-        if self.values.get('name') is None:
-            self.values['name'] = replay_lumberjack.TreeValue()
+        self.values['name'] = replay_lumberjack.TreeValue()
 
         # If a command string has been passed in, parse it
         if isinstance(kwargs.get('command_string'), basestring):
@@ -53,7 +50,6 @@ class ReplayMacroCommand(replay_lumberjack.TreeNode):
             self.values['command'].value = value
             self.retreive_args()
             self.values['name'].value = self.command_meta()['username']
-            self.callback_refresh()
         return locals()
 
     command = property(**command())

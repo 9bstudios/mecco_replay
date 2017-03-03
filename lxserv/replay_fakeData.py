@@ -20,6 +20,9 @@ class CommandClass(replay_commander.CommanderClass):
         ]
 
         for command in commands:
-            jack.add_command(command)
+            node = jack.add_command()
+            node.values['name'].value = command[0]
+            node.values['command'].value = command[1]
+            jack.rebuild_view()
 
 lx.bless(CommandClass, 'replay.fakeData')

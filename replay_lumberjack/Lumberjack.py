@@ -4,15 +4,6 @@ import lx, traceback
 from TreeNode import TreeNode
 from TreeView import TreeView
 
-# TODO: Need a "batch update" mode for making changes without rebuilding
-# or refreshing the tree every time. Something like:
-
-# Lumberjack().batch_edit_begin()
-# ...
-# Lumberjack().batch_edit_end()
-
-# Would auto-detect if rebuild is needed.
-
 class Lumberjack(object):
     """Metaclass containing everything necessary to create
     and manage a working treeview in MODO.
@@ -225,9 +216,6 @@ class Lumberjack(object):
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = cls._TreeNodeClass()
         cls._root.columns = columns.get('list', [])
-        cls._root.callbacks_for_rebuild.append((cls, 'rebuild'))
-        cls._root.callbacks_for_refresh.append((cls, 'refresh'))
-
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(root=cls._root)
@@ -335,7 +323,6 @@ class Lumberjack(object):
             return self._root.columns
         def fset(self, value):
             self._root.columns = value
-            self.rebuild()
         return locals()
 
     columns = property(**columns())
@@ -348,7 +335,6 @@ class Lumberjack(object):
             return self.root.children
         def fset(self, value):
             self.root.children = value
-            self.rebuild()
         return locals()
 
     children = property(**children())
@@ -373,7 +359,6 @@ class Lumberjack(object):
             return self.root.tail_commands
         def fset(self, value):
             self.root.tail_commands = valuegg
-            self.rebuild()
         return locals()
 
     tail_commands = property(**tail_commands())
@@ -383,7 +368,6 @@ class Lumberjack(object):
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
         self.root.children.append(self._TreeNodeClass(**kwargs))
-        self.rebuild()
         return self.root.children[-1]
 
     def find(self, column_name, search_term, regex=False):
@@ -397,7 +381,7 @@ class Lumberjack(object):
 
         return self.root.find_in_descendants(column_name, search_term, regex)
 
-    def rebuild(self):
+    def rebuild_view(self):
         """Rebuilds the `TreeView()` object from scratch. Must run every time any
         structural change occurs in the node tree. Note: if cell values have changed
         but the overal structure of the node tree has not changed, use `refresh()`
@@ -405,7 +389,7 @@ class Lumberjack(object):
 
         return self._tree_view.notify_NewShape()
 
-    def refresh(self):
+    def refresh_view(self):
         """Refreshes `TreeView()` cell values, but not structure. Must run every
         time a cell value changes in the node tree. Note: structural changes
         (e.g. adding/removing nodes, reordering, reparenting) require the
