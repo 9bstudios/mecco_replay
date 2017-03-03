@@ -1,10 +1,11 @@
 import lx, modo, replay
+from replay import commander
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 
-class FCLClass(replay.commander.CommanderClass):
+class FCLClass(commander.CommanderClass):
     """Renders a Form Command List (FCL) that is rendered in the MODO modes tail."""
 
     def commander_arguments(self):
@@ -28,7 +29,7 @@ class FCLClass(replay.commander.CommanderClass):
 lx.bless(FCLClass, 'replay.ModesTailFCL')
 
 
-class CommandClass(replay.commander.CommanderClass):
+class CommandClass(commander.CommanderClass):
     """Appends an FCL in the modes tail with the supplied command."""
 
     def commander_arguments(self):
