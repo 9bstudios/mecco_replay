@@ -61,6 +61,7 @@ class ReplayMacroCommand(object):
                 'argTypeName': 'boolean',
                 'argDesc': 'What the argument does.',
                 'argExample': 'Example if available.'
+                'argValue': 'Value of the argument.'
             }
         ]"""
         def fget(self):
@@ -131,14 +132,38 @@ class ReplayMacroCommand(object):
         # Get the prefix, if any:
         if full_command.group(1): self.prefix = full_command.group(1)
 
-        # Get the command, and trim it if given as argName:command.name:
-        command = full_command.group(2)
-        index = command.find(':')
-        if index > 0: command = command[index+1:]
-        self.command = command
+        # Get the command:
+        self.command = full_command.group(2)
 
-        # Get the arguments for this command:
+        # Get the argument information for this command:
         self.retreive_args()
+        
+        # Parse the arguments for this command:
+        self.parse_args(command_string[len(full_command.group(0)):])
+
+    def parse_args(self, args_string):
+
+        # Get all the arguments:
+        args = re.findall(r'(\S+)', args_string)
+
+        # Process all the arguments:
+        for arg_number, arg in enumerate(args):
+
+            # Check if the name of the argument has been given:
+            full_argument = re.search(r'(\S+):(\S+)', arg)
+            if full_argument:
+                arg_name = full_argument.group(1)
+                arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
+                arg_value = full_argument.group(2)
+            else:
+				arg_value = arg
+
+            # Clean the argument value of "", '' and {} wraps:
+            if arg_value[0] == '"' or arg_value[0] == "'" or arg_value[0] == '{':
+				arg_value = arg_value[1:-1]
+
+            # Set the value of the argument:
+            self._args[arg_number]['argValues'] = arg_value
 
     def command_meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
@@ -179,6 +204,7 @@ class ReplayMacroCommand(object):
                 'argTypeName': 'boolean',
                 'argDesc': 'What the argument does.',
                 'argExample': 'Example if available.'
+                'argValue': 'Value of the argument.'
             }
         ]"""
 
@@ -194,7 +220,7 @@ class ReplayMacroCommand(object):
             return
 
         # Create placeholders for each arg
-        self.args = [{}] * len(argNames)
+        self._args = []
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [
@@ -208,9 +234,11 @@ class ReplayMacroCommand(object):
 
         # Populate the list.
         for n in range(len(argNames)):
+            arg_dict = {}
             for term in query_terms:
-                self.args[n][term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
-
+                arg_dict[term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
+            arg_dict['argValues'] = None
+            self._args.append(arg_dict)
 
 class ReplayMacro(object):
     """Contains everything necessary to store, manage, and save a MODO maco or
