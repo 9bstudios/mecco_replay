@@ -137,7 +137,7 @@ class ReplayMacroCommand(object):
 
         # Get the argument information for this command:
         self.retreive_args()
-        
+
         # Parse the arguments for this command:
         self.parse_args(command_string[len(full_command.group(0)):])
 
@@ -146,6 +146,7 @@ class ReplayMacroCommand(object):
         # Get all the arguments:
         args = re.findall(r'(\S+)', args_string)
 
+        # TODO: What if an invalid argument is passed in? Error handling?
         # Process all the arguments:
         for arg_number, arg in enumerate(args):
 
@@ -293,6 +294,8 @@ class ReplayMacro(object):
         for input_line in input_file:
             if not input_line: continue
 
+            # TODO: Ultimately we need to attach comments to whichever command
+            # follows them using the `comment_before` property.
             # Skip comments:
             if input_line[0] == "#": continue
 
