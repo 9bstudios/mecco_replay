@@ -19,7 +19,6 @@ class Macro(lumberjack.Lumberjack):
     work entirely with class variables and classmethods."""
 
     _file_path = None
-    _commands = []
     _export_formats = ['lxm', 'py', 'json']
 
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
@@ -45,7 +44,7 @@ class Macro(lumberjack.Lumberjack):
         doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
         def fget(self):
-            return self._commands
+            return self.root.children
         return locals()
 
     commands = property(**commands())
