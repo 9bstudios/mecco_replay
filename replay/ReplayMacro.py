@@ -70,17 +70,16 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
     def add_command(self, command_string=None):
         self.root.children.append(ReplayMacroCommand({'command_string':command_string}))
 
-    @classmethod
-    def parse_LXM(cls, input_path):
+    def parse_LXM(self, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""
 
-        cls.root.delete_descendants()
+        self.root.delete_descendants()
 
         # Open the .lxm input file
         input_file = open(input_path, 'r')
 
         # Save input path
-        cls.file_path = input_path
+        self.file_path = input_path
 
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
@@ -92,9 +91,9 @@ class ReplayMacro(replay_lumberjack.Lumberjack):
             if input_line[0] == "#": continue
 
             # Parse the command and store it in the commands list:
-            cls.add_command(input_line)
+            self.add_command(input_line)
 
-        cls.rebuild()
+        self.rebuild()
 
     @classmethod
     def parse_Python(cls):
