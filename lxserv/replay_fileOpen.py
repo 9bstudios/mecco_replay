@@ -14,8 +14,6 @@ class CommandClass(replay_commander.CommanderClass):
         input_path = modo.dialogs.customFile(dtype = 'fileOpen', title = 'Open LXM file', \
            names = ('LXM',), unames = ('LXM file'), patterns = ('*.LXM', '*.lxm'))
 
-        # Open the .lxm input file and send it to the parser:
-        input_file = open(input_path, 'r')
-        replay.ReplayMacro().parse_LXM(input_file)
+        replay.ReplayMacro().parse_LXM(input_path)
 
 lx.bless(CommandClass, 'replay.fileOpen')

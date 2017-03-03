@@ -304,8 +304,14 @@ class ReplayMacro(object):
     export_formats = property(**export_formats())
 
     @classmethod
-    def parse_LXM(cls, input_file):
+    def parse_LXM(cls, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""
+
+        # Open the .lxm input file
+        input_file = open(input_path, 'r')
+
+        # Save input path
+        file_path = input_path
 
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
@@ -339,14 +345,24 @@ class ReplayMacro(object):
             # See http://modo.sdk.thefoundry.co.uk/wiki/Python#lx.command
             pass
 
-    def render_LXM(self):
+    @classmethod
+    def render_LXM(cls, output_path):
         """Generates an LXM string for export."""
-        pass
 
-    def render_Python(self):
+        # Open the .lxm input file
+        output_file = open(output_path, 'w')
+
+        # Loop over the commands to get all the command strings:
+        for command in cls.commands:
+            text = connand.render_LXM()
+            output_file.write(text + "\n")
+
+    @classmethod
+    def render_Python(cls):
         """Generates a Python string for export."""
         pass
 
-    def render_json(self):
+    @classmethod
+    def render_json(cls):
         """Generates a json string for export."""
         pass
