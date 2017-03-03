@@ -1,4 +1,5 @@
 # python
 
-from ReplayTreeView import *
 from ReplayMacro import *
+from ReplayMacroCommand import *
+from Chameleon import *

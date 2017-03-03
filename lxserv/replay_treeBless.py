@@ -1,13 +1,13 @@
 # python
 
-from replay import ReplayLumberjack
+from replay import ReplayMacro
 
 
 # In order to be available in the GUI, a treeview needs to be "blessed" (same as
 # MODO commands.) Lumberjack does all of this automatically with a single
 # `bless()` method. It can only be fired once per session.
 
-ReplayLumberjack().bless(
+ReplayMacro().bless(
 
     # :param viewport_type:   category in the MODO UI popup
     #                         vpapplication, vp3DEdit, vptoolbars, vpproperties, vpdataLists,

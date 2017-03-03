@@ -112,6 +112,11 @@ class Lumberjack(object):
     _nice_name = ""
     _viewport_type = ""
 
+    # In case you need to extend the TreeNode class, you can inherit TreeNode in
+    # your own class and then tell your Lumberjack Object to use it by changing
+    # the TreeNodeClass property.
+    _TreeNodeClass = TreeNode
+
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
 
@@ -218,7 +223,7 @@ class Lumberjack(object):
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        cls._root = TreeNode()
+        cls._root = cls._TreeNodeClass()
         cls._root.columns = columns.get('list', [])
         cls._root.callbacks_for_rebuild.append((cls, 'rebuild'))
         cls._root.callbacks_for_refresh.append((cls, 'refresh'))
@@ -306,6 +311,21 @@ class Lumberjack(object):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
 
+    def TreeNodeClass():
+        doc = """The `TreeNode()`` subclass to use when populating the tree.
+
+        By default, Lumberjack populates itself with vanilla `TreeNode` objects.
+        Should you need to extend `TreeNode` to include application-specific functionality,
+        you can inherit `TreeNode` into your own class, and supply your class to Lumberjack
+        using the `TreeNodeClass` property."""
+        def fget(self):
+            return self._TreeNodeClass
+        def fset(self, value):
+            self._TreeNodeClass = value
+        return locals()
+
+    TreeNodeClass = property(**TreeNodeClass())
+
     def columns():
         doc = """List of columns and their widths for the treeview in the
         format `('name', width)`, where width can be a positive integer in pixels
@@ -362,7 +382,7 @@ class Lumberjack(object):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
-        self.root.children.append(TreeNode(**kwargs))
+        self.root.children.append(self._TreeNodeClass(**kwargs))
         self.rebuild()
         return self.root.children[-1]
 
