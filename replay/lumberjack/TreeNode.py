@@ -364,7 +364,9 @@ class TreeNode(object):
     def delete_descendants(self):
         """Deletes all children, grandchildren etc from the current node. To delete
         the node itself, use `delete()`"""
-        if len(self._children) > 0:
+        del self.children[:]
+        return
+        if len(self.children) > 0:
             for child in self._children:
                 self._children.remove(child)
 

@@ -33,9 +33,9 @@ class Macro(lumberjack.Lumberjack):
         is unsaved, and needs a save-as. When a macro is loaded and parsed, be
         sure to set this value. (It will not be set automatically.)"""
         def fget(self):
-            return self._file_path
+            return self.__class__._file_path
         def fset(self, value):
-            self._file_path = value
+            self.__class__._file_path = value
         return locals()
 
     file_path = property(**file_path())
@@ -68,6 +68,11 @@ class Macro(lumberjack.Lumberjack):
 
     def add_command(self, **kwargs):
         return self.add_child(**kwargs)
+
+    """Clear all commands and relevant data"""
+    def clear(self):
+        self.root.delete_descendants()
+        self.file_path = None
 
     def parse_LXM(self, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""

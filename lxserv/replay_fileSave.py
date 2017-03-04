@@ -9,9 +9,8 @@ class CommandClass(replay.commander.CommanderClass):
     `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
     `replay.fileExport`, this command only supports saving to the LXM format."""
     def commander_execute(self, msg, flags):
-        # For save prompt, see http://modo.sdk.thefoundry.co.uk/td-sdk/dialogs.html#custom-file-dialog
 
-        # If search string is empty throw warning and return
+        # If macro is empty throw warning and return
         if replay.Macro().is_empty:
            modo.dialogs.alert("Empty macro", "There are no recorded commands to save", dtype='warning')
            return
