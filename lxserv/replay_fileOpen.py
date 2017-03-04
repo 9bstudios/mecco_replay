@@ -19,13 +19,15 @@ class CommandClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
 
+        # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 
+        # Get the path from the user, if not given as argument:
         if not input_path:
-            # Get the complete file path from the user:
             input_path = modo.dialogs.customFile(dtype = 'fileOpen', title = 'Open LXM file', \
                names = ('LXM',), unames = ('LXM file'), patterns = ('*.LXM', '*.lxm'))
 
+        # Parse the file in replay.Macro() and rebuild the view:
         replay.Macro().parse_LXM(input_path)
         replay.Macro().rebuild_view()
 

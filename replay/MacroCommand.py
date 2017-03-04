@@ -167,7 +167,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Get the comments before the command, if any:
         if len(command_string) > 1:
-            _comment_before = command_string[:-1]
+            self.comment_before = command_string[:-1]
 
         # Get the prefix and the command:
         full_command = re.search(r'([!?+]*)(\S+)', command_string[-1])
@@ -189,17 +189,26 @@ class MacroCommand(lumberjack.TreeNode):
         # Get all the arguments:
         args = re.findall(r'(\S+)', args_string)
 
-        # TODO: What if an invalid argument is passed in? Error handling?
         # Process all the arguments:
         for arg_number, arg in enumerate(args):
 
-            # Check if the name of the argument has been given:
+            # Get the argument value and, if given, its name:
             full_argument = re.search(r'(\S+):(\S+)', arg)
+
             if full_argument:
+
                 arg_name = full_argument.group(1)
-                arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
+
+                # Check if the name of the argument is correct:
+                if arg_name in [self.args[i]['argNames'] for i in range(len(args))]:
+                    arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
+                else:
+                    raise NameError('Wrong argument')
+
                 arg_value = full_argument.group(2)
+
             else:
+
 				arg_value = arg
 
             # Clean the argument value of "", '' and {} wraps:
