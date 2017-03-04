@@ -115,9 +115,10 @@ class Macro(lumberjack.Lumberjack):
 
     def run(self):
         """Runs the macro."""
+        
+        # Run every command in the macro:
         for command in self.commands:
-            # See http://modo.sdk.thefoundry.co.uk/wiki/Python#lx.command
-            pass
+            command.run()
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""

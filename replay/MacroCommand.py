@@ -185,6 +185,7 @@ class MacroCommand(lumberjack.TreeNode):
         self.parse_args(command_string[-1][len(full_command.group(0)):])
 
     def parse_args(self, args_string):
+        """Parse a string containing arguments and stores them in 'args'."""
 
         # Get all the arguments:
         args = re.findall(r'(\S+)', args_string)
@@ -203,13 +204,13 @@ class MacroCommand(lumberjack.TreeNode):
                 if arg_name in [self.args[i]['argNames'] for i in range(len(args))]:
                     arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
                 else:
-                    raise NameError('Wrong argument')
+                    raise Exception("Wrong argument name.")
 
                 arg_value = full_argument.group(2)
 
             else:
 
-				arg_value = arg
+                arg_value = arg
 
             # Clean the argument value of "", '' and {} wraps:
             if arg_value[0] == '"' or arg_value[0] == "'" or arg_value[0] == '{':
@@ -308,3 +309,25 @@ class MacroCommand(lumberjack.TreeNode):
             if arg_dict['argValues'] is not None:
                 result += " {name}:{value}".format(name=arg_dict['argNames'], value=wrap_quote(arg_dict['argValues']))
         return result
+
+    def run(self):
+        """Runs the command."""
+
+        # Start the command with the prefix, if any:
+        if self.prefix:
+            full_command = self.prefix
+        else:
+            full_command = ""
+
+        # Concatenate the command name:
+        full_command += self.command
+
+        # Concatenate each of the arguments that have been given, skip the ones not given:
+        for arg in self.args:
+
+            if arg['argValues']:
+                full_arg = " " + arg['argNames'] + ":" + arg['argValues']
+                full_command += full_arg
+
+        # Run the command:
+        lx.eval(full_command)
