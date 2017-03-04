@@ -19,7 +19,10 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-        pass
+
+        for line in replay.Macro().selected_descendants: line.suppress = True
+        
+        replay.Macro().refresh_view()
 
 
 lx.bless(CommandClass, 'replay.lineSuppress')

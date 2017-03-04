@@ -33,7 +33,7 @@ class MacroCommand(lumberjack.TreeNode):
         # Create default name value object
         self.values['name'] = lumberjack.TreeValue()
 
-        # If a command string has been passed in, parse it
+        # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
             all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
 
@@ -106,16 +106,16 @@ class MacroCommand(lumberjack.TreeNode):
 
             # Set the `enable` column display. This is purely visual.
             # First, set display_value to a blank string so that we don't show any text.
-            task.values['enable'].display_value = ''
+            self.values['enable'].display_value = ''
 
             if not is_suppressed:
                 # If not suppressed, display a checkmark and store True
                 self.values['enable'].value = True
-                task.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+                self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
             elif is_suppressed:
                 # If it is suppressed, display nothing and store False
                 self.values['enable'].value = False
-                task.values['enable'].icon_resource = None
+                self.values['enable'].icon_resource = None
 
         return locals()
 
