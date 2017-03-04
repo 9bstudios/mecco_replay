@@ -85,6 +85,7 @@ class Macro(lumberjack.Lumberjack):
         # Save input path
         self.file_path = input_path
 
+        command_with_comments = []
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
             if not input_line: continue
@@ -92,10 +93,14 @@ class Macro(lumberjack.Lumberjack):
             # TODO: Ultimately we need to attach comments to whichever command
             # follows them using the `comment_before` property.
             # Skip comments:
-            if input_line[0] == "#": continue
+
+            command_with_comments.append(input_line)
+            if input_line[0] == "#":
+				continue
 
             # Parse the command and store it in the commands list:
-            self.add_command(command_string=input_line)
+            self.add_command(command_string=command_with_comments)
+            command_with_comments = []
 
     def parse_Python(self):
         """Parse a Python file and store its commands in the `commands` property.

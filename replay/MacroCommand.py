@@ -34,9 +34,10 @@ class MacroCommand(lumberjack.TreeNode):
         self.values['name'] = lumberjack.TreeValue()
 
         # If a command string has been passed in, parse it
-        if isinstance(kwargs.get('command_string'), basestring):
-            self.parse_string(kwargs.get('command_string'))
+        if bool(kwargs.get('command_string')) and \
+            all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
 
+            self.parse_string(kwargs.get('command_string'))
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
@@ -164,8 +165,12 @@ class MacroCommand(lumberjack.TreeNode):
         """Parse a normal MODO command string into its constituent parts, and
         stores those in the `command` and `args` properties for the object."""
 
+        # Get the comments before the command, if any:
+        if len(command_string) > 1:
+            _comment_before = command_string[:-1]
+
         # Get the prefix and the command:
-        full_command = re.search(r'([!?+]*)(\S+)', command_string)
+        full_command = re.search(r'([!?+]*)(\S+)', command_string[-1])
 
         # Get the prefix, if any:
         if full_command.group(1): self.prefix = full_command.group(1)
@@ -177,7 +182,7 @@ class MacroCommand(lumberjack.TreeNode):
         self.retreive_args()
 
         # Parse the arguments for this command:
-        self.parse_args(command_string[len(full_command.group(0)):])
+        self.parse_args(command_string[-1][len(full_command.group(0)):])
 
     def parse_args(self, args_string):
 
