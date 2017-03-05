@@ -27,7 +27,7 @@ Macro().bless(
     # :param columns:         a list of dictionaries, one for each column. Values in each
     #                         node's values dictionary must correspond with these strings
     columns = {
-        'primary_position': 1,
+        'primary_position': 2,
         'list': [
                 {
                     'name':'name',
@@ -37,6 +37,9 @@ Macro().bless(
                 }, {
                     'name':'enable',
                     # positive integers are pixel values (i.e. 20px)
+                    'width':20
+                }, {
+                    'name':'dialogs',
                     'width':20
                 }, {
                     'name':'command',
@@ -68,6 +71,7 @@ Macro().bless(
         'MacroCommandCommand',
         'MacroCommandArg',
         'MacroCommandEnable'
+        'MacroCommandDialogs'
     ],
 
     # :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.

@@ -15,7 +15,6 @@ class MacroCommand(lumberjack.TreeNode):
     _suppress = False
     _whitespace_before = None
     _comment_before = None
-    _prefix = None
     _replay_meta = {}
 
     def __init__(self, **kwargs):
@@ -32,6 +31,10 @@ class MacroCommand(lumberjack.TreeNode):
         self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
         self.values['enable'].display_value = ''
         self.values['enable'].input_region = 'MacroCommandEnable'
+
+        # Create default dialogs value object and set formatting
+        self.values['dialogs'] = lumberjack.TreeValue()
+        self.values['dialogs'].input_region = 'MacroCommandDialogs'
 
         # Create default name value object
         self.values['name'] = lumberjack.TreeValue()
@@ -71,9 +74,9 @@ class MacroCommand(lumberjack.TreeNode):
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
-            return self._prefix
+            return self.values['dialogs'].value
         def fset(self, value):
-            self._prefix = value
+            self.values['dialogs'].value = value
         return locals()
 
     prefix = property(**prefix())
@@ -208,10 +211,30 @@ class MacroCommand(lumberjack.TreeNode):
 
             # Clean the argument value of "", '' and {} wraps:
             if arg_value[0] == '"' or arg_value[0] == "'" or arg_value[0] == '{':
-				arg_value = arg_value[1:-1]
+                arg_value = arg_value[1:-1]
 
             # Set the value of the argument:
             self.args[arg_number].value = arg_value
+
+    def retreive_args(self):
+        """Retrieve a list of arguments and datatypes from MODO's commandservice.
+        See http://sdk.luxology.com/wiki/Commandservice#command.argNames"""
+
+        if not self.command:
+            raise Exception("Command string not set.")
+            return
+
+        # Names of the arguments for the current command.
+        argNames = lx.eval("query commandservice command.argNames ? {%s}" % self.command)
+
+        # No arguments to add
+        if not argNames:
+            return
+
+        # Populate the list.
+        for n in range(len(argNames)):
+            self.args.append(MacroCommandArg()) 
+
 
     def command_meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
