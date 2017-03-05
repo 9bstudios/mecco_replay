@@ -195,6 +195,7 @@ class MacroCommand(lumberjack.TreeNode):
             if not full_argument:
 				full_argument = re.search(r'(\S+):(\S+)', arg)
 
+            # If only the argument value wrapped in string symbols was given, don't use full_argument:
             if re.search(r'["\'{](\S+)["\'}]', arg): full_argument = False
 
             # Process the argument string, either with or without name:
@@ -220,8 +221,6 @@ class MacroCommand(lumberjack.TreeNode):
             # Clean the argument value of "", '' and {} wraps:
             if arg_value[0] == '"' or arg_value[0] == "'" or arg_value[0] == '{':
                 arg_value = arg_value[1:-1]
-
-            print arg_value
 
             # Set the value of the argument:
             self.args[arg_number].value = arg_value
