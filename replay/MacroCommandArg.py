@@ -19,6 +19,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         self._arg_index = arg_index
 
         # Argument metadata placeholders
+        self._argUsername = None
         self._argType = None
         self._argTypeName = None
         self._argDesc = None
@@ -79,8 +80,12 @@ class MacroCommandArg(lumberjack.TreeNode):
     def argUsername():
         doc = "The argUsername property is really a proxy for the `name` cell `display_value`."
         def fget(self):
-            return self.values['name'].display_value
+            return self._argUsername
         def fset(self, value):
+            # Since the `display_value` getter will return color and font markup,
+            # we need to store the username in both the `display_value` for the `name`
+            # column, and also in an internal `_argUsername` variable.
+            self._argUsername = value
             self.values['name'].display_value = value
         return locals()
 
@@ -157,10 +162,10 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # Unlike other metadata, we store these two directly inside the value objects for the columns.
         values_list = lx.evalN("query commandservice command.argNames ? {%s}" % base_command)
-        self.values['name'].value = values_list[arg_index]
+        self.argName = values_list[arg_index]
 
         values_list = lx.evalN("query commandservice command.argUsernames ? {%s}" % base_command)
-        self.values['name'].display_value = values_list[arg_index]
+        self.argUsername = values_list[arg_index]
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [
