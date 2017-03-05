@@ -79,22 +79,12 @@ class MacroCommand(lumberjack.TreeNode):
     prefix = property(**prefix())
 
     def args():
-        doc = """A list of dictionaries with arguments, values, and datatypes.
-        [
-            {
-                'argName': 'argname',
-                'argUsername': 'Argument Name',
-                'argType': 0, # 0 for generic objects, 1 for integers, 2 for floats an 3 for strings
-                'argTypeName': 'boolean',
-                'argDesc': 'What the argument does.',
-                'argExample': 'Example if available.'
-                'argValue': 'Value of the argument.'
-            }
-        ]"""
+        doc = """The `MacroCommand` node's arguments, which should all be
+        of class `MacroCommandArg`."""
         def fget(self):
-            return self._args
+            return self.children
         def fset(self, value):
-            self._args = value
+            self.children = value
         return locals()
 
     args = property(**args())
@@ -205,8 +195,8 @@ class MacroCommand(lumberjack.TreeNode):
                 arg_name = full_argument.group(1)
 
                 # Check if the name of the argument is correct:
-                if arg_name in [self.args[i]['argNames'] for i in range(len(args))]:
-                    arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
+                if arg_name in [self.args[i].argNames for i in range(len(args))]:
+                    arg_number = [self.args[i].argNames for i in range(len(args))].index(arg_name)
                 else:
                     raise Exception("Wrong argument name.")
 
@@ -221,7 +211,7 @@ class MacroCommand(lumberjack.TreeNode):
 				arg_value = arg_value[1:-1]
 
             # Set the value of the argument:
-            self._args[arg_number]['argValues'] = arg_value
+            self.args[arg_number].value = arg_value
 
     def command_meta(self):
         """Returns a dict of metadata for the command from the MODO commandservice,
@@ -273,12 +263,9 @@ class MacroCommand(lumberjack.TreeNode):
         # Names of the arguments for the current command.
         argNames = lx.eval("query commandservice command.argNames ? {%s}" % self.command)
 
-        # No arguments to report
+        # No arguments to add
         if not argNames:
             return
-
-        # Create placeholders for each arg
-        self._args = []
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [
@@ -293,10 +280,19 @@ class MacroCommand(lumberjack.TreeNode):
         # Populate the list.
         for n in range(len(argNames)):
             arg_dict = {}
+
+            # The list of query_terms is arbitrary. I'm just grabbing everything I think is important.
             for term in query_terms:
-                arg_dict[term] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
-            arg_dict['argValues'] = None
-            self._args.append(arg_dict)
+
+                # Remove the last character from the term to make it singular (argNames becomes argName)
+                # Run the query.
+                arg_dict[term[:-1]] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
+
+            # argValue always defaults to None until the parser fills it out.
+            arg_dict['value'] = None
+
+            # add the argument to our list.
+            self.args.append(MacroCommandArg(**arg_dict))
 
     def render_LXM(self):
         """Construct MODO command string from stored internal parts."""
