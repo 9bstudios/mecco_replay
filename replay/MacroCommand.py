@@ -329,21 +329,9 @@ class MacroCommand(lumberjack.TreeNode):
     def run(self):
         """Runs the command."""
 
-        # Start the command with the prefix, if any:
-        if self.prefix:
-            full_command = self.prefix
-        else:
-            full_command = ""
-
-        # Concatenate the command name:
-        full_command += self.command
-
-        # Concatenate each of the arguments that have been given, skip the ones not given:
-        for arg in self.args:
-
-            if arg['argValues']:
-                full_arg = " " + arg['argNames'] + ":" + arg['argValues']
-                full_command += full_arg
+        # Build the MODO command string:
+        command = self.render_LXM()
+        print command
 
         # Run the command:
-        lx.eval(full_command)
+        lx.eval(command)
