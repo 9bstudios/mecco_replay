@@ -288,7 +288,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         full_cmd = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
 
-        return (full_cmd, self.args)
+        return {full_cmd: self.args}
 
     def run(self):
         """Runs the command."""
