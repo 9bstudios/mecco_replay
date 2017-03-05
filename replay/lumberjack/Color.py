@@ -19,6 +19,17 @@ class Color(object):
         r, g, b = [int(n * 255) for n in self._internal_rgb]
         return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
+    def set_with_name(self, name):
+        """Sets colors by name, especially MODO internal colors."""
+        if name in ['gray', 'grey']:
+            # 4113 is a special color for grayed-out text in MODO
+            self.special = 4113
+        elif name == 'default':
+            self.special = None
+        elif name == 'black':
+            self.special = None
+            self._internal_rgb = [0,0,0]
+
     def set_with_8bit(self, r, g, b):
         """Sets internal RGB with three int values between 0-255."""
         self._internal_rgb = [(n / 255) for n in (r, g, b)]
@@ -44,6 +55,7 @@ class Color(object):
             return self._special
         def fset(self, value):
             self._special = value
+            self._internal_rgb = []
         return locals()
 
     special = property(**special())

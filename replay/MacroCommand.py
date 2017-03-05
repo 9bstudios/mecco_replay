@@ -24,7 +24,7 @@ class MacroCommand(lumberjack.TreeNode):
         # Create default command value object and set formatting
         self.values['command'] = lumberjack.TreeValue()
         # 4113 is a special gray color for grayed out text in MODO
-        self.values['command'].color.special = 4113
+        self.values['command'].color.set_with_name('gray')
         self.values['command'].input_region = 'MacroCommandCommand'
 
         # Create default enable value object and set formatting
