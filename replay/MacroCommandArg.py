@@ -50,7 +50,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         def fget(self):
             return self.values['command'].value
         def fset(self, value):
-            return self.values['command'].value = value
+            self.values['command'].value = value
         return locals()
 
     value = property(**value())
@@ -60,7 +60,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         def fget(self):
             return self.values['name'].value
         def fset(self, value):
-            return self.values['name'].value = value
+            self.values['name'].value = value
         return locals()
 
     argName = property(**argName())
@@ -70,7 +70,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         def fget(self):
             return self.values['name'].display_value
         def fset(self, value):
-            return self.values['name'].display_value = value
+            self.values['name'].display_value = value
         return locals()
 
     argUsername = property(**argUsername())

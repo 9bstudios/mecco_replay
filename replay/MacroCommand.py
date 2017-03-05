@@ -4,6 +4,7 @@ import lx
 import re
 import json
 import lumberjack
+from MacroCommandArg import MacroCommandArg
 
 class MacroCommand(lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
@@ -175,9 +176,6 @@ class MacroCommand(lumberjack.TreeNode):
         # Get the command:
         self.command = full_command.group(2)
 
-        # Get the argument information for this command:
-        self.retreive_args()
-
         # Parse the arguments for this command:
         self.parse_args(command_string[-1][len(full_command.group(0)):])
 
@@ -191,7 +189,7 @@ class MacroCommand(lumberjack.TreeNode):
         for arg_number, arg in enumerate(args):
 
             # Get the argument value and, if given, its name:
-            full_argument = re.search(r'(\S+):(\S+)', arg)
+            full_argument = re.search(r'(\S+):["\'{]?(\S+)["\'}]?', arg)
 
             if full_argument:
 
@@ -295,7 +293,6 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Build the MODO command string:
         command = self.render_LXM()
-        print command
 
         # Run the command:
         lx.eval(command)
