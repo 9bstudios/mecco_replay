@@ -245,7 +245,7 @@ class MacroCommand(lumberjack.TreeNode):
         meta = {}
 
         for term in query_terms:
-            meta[term] = lx.eval("query commandservice command.%s ? %s" % (term, self.command))
+            meta[term] = lx.eval("query commandservice command.%s ? {%s}" % (term, self.command))
 
         return meta
 
@@ -271,7 +271,7 @@ class MacroCommand(lumberjack.TreeNode):
             return
 
         # Names of the arguments for the current command.
-        argNames = lx.eval("query commandservice command.argNames ? %s" % self.command)
+        argNames = lx.eval("query commandservice command.argNames ? {%s}" % self.command)
 
         # No arguments to report
         if not argNames:

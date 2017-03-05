@@ -20,9 +20,9 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
         for command in commands:
-            macro_command = macro.add_command()
+            macro_command = macro.add_command(command_string=command[1])
             macro_command.values['name'].value = command[0]
-            macro_command.values['command'].value = command[1]
+            # macro_command.values['command'].value = command[1]
             macro.rebuild_view()
 
 lx.bless(CommandClass, 'replay.fakeData')
