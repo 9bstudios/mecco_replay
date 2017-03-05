@@ -185,8 +185,9 @@ class MacroCommand(lumberjack.TreeNode):
         # Get all the arguments:
         args = re.findall(r'(\S+)', args_string)
 
-        # Process all the arguments:
-        for arg_number, arg in enumerate(args):
+        # Process all the arguments.
+        # The list cannot be longer than the total number of `self.args`.
+        for arg_number, arg in enumerate(args[:len(self.args)]):
 
             # Try to get the name and the value wrapped in string symbols:
             full_argument = re.search(r'(\S+):["\'{](\S+)["\'}]', arg)
