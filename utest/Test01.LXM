@@ -1,0 +1,26 @@
+#LXMacro#
+script.run "macro.scriptservice:19601433555:macro"
+transform.channel pos.Y 2.0
+script.run "macro.scriptservice:27554333777:macro"
+transform.channel pos.Y -2.0
+script.run "macro.scriptservice:32235733333:macro"
+script.run "macro.scriptservice:47158833888:macro"
+transform.channel pos.X 2.0
+script.run "macro.scriptservice:45422344000:macro"
+transform.channel pos.X -2.0
+transform.channel rot.X 90.0
+select.itemType mesh
+layer.mergeMeshes true
+transform.channel rot.Z 180.0
+select.typeFrom polygon;edge;vertex;item;pivot;center;ptag true
+poly.setMaterial GreenTestMaterial {0.0443 0.5543 0.1335} 0.8 0.04 true false false
+tool.set *.bevel on
+tool.noChange
+tool.attr poly.bevel group false
+tool.attr poly.bevel shift 0.041
+tool.attr poly.bevel inset -0.01
+tool.attr poly.bevel inset 0.0279
+tool.attr poly.bevel inset 0.01
+tool.doApply
+tool.set poly.bevel off 0
+tool.clearTask snap
