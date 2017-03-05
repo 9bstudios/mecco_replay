@@ -50,6 +50,11 @@ class TreeView( lxifc.TreeView,
         except AttributeError:
             self.__class__._primary_column_position = 0
 
+        try:
+            self._input_regions
+        except AttributeError:
+            self.__class__._input_regions = []
+
         self.m_currentNode = node
         self.m_currentIndex = curIndex
 
@@ -59,7 +64,7 @@ class TreeView( lxifc.TreeView,
 
     # Wanted to use a property for this instead of a setter method, but wasn't able
     # to make it work for some reason.
-    def set_primary_column_position(self, value):
+    def set_primary_column_position(self, index):
         """Moves the primary column to the specified column index.
 
         The "primary" column (i.e. the one with the twirly carrot icon for hide/show
@@ -68,7 +73,12 @@ class TreeView( lxifc.TreeView,
 
         To move it over to the selcond-from-left slot, for example, provide this
         function a value of 1."""
-        self.__class__._primary_column_position = value
+        self.__class__._primary_column_position = index
+
+    def set_input_regions(self, input_regions):
+        """The available input regions as blessed by the parent `Lumberjack.bless()`
+        function. Once blessed, this should not change at any time during a MODO session."""
+        self.__class__._input_regions = input_regions
 
     def root():
         doc = """Root TreeNode object for the TreeView. This is typically set only
@@ -358,9 +368,55 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
-        lx.notimpl()
+        """Returns True if the provided columnIndex corresponds to the provided regionID."""
+
+        # NOTE: This code fires very, very frequently.
+        # Speed is very important.
+
+        column_name = self.root.columns[columnIndex]['name']
+        target_region = self.targetNode().values[column_name].input_region
+
+        # regionID zero is reserved for .anywhere. It should always return True.
+        if regionID == 0:
+            return True
+
+        if target_region == self._input_regions[regionID]:
+            return True
+
+        return False
 
     def treeview_SupportedDragDropSourceTypes(self, columnIndex):
+        """Wisdom from Joe:
+
+        The tree has to implement 2 methods to be a source,  SupportedDragDropTypes()
+        and GetDragDropSourceObject().    To be a destination, it has to impelment
+        GetDragDropDestinationObject()
+
+        SupportedDragDropTypes() is a space-delimited list of source types you
+        can support for a drag.  These can be your own strings if you want to
+        define your own types, or it can be standard drop types,
+        like LXsDROUPSOURCE_ITEMS.
+
+        GetDragDropSourceObject() returns a COM object (however those are wrapped in Python)
+        representing the source item being dragged.  Often we use ILxValueArray
+        (even if it's just one item, just in case there are more) containing the
+        elements, but you can use an arbitrary object if you want.  You can define
+        your own COM objects as by adding the ILxValue interface to your class,
+        although I'm not sure how you do that in Python.
+
+        Together, that gets D&D going.  To accept drops, you have to implement
+        GetDragDropDestinationObject(), which just returns a COM object representing
+        the drop point.
+
+        Be aware that this is called frequently (like, on every mouse move over your tree).
+
+        An separate ILxDrop server then takes the source and destination objects
+        and decides if it can drop there.  If the user decides to use an action from
+        that server, then it does the actual work for the drop (although sometimes
+        the destination object does the actual drop, such as for color presets).
+
+        That's it, really.
+        """
         lx.notimpl()
 
     def treeview_GetDragDropSourceObject(self, columnIndex, type):

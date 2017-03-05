@@ -220,6 +220,7 @@ class Lumberjack(object):
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(root=cls._root)
         cls._tree_view.set_primary_column_position(columns.get('primary_position', 0))
+        cls._tree_view.set_input_regions(input_regions)
 
         # We store these as read-only properties of the class, just in case
         # we ever need them.

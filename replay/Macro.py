@@ -163,7 +163,17 @@ class Macro(lumberjack.Lumberjack):
 
     def render_Python(self):
         """Generates a Python string for export."""
-        pass
+        # Open the .lxm input file
+        output_file = open(output_path, 'w')
+
+        output_file.write("# python\n")
+
+        # Loop over the commands to get all the command strings:
+        for command in self.commands:
+            text = command.render_Python()
+            output_file.write(text + "\n")
+
+        output_file.close()
 
     def render_json(self):
         """Generates a json string for export."""

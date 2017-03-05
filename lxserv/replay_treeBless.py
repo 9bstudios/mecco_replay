@@ -40,7 +40,7 @@ Macro().bless(
                     'width':20
                 }, {
                     'name':'command',
-                    'width':-3
+                    'width':-1
                 }
             ]
     },
@@ -64,6 +64,10 @@ Macro().bless(
 
     input_regions = [
         '(anywhere)', # 0 is reserved ".anywhere" region index
+        'MacroCommandName',
+        'MacroCommandCommand',
+        'MacroCommandArg',
+        'MacroCommandEnable'
     ],
 
     # :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.

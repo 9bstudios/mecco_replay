@@ -2,6 +2,7 @@
 
 import lx
 import re
+import json
 import lumberjack
 
 class MacroCommand(lumberjack.TreeNode):
@@ -24,14 +25,17 @@ class MacroCommand(lumberjack.TreeNode):
         self.values['command'] = lumberjack.TreeValue()
         # 4113 is a special gray color for grayed out text in MODO
         self.values['command'].color.special = 4113
+        self.values['command'].input_region = 'MacroCommandCommand'
 
         # Create default enable value object and set formatting
         self.values['enable'] = lumberjack.TreeValue()
         self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
         self.values['enable'].display_value = ''
+        self.values['enable'].input_region = 'MacroCommandEnable'
 
         # Create default name value object
         self.values['name'] = lumberjack.TreeValue()
+        self.values['name'].input_region = 'MacroCommandName'
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
@@ -309,6 +313,18 @@ class MacroCommand(lumberjack.TreeNode):
             if arg_dict['argValues'] is not None:
                 result += " {name}:{value}".format(name=arg_dict['argNames'], value=wrap_quote(arg_dict['argValues']))
         return result
+
+    def render_Python(self):
+        """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
+
+        return "lx.eval({command})".format(command=repr(self.render_LXM().replace("'", "\\'")))
+
+    def render_json(self):
+        """Construct MODO command string in json format from stored internal parts."""
+
+        full_cmd = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
+
+        return {full_cmd : self.args}
 
     def run(self):
         """Runs the command."""
