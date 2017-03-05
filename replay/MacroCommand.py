@@ -239,61 +239,6 @@ class MacroCommand(lumberjack.TreeNode):
 
         return meta
 
-    def retreive_args(self):
-        """Retrieve a list of arguments and datatypes from MODO's commandservice.
-        See http://sdk.luxology.com/wiki/Commandservice#command.argNames
-
-        Example:
-        [
-            {
-                'argName': 'argname',
-                'argUsername': 'Argument Name',
-                'argType': 0, # 0 for generic objects, 1 for integers, 2 for floats an 3 for strings
-                'argTypeName': 'boolean',
-                'argDesc': 'What the argument does.',
-                'argExample': 'Example if available.'
-                'argValue': 'Value of the argument.'
-            }
-        ]"""
-
-        if not self.command:
-            raise Exception("Command string not set.")
-            return
-
-        # Names of the arguments for the current command.
-        argNames = lx.eval("query commandservice command.argNames ? {%s}" % self.command)
-
-        # No arguments to add
-        if not argNames:
-            return
-
-        # These are the ones I care about for now. If there are others later, we can add them.
-        query_terms = [
-            'argNames',
-            'argUsernames',
-            'argTypes',
-            'argTypeNames',
-            'argDescs',
-            'argExamples'
-        ]
-
-        # Populate the list.
-        for n in range(len(argNames)):
-            arg_dict = {}
-
-            # The list of query_terms is arbitrary. I'm just grabbing everything I think is important.
-            for term in query_terms:
-
-                # Remove the last character from the term to make it singular (argNames becomes argName)
-                # Run the query.
-                arg_dict[term[:-1]] = lx.eval('query commandservice command.%s ? %s' % (term, self.command))[n]
-
-            # argValue always defaults to None until the parser fills it out.
-            arg_dict['value'] = None
-
-            # add the argument to our list.
-            self.args.append(MacroCommandArg(**arg_dict))
-
     def render_LXM(self):
         """Construct MODO command string from stored internal parts."""
 

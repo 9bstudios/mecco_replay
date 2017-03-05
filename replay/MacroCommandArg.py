@@ -8,28 +8,35 @@ import lumberjack
 class MacroCommandArg(lumberjack.TreeNode):
     """Contains everything pertaining to a single command argument in the macro.
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
-    argument.
+    argument."""
 
-    An `arg_name` is required. All other argument metadata can be added using
-    the various `arg*` properties, or added as optional kwargs during init."""
-
-    def __init__(self, arg_name, **kwargs):
+    def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
-        self._base_command = base_command
-        self._arg_name = arg_name
+        # Argument metadata placeholders
+        self._argType = None
+        self._argTypeName = None
+        self._argDesc = None
+        self._argExample = None
 
-        # Create default command value object and set formatting
+        # Query argument metadata
+        self.retreive_arg_meta()
+
+        # `command` field displays the actual argument value
         self.values['command'] = lumberjack.TreeValue()
         self.values['command'].input_region = 'MacroCommandArg'
+        self.values['command'].value = None
 
-        # Create default enable value object and set formatting
+        # `enable` field is empty for arguments
         self.values['enable'] = lumberjack.TreeValue()
         self.values['enable'].display_value = ''
 
-        # Create default name value object
+        # `name` field contains the argument name as a `value`,
+        # and the argument's username (nice name) as a `display_value`
         self.values['name'] = lumberjack.TreeValue()
         self.values['name'].input_region = 'MacroCommandArg'
+        self.values['name'].value = self.argName
+        self.values['name'].display_value = self.argUsername
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('arg_string')) and \
@@ -37,44 +44,33 @@ class MacroCommandArg(lumberjack.TreeNode):
 
             self.parse_string(kwargs.get('arg_string'))
 
-        properties = [
-            'value',
-            'argName',
-            'argUsername',
-            'argType',
-            'argTypeName',
-            'argDesc',
-            'argExample'
-        ]
-
-        for prop in properties:
-            if kwargs.get(prop):
-                setattr(self, prop, kwargs.get(prop))
-            else:
-                setattr(self, prop, None)
 
     def value():
-        doc = "The value property."
+        doc = "The value property is really a proxy for the `command` cell value."
         def fget(self):
-            return self._value
+            return self.values['command'].value
+        def fset(self, value):
+            return self.values['command'].value = value
         return locals()
 
     value = property(**value())
 
     def argName():
-        doc = "The argName property."
+        doc = "The argName property is really a proxy for the `name` cell value."
         def fget(self):
-            return self._argName
+            return self.values['name'].value
+        def fset(self, value):
+            return self.values['name'].value = value
         return locals()
 
     argName = property(**argName())
 
     def argUsername():
-        doc = "The argUsername property."
+        doc = "The argUsername property is really a proxy for the `name` cell `display_value`."
         def fget(self):
-            return self._argUsername
+            return self.values['name'].display_value
         def fset(self, value):
-            self._argUsername = value
+            return self.values['name'].display_value = value
         return locals()
 
     argUsername = property(**argUsername())
@@ -118,6 +114,53 @@ class MacroCommandArg(lumberjack.TreeNode):
         return locals()
 
     argExample = property(**argExample())
+
+    def retreive_arg_meta(self):
+        """Retrieve a list of arguments and datatypes from MODO's commandservice.
+        See http://sdk.luxology.com/wiki/Commandservice#command.argNames
+
+        Example:
+        [
+            {
+                'argName': 'argname',
+                'argUsername': 'Argument Name',
+                'argType': 0, # 0 for generic objects, 1 for integers, 2 for floats an 3 for strings
+                'argTypeName': 'boolean',
+                'argDesc': 'What the argument does.',
+                'argExample': 'Example if available.'
+                'argValue': 'Value of the argument.'
+            }
+        ]"""
+
+        base_command = self.parent.command
+        arg_index = self.index
+
+        if not base_command:
+            raise Exception("Invalid parent command.")
+            return
+
+        # Names of the arguments for the current command.
+        if not lx.eval("query commandservice command.argNames ? {%s}" % base_command):
+            raise Exception("Parent command has no args. Why do I exist? (Big Questions In Life)")
+            return
+
+        # These are the ones I care about for now. If there are others later, we can add them.
+        query_terms = [
+            'argNames',
+            'argUsernames',
+            'argTypes',
+            'argTypeNames',
+            'argDescs',
+            'argExamples'
+        ]
+
+        # The list of query_terms is arbitrary. I'm just grabbing everything I think is important.
+        for term in query_terms:
+
+            # Remove the last character from the term to make it singular (argNames becomes argName)
+            property_name = term[:-1]
+            # Run the query.
+            setattr(self, property_name, lx.eval('query commandservice command.%s ? {%s}' % (term, base_command))[arg_index])
 
     def parse_string(self, command_string):
         """Parse a single MODO argument string into its constituent parts and stores
