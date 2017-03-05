@@ -361,6 +361,37 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_SupportedDragDropSourceTypes(self, columnIndex):
+        """Wisdom from Joe:
+
+        The tree has to implement 2 methods to be a source,  SupportedDragDropTypes()
+        and GetDragDropSourceObject().    To be a destination, it has to impelment
+        GetDragDropDestinationObject()
+
+        SupportedDragDropTypes() is a space-delimited list of source types you
+        can support for a drag.  These can be your own strings if you want to
+        define your own types, or it can be standard drop types,
+        like LXsDROUPSOURCE_ITEMS.
+
+        GetDragDropSourceObject() returns a COM object (however those are wrapped in Python)
+        representing the source item being dragged.  Often we use ILxValueArray
+        (even if it's just one item, just in case there are more) containing the
+        elements, but you can use an arbitrary object if you want.  You can define
+        your own COM objects as by adding the ILxValue interface to your class,
+        although I'm not sure how you do that in Python.
+
+        Together, that gets D&D going.  To accept drops, you have to implement
+        GetDragDropDestinationObject(), which just returns a COM object representing
+        the drop point.
+
+        Be aware that this is called frequently (like, on every mouse move over your tree).
+
+        An separate ILxDrop server then takes the source and destination objects
+        and decides if it can drop there.  If the user decides to use an action from
+        that server, then it does the actual work for the drop (although sometimes
+        the destination object does the actual drop, such as for color presets).
+
+        That's it, really.
+        """
         lx.notimpl()
 
     def treeview_GetDragDropSourceObject(self, columnIndex, type):
