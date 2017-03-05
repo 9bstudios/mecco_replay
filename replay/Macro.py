@@ -1,6 +1,7 @@
 # python
 
 import lx, re
+import json
 import lumberjack
 from MacroCommand import MacroCommand
 
@@ -178,7 +179,7 @@ class Macro(lumberjack.Lumberjack):
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
 
-        # Open the .lxm input file
+        # Open the .lxm file
         output_file = open(output_path, 'w')
 
         # Loop over the commands to get all the command strings:
@@ -188,9 +189,9 @@ class Macro(lumberjack.Lumberjack):
 
         output_file.close()
 
-    def render_Python(self):
+    def render_Python(self, output_path):
         """Generates a Python string for export."""
-        # Open the .lxm input file
+        # Open the .py file
         output_file = open(output_path, 'w')
 
         output_file.write("# python\n")
@@ -202,6 +203,26 @@ class Macro(lumberjack.Lumberjack):
 
         output_file.close()
 
-    def render_json(self):
+    def render_json(self, output_path):
         """Generates a json string for export."""
-        pass
+
+        # Open the .py file
+        output_file = open(output_path, 'w')
+
+        res = dict()
+        # Loop over the commands to get all the command strings:
+        for command in self.commands:
+            name_args = command.render_json()
+            res[name_args[0]] = name_args[1]
+
+        output_file.write(json.dumps(res))
+
+        output_file.close()
+
+    def render(self, format_val, file_path):
+        if format_val == "lxm":
+            self.render_LXM(file_path)
+        elif format_val == "py":
+            self.render_Python(file_path)
+        else:
+            self.render_json(file_path)
