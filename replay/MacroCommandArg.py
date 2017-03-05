@@ -33,6 +33,10 @@ class MacroCommandArg(lumberjack.TreeNode):
         self.values['enable'] = lumberjack.TreeValue()
         self.values['enable'].display_value = ''
 
+        # `prefix` field is empty for arguments
+        self.values['prefix'] = lumberjack.TreeValue()
+        self.values['prefix'].display_value = ''
+
         # `name` field contains the argument name as a `value`,
         # and the argument's username (nice name) as a `display_value`
         self.values['name'] = lumberjack.TreeValue()
