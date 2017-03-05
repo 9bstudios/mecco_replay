@@ -40,7 +40,8 @@ Macro().bless(
                     'width':20
                 }, {
                     'name':'prefix',
-                    'width':20
+                    'width':24,
+                    'justify':'center'
                 }, {
                     'name':'command',
                     'width':-1

@@ -253,14 +253,19 @@ class TreeView( lxifc.TreeView,
 
     def treeview_ColumnJustification(self, columnIndex):
         """Returns the desired justification setting for a given column.
-        #define LXiTREEJUST_LEFT                0
-        #define LXiTREEJUST_CENTER              1
-        #define LXiTREEJUST_RIGHT               2"""
+        Expects the column to have a 'justify' key with a value of 'left',
+        'center', or 'right'."""
+
+        # define LXiTREEJUST_LEFT                0
+        # define LXiTREEJUST_CENTER              1
+        # define LXiTREEJUST_RIGHT               2
+
         lookup = {
             'left': 0,
             'center': 1,
             'right': 2
         }
+
         if columnIndex < len(self.root.columns):
             string_value = self.root.columns[columnIndex].get('justify', 'left')
             return lookup[string_value]

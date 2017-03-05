@@ -29,7 +29,7 @@ class CommandClass(replay.commander.CommanderClass):
             {
                 'name': 'command_prefix',
                 'datatype': 'string',
-                'default': prefixes[0][0],
+                'default': PREFIXES[0][0],
                 'values_list_type': 'popup',
                 'values_list': PREFIXES,
                 'flags': ['optional']
@@ -42,6 +42,6 @@ class CommandClass(replay.commander.CommanderClass):
         for command in replay.Macro().selected_descendants:
             command.prefix = prefix
 
-        replay.Macro().refresh()
+        replay.Macro().refresh_view()
 
 lx.bless(CommandClass, 'replay.linePrefix')
