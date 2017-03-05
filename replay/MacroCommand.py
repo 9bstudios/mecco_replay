@@ -2,6 +2,7 @@
 
 import lx
 import re
+import json
 import lumberjack
 
 class MacroCommand(lumberjack.TreeNode):
@@ -312,6 +313,18 @@ class MacroCommand(lumberjack.TreeNode):
             if arg_dict['argValues'] is not None:
                 result += " {name}:{value}".format(name=arg_dict['argNames'], value=wrap_quote(arg_dict['argValues']))
         return result
+
+    def render_Python(self):
+        """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
+
+        return "lx.eval({command})".format(command=repr(self.render_LXM().replace("'", "\\'")))
+
+    def render_json(self):
+        """Construct MODO command string in json format from stored internal parts."""
+
+        full_cmd = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
+
+        return {full_cmd : self.args}
 
     def run(self):
         """Runs the command."""
