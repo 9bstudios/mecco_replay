@@ -10,10 +10,13 @@ class MacroCommandArg(lumberjack.TreeNode):
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
     argument."""
 
-    def __init__(self, **kwargs):
+    def __init__(self, parent, arg_index, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
-    def init(self, **kwargs):
+        # We have to manually pass this in from the parent, since the `index`
+        # parameter won't be operational until the object has finished `__init__()`.
+        self._arg_index = arg_index
+
         # Argument metadata placeholders
         self._argType = None
         self._argTypeName = None
