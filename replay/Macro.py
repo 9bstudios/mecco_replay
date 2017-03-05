@@ -19,7 +19,13 @@ class Macro(lumberjack.Lumberjack):
     work entirely with class variables and classmethods."""
 
     _file_path = None
-    _export_formats = ['lxm', 'py', 'json']
+
+    # export formats in (file extension, user name of format, file pattern)
+    _export_formats = {
+                       'lxm' : ('lxm', 'LXM file', '*.LXM;*.lxm'),
+                       'py' : ('py', 'Python file', '*.py'),
+                       'json' : ('json', 'JSON file', '*.json')
+                       }
 
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
@@ -49,14 +55,35 @@ class Macro(lumberjack.Lumberjack):
 
     commands = property(**commands())
 
-    def export_formats():
-        doc = """The list of `MacroCommand()` objects for the macro, in
-        order from first to last."""
+    def format_names():
+        doc = """List of format names used internally."""
         def fget(self):
-            return self._export_formats
+            return self.__class__._export_formats.keys()
         return locals()
 
-    export_formats = property(**export_formats())
+    format_names = property(**format_names())
+
+    def format_unames():
+        doc = """List of format User names used to display in file dialogs."""
+        def fget(self):
+            res = list()
+            for val in self.__class__._export_formats.itervalues():
+                res.append(val[1])
+            return res
+        return locals()
+
+    format_unames = property(**format_unames())
+
+    def format_extensions():
+        doc = """List of extensions to be used in file dialogs."""
+        def fget(self):
+            res = list()
+            for val in self.__class__._export_formats.itervalues():
+                res.append(val[0])
+            return self._export_formats.keys()
+        return locals()
+
+    format_extensions = property(**format_extensions())
 
     def is_empty():
         doc = """Return true if there are no recorded commands."""

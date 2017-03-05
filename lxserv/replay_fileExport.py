@@ -13,9 +13,9 @@ class CommandClass(replay.commander.CommanderClass):
             {
                 'name': 'format',
                 'datatype': 'string',
-                'default': replay.Macro().export_formats[0],
+                'default': replay.Macro().format_names[0],
                 'values_list_type': 'popup',
-                'values_list': replay.Macro().export_formats,
+                'values_list': replay.Macro().format_names,
                 'flags': ['optional']
             }, {
                 'name': 'destination',
@@ -25,9 +25,27 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
+        """Saves the current Macro() object to the destination stored in its
+        `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
+        `replay.fileSave` this command can save in multiple formats."""
 
-        # see http://modo.sdk.thefoundry.co.uk/td-sdk/dialogs.html#custom-file-dialog
-        pass
+        macro = replay.Macro()
+
+        # If macro is empty throw warning and return
+        if macro.is_empty:
+           modo.dialogs.alert("Empty macro", "There are no recorded commands to save", dtype='warning')
+           return
+
+        format_val = self.commander_arg_value(0)
+        file_path = self.commander_arg_value(1)
+        if file_path is None:
+            file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Export file', \
+                    names = macro.format_names, unames = macro.format_unames, ext = macro.format_extensions)
+            if file_path is None:
+                return
+            format_val = lx.eval('dialog.fileSaveFormat ?')
+
+        replay.Macro().render(format_val, file_path)
 
 
 lx.bless(CommandClass, 'replay.fileExport')
