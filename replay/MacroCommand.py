@@ -231,7 +231,9 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Populate the list.
         for n in range(len(argNames)):
-            self.args.append(MacroCommandArg())
+            cmd = MacroCommandArg(parent=self)
+            self.args.append(cmd)
+            cmd.init()
 
 
     def command_meta(self):

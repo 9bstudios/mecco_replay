@@ -13,14 +13,12 @@ class MacroCommandArg(lumberjack.TreeNode):
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
+    def init(self, **kwargs):
         # Argument metadata placeholders
         self._argType = None
         self._argTypeName = None
         self._argDesc = None
         self._argExample = None
-
-        # Query argument metadata
-        self.retreive_arg_meta()
 
         # `command` field displays the actual argument value
         self.values['command'] = lumberjack.TreeValue()
@@ -37,6 +35,9 @@ class MacroCommandArg(lumberjack.TreeNode):
         self.values['name'].input_region = 'MacroCommandArg'
         self.values['name'].value = self.argName
         self.values['name'].display_value = self.argUsername
+
+        # Query argument metadata
+        self.retreive_arg_meta()
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('arg_string')) and \
