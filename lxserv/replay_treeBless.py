@@ -40,7 +40,7 @@ Macro().bless(
                     'width':20
                 }, {
                     'name':'command',
-                    'width':-3
+                    'width':-1
                 }
             ]
     },
