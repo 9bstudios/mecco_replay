@@ -150,7 +150,6 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [
-            'argNames',
             'argUsernames',
             'argTypes',
             'argTypeNames',
