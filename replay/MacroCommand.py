@@ -234,7 +234,7 @@ class MacroCommand(lumberjack.TreeNode):
             return
 
         # Names of the arguments for the current command.
-        argNames = lx.eval("query commandservice command.argNames ? {%s}" % self.command)
+        argNames = lx.evalN("query commandservice command.argNames ? {%s}" % self.command)
 
         # No arguments to add
         if not argNames:

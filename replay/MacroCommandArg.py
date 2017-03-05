@@ -13,8 +13,9 @@ class MacroCommandArg(lumberjack.TreeNode):
     def __init__(self, parent, arg_index, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
-        # We have to manually pass this in from the parent, since the `index`
+        # We have to manually pass these in from the parent because the `parent`
         # parameter won't be operational until the object has finished `__init__()`.
+        self._parent = parent
         self._arg_index = arg_index
 
         # Argument metadata placeholders
@@ -36,8 +37,6 @@ class MacroCommandArg(lumberjack.TreeNode):
         # and the argument's username (nice name) as a `display_value`
         self.values['name'] = lumberjack.TreeValue()
         self.values['name'].input_region = 'MacroCommandArg'
-        self.values['name'].value = self.argName
-        self.values['name'].display_value = self.argUsername
 
         # Query argument metadata
         self.retreive_arg_meta()
@@ -137,20 +136,26 @@ class MacroCommandArg(lumberjack.TreeNode):
         ]"""
 
         base_command = self.parent.command
-        arg_index = self.index
+        arg_index = self._arg_index
 
         if not base_command:
             raise Exception("Invalid parent command.")
             return
 
         # Names of the arguments for the current command.
-        if not lx.eval("query commandservice command.argNames ? {%s}" % base_command):
+        if not lx.evalN("query commandservice command.argNames ? {%s}" % base_command):
             raise Exception("Parent command has no args. Why do I exist? (Big Questions In Life)")
             return
 
+        # Unlike other metadata, we store these two directly inside the value objects for the columns.
+        values_list = lx.evalN("query commandservice command.argNames ? {%s}" % base_command)
+        self.values['name'].value = values_list[arg_index]
+
+        values_list = lx.evalN("query commandservice command.argUsernames ? {%s}" % base_command)
+        self.values['name'].display_value = values_list[arg_index]
+
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [
-            'argUsernames',
             'argTypes',
             'argTypeNames',
             'argDescs',
@@ -159,11 +164,15 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # The list of query_terms is arbitrary. I'm just grabbing everything I think is important.
         for term in query_terms:
-
             # Remove the last character from the term to make it singular (argNames becomes argName)
             property_name = term[:-1]
+            # Get the full list of values (for all args)
+            # Note the use of `lx.evalN` as opposed to the normal `lx.eval`. We need to be certain
+            # that we always receive a list in response, even if the list length is 1.
+            values_list = lx.evalN('query commandservice command.%s ? {%s}' % (term, base_command))
+            lx.out(base_command, term, values_list, arg_index)
             # Run the query.
-            setattr(self, property_name, lx.eval('query commandservice command.%s ? {%s}' % (term, base_command))[arg_index])
+            setattr(self, property_name, values_list[arg_index])
 
     def parse_string(self, command_string):
         """Parse a single MODO argument string into its constituent parts and stores
