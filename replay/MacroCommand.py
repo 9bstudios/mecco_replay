@@ -203,7 +203,7 @@ class MacroCommand(lumberjack.TreeNode):
 
                 # Get the argument's name:
                 arg_name = full_argument.group(1)
-                
+
                 # Check if the name of the argument is correct:
                 if arg_name in [self.args[i].argName for i in range(len(args))]:
                     arg_number = [self.args[i].argName for i in range(len(args))].index(arg_name)
@@ -254,11 +254,13 @@ class MacroCommand(lumberjack.TreeNode):
             return
 
         query_terms = [
+            'category',
             'desc',
             'usage',
             'example',
             'flags',
             'username',
+            'buttonName',
             'tooltip',
             'help',
             'icon'
