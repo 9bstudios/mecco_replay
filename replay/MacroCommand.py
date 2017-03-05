@@ -196,8 +196,8 @@ class MacroCommand(lumberjack.TreeNode):
                 arg_name = full_argument.group(1)
 
                 # Check if the name of the argument is correct:
-                if arg_name in [self.args[i].argNames for i in range(len(args))]:
-                    arg_number = [self.args[i].argNames for i in range(len(args))].index(arg_name)
+                if arg_name in [self.args[i].argName for i in range(len(args))]:
+                    arg_number = [self.args[i].argName for i in range(len(args))].index(arg_name)
                 else:
                     raise Exception("Wrong argument name.")
 
@@ -273,9 +273,9 @@ class MacroCommand(lumberjack.TreeNode):
             else:
                 return value
 
-        for arg_dict in self.args:
-            if arg_dict['argValues'] is not None:
-                result += " {name}:{value}".format(name=arg_dict['argNames'], value=wrap_quote(arg_dict['argValues']))
+        for arg in self.args:
+            if arg.value is not None:
+                result += " {name}:{value}".format(name=arg.argName, value=wrap_quote(arg.value))
         return result
 
     def render_Python(self):
