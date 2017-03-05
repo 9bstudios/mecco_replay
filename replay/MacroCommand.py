@@ -188,23 +188,31 @@ class MacroCommand(lumberjack.TreeNode):
         # Process all the arguments:
         for arg_number, arg in enumerate(args):
 
-            # Get the argument value and, if given, its name:
-            full_argument = re.search(r'(\S+):["\'{]?(\S+)["\'}]?', arg)
+            # Try to get the name and the value wrapped in string symbols:
+            full_argument = re.search(r'(\S+):["\'{](\S+)["\'}]', arg)
 
+            # Try to get the name and the value with no string symbols:
+            if not full_argument:
+				full_argument = re.search(r'(\S+):(\S+)', arg)
+
+            # Process the argument string, either with or without name:
             if full_argument:
 
+                # Get the argument's name:
                 arg_name = full_argument.group(1)
-
+                
                 # Check if the name of the argument is correct:
-                if arg_name in [self.args[i].argNames for i in range(len(args))]:
-                    arg_number = [self.args[i].argNames for i in range(len(args))].index(arg_name)
+                if arg_name in [self.args[i].argName for i in range(len(args))]:
+                    arg_number = [self.args[i].argName for i in range(len(args))].index(arg_name)
                 else:
                     raise Exception("Wrong argument name.")
 
+                # Get the argument's value:
                 arg_value = full_argument.group(2)
 
             else:
 
+                # If the name has not been given, then the value is the full string:
                 arg_value = arg
 
             # Clean the argument value of "", '' and {} wraps:
