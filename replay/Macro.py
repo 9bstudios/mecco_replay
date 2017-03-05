@@ -209,13 +209,12 @@ class Macro(lumberjack.Lumberjack):
         # Open the .py file
         output_file = open(output_path, 'w')
 
-        res = dict()
-        # Loop over the commands to get all the command strings:
+        res = list()
+        # Loop over the commands to get all the command json data:
         for command in self.commands:
-            name_args = command.render_json()
-            res[name_args[0]] = name_args[1]
+            res.append(command.render_json())
 
-        output_file.write(json.dumps(res))
+        output_file.write(json.dumps(res, indent=4))
 
         output_file.close()
 
