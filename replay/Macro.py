@@ -20,6 +20,7 @@ class Macro(lumberjack.Lumberjack):
 
     _file_path = None
     _export_formats = ['lxm', 'py', 'json']
+    _current_line = 0
 
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
@@ -39,6 +40,18 @@ class Macro(lumberjack.Lumberjack):
         return locals()
 
     file_path = property(**file_path())
+
+    def current_line():
+        doc = """The current line in the macro, used to execute step-by-step. It is 
+        initially set to zero, to start with the first command. It is increased after 
+        running a step, so the run_next_line executes the next line next time."""
+        def fget(self):
+            return self.__class__._current_line
+        def fset(self, value):
+            self.__class__._current_line = value
+        return locals()
+
+    current_line = property(**current_line())
 
     def commands():
         doc = """The list of `MacroCommand()` objects for the macro, in
@@ -119,6 +132,21 @@ class Macro(lumberjack.Lumberjack):
         # Run every command in the macro:
         for command in self.commands:
             command.run()
+
+    def run_next_line(self):
+        """Runs the next line in the macro."""
+        
+        # Select current command and run it:
+        command = self.commands[self.current_line]
+        command.run()
+        
+        # Increase the line counter, so next time we execute the next command:
+        self.current_line += 1
+
+        # If the line counter is out of bounds, restart the counter:
+        # NOTE: This will probably be changed in the future.
+        if self.current_line == len(self.commands):
+			self.current_line = 0
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""

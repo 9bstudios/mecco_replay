@@ -5,10 +5,10 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay.commander.CommanderClass):
-    """TODO: Fires the next step in the macro, allowing you to fire each frame in a Macro
+    """Fires the next step in the macro, allowing you to fire each frame in a Macro
     one-by-one."""
     def commander_execute(self, msg, flags):
-        pass
+        replay.Macro().run_next_line()
 
 
-# lx.bless(CommandClass, 'replay.step')
+lx.bless(CommandClass, 'replay.step')
