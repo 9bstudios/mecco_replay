@@ -50,6 +50,11 @@ class TreeView( lxifc.TreeView,
         except AttributeError:
             self.__class__._primary_column_position = 0
 
+        try:
+            self._input_regions
+        except AttributeError:
+            self.__class__._input_regions = []
+
         self.m_currentNode = node
         self.m_currentIndex = curIndex
 
@@ -59,7 +64,7 @@ class TreeView( lxifc.TreeView,
 
     # Wanted to use a property for this instead of a setter method, but wasn't able
     # to make it work for some reason.
-    def set_primary_column_position(self, value):
+    def set_primary_column_position(self, index):
         """Moves the primary column to the specified column index.
 
         The "primary" column (i.e. the one with the twirly carrot icon for hide/show
@@ -68,7 +73,12 @@ class TreeView( lxifc.TreeView,
 
         To move it over to the selcond-from-left slot, for example, provide this
         function a value of 1."""
-        self.__class__._primary_column_position = value
+        self.__class__._primary_column_position = index
+
+    def set_input_regions(self, input_regions):
+        """The available input regions as blessed by the parent `Lumberjack.bless()`
+        function. Once blessed, this should not change at any time during a MODO session."""
+        self.__class__._input_regions = input_regions
 
     def root():
         doc = """Root TreeNode object for the TreeView. This is typically set only
@@ -358,7 +368,22 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_IsInputRegion(self, columnIndex, regionID):
-        lx.notimpl()
+        """Returns True if the provided columnIndex corresponds to the provided regionID."""
+
+        # NOTE: This code fires very, very frequently.
+        # Speed is very important.
+
+        column_name = self.root.columns[columnIndex]['name']
+        target_region = self.targetNode().values[column_name].input_region
+
+        # regionID zero is reserved for .anywhere. It should always return True.
+        if regionID == 0:
+            return True
+
+        if target_region == self._input_regions[regionID]:
+            return True
+
+        return False
 
     def treeview_SupportedDragDropSourceTypes(self, columnIndex):
         """Wisdom from Joe:
