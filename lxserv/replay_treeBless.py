@@ -39,7 +39,7 @@ Macro().bless(
                     # positive integers are pixel values (i.e. 20px)
                     'width':20
                 }, {
-                    'name':'dialogs',
+                    'name':'prefix',
                     'width':20
                 }, {
                     'name':'command',
@@ -70,8 +70,8 @@ Macro().bless(
         'MacroCommandName',
         'MacroCommandCommand',
         'MacroCommandArg',
-        'MacroCommandEnable'
-        'MacroCommandDialogs'
+        'MacroCommandEnable',
+        'MacroCommandPrefix'
     ],
 
     # :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.

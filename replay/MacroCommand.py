@@ -33,8 +33,8 @@ class MacroCommand(lumberjack.TreeNode):
         self.values['enable'].input_region = 'MacroCommandEnable'
 
         # Create default dialogs value object and set formatting
-        self.values['dialogs'] = lumberjack.TreeValue()
-        self.values['dialogs'].input_region = 'MacroCommandDialogs'
+        self.values['prefix'] = lumberjack.TreeValue()
+        self.values['prefix'].input_region = 'MacroCommandPrefix'
 
         # Create default name value object
         self.values['name'] = lumberjack.TreeValue()
@@ -74,9 +74,9 @@ class MacroCommand(lumberjack.TreeNode):
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
-            return self.values['dialogs'].value
+            return self.values['prefix'].value
         def fset(self, value):
-            self.values['dialogs'].value = value
+            self.values['prefix'].value = value
         return locals()
 
     prefix = property(**prefix())
@@ -233,7 +233,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Populate the list.
         for n in range(len(argNames)):
-            self.args.append(MacroCommandArg()) 
+            self.args.append(MacroCommandArg())
 
 
     def command_meta(self):
