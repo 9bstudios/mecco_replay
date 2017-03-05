@@ -174,7 +174,6 @@ class MacroCommandArg(lumberjack.TreeNode):
             # Note the use of `lx.evalN` as opposed to the normal `lx.eval`. We need to be certain
             # that we always receive a list in response, even if the list length is 1.
             values_list = lx.evalN('query commandservice command.%s ? {%s}' % (term, base_command))
-            lx.out(base_command, term, values_list, arg_index)
             # Run the query.
             setattr(self, property_name, values_list[arg_index])
 
