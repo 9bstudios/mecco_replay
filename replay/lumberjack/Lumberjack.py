@@ -296,6 +296,11 @@ class Lumberjack(object):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.selected_descendants
 
+    @property
+    def selected_children(self):
+        """Returns the selected `TreeNode()` objects in the tree."""
+        return self.root.selected_children
+
     def clear_tree_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
@@ -397,3 +402,26 @@ class Lumberjack(object):
         `rebuild()`` method."""
 
         return self.view.notify_NewAttributes()
+
+    def reorder(self, mode, index):
+        """ Reorder selected items according to mode and index arguments """
+        # Getting
+        sel_children = self.selected_children
+
+        # Sorting children in descending order to preserve order in macro
+        sel_children.sort(key=lambda x: x.index, reverse=True)
+
+        for child in sel_children:
+            if mode == "up":
+                child.reorder_up()
+            elif mode == "down":
+                child.reorder_down()
+            elif mode == "top":
+                child.reorder_top()
+            elif mode == "bottom":
+                child.reorder_bottom()
+            elif mode == "index":
+                child.index = index
+            else:
+                raise Exception('Wrong mode value "%s" is specified.' % mode)
+

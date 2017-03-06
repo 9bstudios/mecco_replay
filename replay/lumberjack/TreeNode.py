@@ -348,6 +348,14 @@ class TreeNode(object):
             selected_nodes.extend(child.selected_descendants)
         return selected_nodes
 
+    @property
+    def selected_children(self):
+        """Returns a list of all currently-selected children of the current node."""
+        selected_nodes = []
+        for child in self.children:
+            if child.selected:
+                selected_nodes.append(child)
+        return selected_nodes
 
     # METHODS
     # ----------
@@ -437,7 +445,7 @@ class TreeNode(object):
     def reorder_bottom(self):
         """Reorder the current node to the bottom of its branch in the tree.
         Returns the new index."""
-        self.index = len(self.get_siblings()) - 1
+        self.index = len(self._parent.children) - 1
         return self.index
 
     def find_in_descendants(self, column_name, search_term, regex=False):
