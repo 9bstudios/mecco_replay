@@ -434,7 +434,7 @@ class TreeNode(object):
     def reorder_down(self):
         """Reorder the current node down one index in the tree.
         Returns the new index."""
-        if self.index + 1 < len(self.get_siblings()):
+        if self.index + 1 < len(self.siblings):
             self.index += 1
         return self.index
 
