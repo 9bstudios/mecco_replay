@@ -15,11 +15,14 @@ class MacroCommand(lumberjack.TreeNode):
     _args = {}
     _suppress = False
     _whitespace_before = None
-    _comment_before = []
+    _user_comment_before = []
     _replay_meta = {}
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
+
+        self._replay_meta = {}
+        self._user_comment_before = []
 
         # Create default command value object and set formatting
         self.values['command'] = lumberjack.TreeValue()
@@ -136,17 +139,50 @@ class MacroCommand(lumberjack.TreeNode):
 
     whitespace_before = property(**whitespace_before())
 
+    def parse_meta(self, line):
+	meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+	if meta is not None:
+            return (meta.group(1), meta.group(2))
+	else:
+            return None
+
+    def render_meta(self, name, val):
+	return "# replay {n}:{v}".format(n=name, v=val)
+
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings
         will automatically be broken into lines of 80 characters or less. Appropriate
         comment syntax will be rendered at export time. Include only the raw string."""
         def fget(self):
-            return self._comment_before
+            res = list(self._user_comment_before)
+            for key, val in self._replay_meta.iteritems():
+                res.append(self.render_meta(key, val))
+            return res
         def fset(self, value):
-            self._comment_before = value
+            del self._user_comment_before[:]
+            self._replay_meta.clear()
+            for line in value:
+                meta = self.parse_meta(line)
+                if meta is None:
+                    self._user_comment_before.append(line)
+                else:
+                    (name, val) = meta
+                    self._replay_meta[name] = val
         return locals()
 
     comment_before = property(**comment_before())
+
+    def user_comment_before():
+        doc = """String to be added as comment text before the command. Long strings
+        will automatically be broken into lines of 80 characters or less. Appropriate
+        comment syntax will be rendered at export time. Include only the raw string."""
+        def fget(self):
+            return self._user_comment_before
+        def fset(self, value):
+            self._user_comment_before = value
+        return locals()
+
+    user_comment_before = property(**user_comment_before())
 
     def replay_meta():
         doc = """A dictionary of metadata values for use in the GUI editor. These are stored
