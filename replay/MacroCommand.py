@@ -185,23 +185,23 @@ class MacroCommand(lumberjack.TreeNode):
 
         start = re.search(r'\S', args_string)
         if not start:
-			args_string = None
-			return None, args_string       
+            args_string = None
+            return None, args_string       
         if start.group() in ["'", '"', '{']:
-			return None, args_string
+            return None, args_string
         start_index = start.start() 
 
         next_space = re.search(r'\s', args_string[start_index:])
         if not next_space:
-			args_string = None
-			return None, args_string
+            args_string = None
+            return None, args_string
         next_space_index = start_index + next_space.start()
         
         colon = re.search(r':', args_string[start_index:next_space_index])
         if not colon:
             return None, args_string
         colon_index = start_index + colon.start()
-		
+                
         string_wrapper = re.search(r'["\'{]', args_string[start_index:colon_index])
         if string_wrapper:
             return None, args_string
@@ -267,8 +267,8 @@ class MacroCommand(lumberjack.TreeNode):
             self.args[arg_number].value = arg_value
 
             # Increase the argument counter, and check if it's not out of bounds:
-            arg_counter += 1
             if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
+            arg_counter += 1
 
     def retreive_args(self):
         """Retrieve a list of arguments and datatypes from MODO's commandservice.
