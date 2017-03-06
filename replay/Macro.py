@@ -170,7 +170,7 @@ class Macro(lumberjack.Lumberjack):
         for input_line in input_file:
             if not input_line: continue
 
-            command_with_comments.append(input_line)
+            command_with_comments.append(input_line[:-1])
 
             # If this line is a comment, just append it to the full command:
             if input_line[0] == "#":
@@ -200,7 +200,7 @@ class Macro(lumberjack.Lumberjack):
 
                 # If this line is a comment, just append it to the full command:
                 if input_line[0] == "#":
-                    command_with_comments.append(input_line)
+                    command_with_comments.append(input_line[:-1])
 	            continue
 
                 # Replace lx.eval with function returning command
@@ -286,8 +286,9 @@ class Macro(lumberjack.Lumberjack):
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
-            text = command.render_LXM()
-            output_file.write(text + "\n")
+            lines = command.render_LXM()
+            for line in lines:
+                output_file.write(line + "\n")
 
         output_file.close()
 
@@ -300,8 +301,9 @@ class Macro(lumberjack.Lumberjack):
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
-            text = command.render_Python()
-            output_file.write(text + "\n")
+            lines = command.render_Python()
+            for line in lines:
+                output_file.write(line + "\n")
 
         output_file.close()
 

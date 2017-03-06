@@ -15,7 +15,7 @@ class MacroCommand(lumberjack.TreeNode):
     _args = {}
     _suppress = False
     _whitespace_before = None
-    _comment_before = None
+    _comment_before = []
     _replay_meta = {}
 
     def __init__(self, **kwargs):
@@ -346,6 +346,12 @@ class MacroCommand(lumberjack.TreeNode):
         return meta
 
     def render_LXM(self):
+        """Construct MODO command string from stored internal parts. Also adds comments"""
+        res = list(self.comment_before)
+        res.append(self.render_LXM_without_comment())
+        return res
+
+    def render_LXM_without_comment(self):
         """Construct MODO command string from stored internal parts."""
 
         result = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
@@ -364,7 +370,9 @@ class MacroCommand(lumberjack.TreeNode):
     def render_Python(self):
         """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
 
-        return "lx.eval({command})".format(command=repr(self.render_LXM().replace("'", "\\'")))
+        res = list(self.comment_before)
+        res.append("lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
+        return res
 
     def render_json(self):
         """Construct MODO command string in json format from stored internal parts."""
