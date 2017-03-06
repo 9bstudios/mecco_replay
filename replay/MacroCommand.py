@@ -16,12 +16,10 @@ class MacroCommand(lumberjack.TreeNode):
     _suppress = False
     _whitespace_before = None
     _user_comment_before = []
-    _replay_meta = {}
 
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
-        self._replay_meta = {}
         self._user_comment_before = []
 
         # Create default command value object and set formatting
@@ -183,23 +181,6 @@ class MacroCommand(lumberjack.TreeNode):
         return locals()
 
     user_comment_before = property(**user_comment_before())
-
-    def replay_meta():
-        doc = """A dictionary of metadata values for use in the GUI editor. These are stored
-        as specially-formatted comments within the code itself. These could include things like
-        row color.
-
-        e.g. {'row_color': 'red'}
-
-        Renders as:
-        # replay_meta row_color: 'red'"""
-        def fget(self):
-            return self._replay_meta
-        def fset(self, value):
-            self._replay_meta = value
-        return locals()
-
-    replay_meta = property(**replay_meta())
 
     def parse_string(self, command_string):
         """Parse a normal MODO command string into its constituent parts, and
