@@ -61,9 +61,9 @@ class Color(object):
         """Sets special MODO colors by human-readable names."""
         if name in ['gray', 'grey']:
             # 4113 is a special color for grayed-out text in MODO
-            self.special = 4113
+            self._special = 4113
         elif name == 'default':
-            self.special = None
+            self._special = None
         elif name == 'black':
-            self.special = None
+            self._special = None
             self._internal_rgb = [0,0,0]

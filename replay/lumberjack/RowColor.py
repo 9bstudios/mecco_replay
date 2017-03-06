@@ -87,8 +87,6 @@ class RowColor(object):
     def bitwise():
         doc = """The bitwise int for the row color."""
         def fget(self):
-            if self.name == None:
-                return None
             return self._lookup[self.name]
         return locals()
 

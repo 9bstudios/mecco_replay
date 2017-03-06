@@ -42,6 +42,6 @@ class CommandClass(replay.commander.CommanderClass):
         for line in replay.Macro().selected_descendants:
             line.row_color = color_name
 
-        replay.Macro().refresh_view()
+        replay.Macro().rebuild_view()
 
 lx.bless(CommandClass, 'replay.lineColor')

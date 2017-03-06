@@ -379,7 +379,12 @@ class TreeView( lxifc.TreeView,
         # Speed is very important.
 
         column_name = self.root.columns[columnIndex]['name']
-        target_region = self.targetNode().values[column_name].input_region
+
+        try:
+            target_region = self.targetNode().values[column_name].input_region
+        except AttributeError:
+            # The column has no input region assignment.
+            return False
 
         # regionID zero is reserved for .anywhere. It should always return True.
         if regionID == 0:
