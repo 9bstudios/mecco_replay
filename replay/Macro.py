@@ -142,7 +142,6 @@ class Macro(lumberjack.Lumberjack):
         # Parse file extension
         unused, file_extension = os.path.splitext(input_path)
         file_extension = file_extension[1:]
-        lx.out("Ext = ", file_extension)
 
         # Lookup extension name
         format_name = self.name_by_extension(file_extension)
@@ -184,11 +183,53 @@ class Macro(lumberjack.Lumberjack):
         # Close the .lxm input file:
         input_file.close()
 
-    def parse_Python(self):
+    def parse_Python(self, input_path):
         """Parse a Python file and store its commands in the `commands` property.
         If the python code contains anything other than `lx.eval` and `lx.command`
         calls, parse will raise an error."""
-        pass
+        self.root.delete_descendants()
+
+        # Open the .py input file:
+        input_file = open(input_path, 'r')
+
+        try:
+            command_with_comments = []
+            # Loop over the lines to get all the command strings:
+            for input_line in input_file:
+                if not input_line: continue
+
+                # If this line is a comment, just append it to the full command:
+                if input_line[0] == "#":
+                    command_with_comments.append(input_line)
+	            continue
+
+                # Replace lx.eval with function returning command
+                store_lx_eval = lx.eval
+                def return_cmd(cmd):
+                    return cmd
+                lx.eval = return_cmd
+
+                cmd = eval(input_line)
+
+                # Restore lx.eval
+                lx.eval = store_lx_eval
+                if cmd is not None:
+                    command_with_comments.append(cmd)
+
+                # Parse the command and store it in the commands list:
+                self.add_command(command_string=command_with_comments)
+                command_with_comments = []
+
+        except:
+            # Close the .lxm input file:
+            input_file.close()
+
+            # Restore lx.eval
+            lx.eval = store_lx_eval
+            raise Exception('Failed to parse file "%s".' % input_path)
+
+        # Close the .lxm input file:
+        input_file.close()
 
     def parse_json(self):
         """Parse a json file and store its commands in the `commands` property.
