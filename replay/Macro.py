@@ -1,6 +1,6 @@
 # python
 
-import lx, re
+import lx, re, os
 import json
 import lumberjack
 from MacroCommand import MacroCommand
@@ -20,6 +20,7 @@ class Macro(lumberjack.Lumberjack):
     work entirely with class variables and classmethods."""
 
     _file_path = None
+    _file_format = None
 
     # export formats in (file extension, user name of format, file pattern)
     _export_formats = {
@@ -47,6 +48,17 @@ class Macro(lumberjack.Lumberjack):
         return locals()
 
     file_path = property(**file_path())
+
+    def file_format():
+        doc = """The file format for the current macro. If None, assume that the macro
+        is unsaved, and needs a save-as."""
+        def fget(self):
+            return self.__class__._file_format
+        def fset(self, value):
+            self.__class__._file_format = value
+        return locals()
+
+    file_format = property(**file_format())
 
     def current_line():
         doc = """The current line in the macro, used to execute step-by-step. It is 
@@ -88,16 +100,37 @@ class Macro(lumberjack.Lumberjack):
 
     format_unames = property(**format_unames())
 
+    def format_patterns():
+        doc = """List of format patterns used to display in file open dialogs."""
+        def fget(self):
+            res = list()
+            for val in self.__class__._export_formats.itervalues():
+                res.append(val[2])
+            return res
+        return locals()
+
+    format_patterns = property(**format_patterns())
+
     def format_extensions():
         doc = """List of extensions to be used in file dialogs."""
         def fget(self):
             res = list()
             for val in self.__class__._export_formats.itervalues():
                 res.append(val[0])
-            return self._export_formats.keys()
+            return res
         return locals()
 
     format_extensions = property(**format_extensions())
+
+    def name_by_extension(self, extension):
+        doc = """Returns format name by given extension"""
+        for key, val in self.__class__._export_formats.iteritems():
+            if val[0].lower() == extension.lower():
+                return key
+
+        return self.__class__._export_formats.keys()[0]
+        
+        # Return lxm for unknown extensions
 
     def is_empty():
         doc = """Return true if there are no recorded commands."""
@@ -115,6 +148,28 @@ class Macro(lumberjack.Lumberjack):
         self.root.delete_descendants()
         self.file_path = None
 
+    def parse(self, input_path):
+        """Parse a macro file and store its commands in the `commands` property."""
+
+        # Parse file extension
+        unused, file_extension = os.path.splitext(input_path)
+        file_extension = file_extension[1:]
+        lx.out("Ext = ", file_extension)
+
+        # Lookup extension name
+        format_name = self.name_by_extension(file_extension)
+
+        if format_name == "lxm":
+            self.parse_LXM(input_path)
+        elif format_name == "py":
+            self.parse_Python(input_path)
+        else:
+            self.parse_json(input_path)
+
+        # Store file path and extension
+        self.file_path = input_path
+        self.file_format = format_name
+
     def parse_LXM(self, input_path):
         """Parse an LXM file and store its commands in the `commands` property."""
 
@@ -122,7 +177,6 @@ class Macro(lumberjack.Lumberjack):
 
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
-        self.file_path = input_path
 
         command_with_comments = []
         # Loop over the lines to get all the command strings:
