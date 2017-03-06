@@ -27,7 +27,29 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-        pass
+        # Get arguments
+        mode = self.commander_arg_value(0)
+        index = self.commander_arg_value(1)
+
+        # Checking mode validity
+        if mode not in ['up', 'down', 'top', 'bottom', 'index']:
+            raise Exception('Wrong mode "%s".' % mode)
+
+        macro = replay.Macro()
+
+        # Checking index range
+        if (mode == 'index') and (index >= len(macro.children)):
+            raise Exception('Index "%s" is out of range.' % index)
+
+        # Checking if selection exists
+        if len(macro.selected_children) == 0:
+            modo.dialogs.alert("Empty selection", "There are no selected commands to reorder", dtype='warning')
+            return
+
+        # reorder commands
+        macro.reorder(mode, index)
+
+        macro.refresh_view()
 
 
 lx.bless(CommandClass, 'replay.lineReorder')

@@ -7,6 +7,7 @@ try:
     from TreeNode import *
     from TreeView import *
     from Color import *
+    from RowColor import *
     from Font import *
     from var import *
 except:
