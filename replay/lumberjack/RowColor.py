@@ -71,8 +71,8 @@ class RowColor(object):
         'white':      0x00110000
     }
 
-    def __init__(self):
-        pass
+    def __init__(self, color = 'none'):
+        self._current_color_name = color
 
     def name():
         doc = """The name of the row color."""

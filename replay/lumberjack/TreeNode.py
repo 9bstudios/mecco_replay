@@ -1,5 +1,6 @@
 # python
 
+import lx
 from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
@@ -75,7 +76,7 @@ class TreeNode(object):
         for column in self._columns:
             self._values[column['name']] = TreeValue()
 
-        self._meta['row_color'] = RowColor()
+        self.row_color = RowColor().name
 
     # PROPERTIES
     # ----------
@@ -125,10 +126,9 @@ class TreeNode(object):
         - 'white'
         ```"""
         def fget(self):
-            row_color = self.meta.get('row_color')
-            return row_color.name if row_color is not None else None
+            return self.meta.get('row_color')
         def fset(self, value):
-            self._meta['row_color'].name = value
+            self._meta['row_color'] = value
         return locals()
 
     row_color = property(**row_color())
@@ -293,7 +293,7 @@ class TreeNode(object):
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.
         Leave these alone unless you know what you're doing."""
         def fget(self):
-            return self._state | self._meta['row_color'].bitwise
+            return self._state | RowColor(self.row_color).bitwise
         def fset(self, value):
             self._state = value
         return locals()

@@ -153,19 +153,18 @@ class MacroCommand(lumberjack.TreeNode):
         comment syntax will be rendered at export time. Include only the raw string."""
         def fget(self):
             res = list(self._user_comment_before)
-            for key, val in self._replay_meta.iteritems():
+            for key, val in self.meta.iteritems():
                 res.append(self.render_meta(key, val))
             return res
         def fset(self, value):
             del self._user_comment_before[:]
-            self._replay_meta.clear()
             for line in value:
                 meta = self.parse_meta(line)
                 if meta is None:
                     self._user_comment_before.append(line)
                 else:
                     (name, val) = meta
-                    self._replay_meta[name] = val
+                    self.meta[name] = val
         return locals()
 
     comment_before = property(**comment_before())
