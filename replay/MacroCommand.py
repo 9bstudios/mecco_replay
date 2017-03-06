@@ -29,9 +29,10 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Create default enable value object and set formatting
         self.values['enable'] = lumberjack.TreeValue()
-        self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+        # self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
         self.values['enable'].display_value = ''
         self.values['enable'].input_region = 'MacroCommandEnable'
+        self.values['enable'].color.special_by_name('gray')
 
         # Create default dialogs value object and set formatting
         self.values['prefix'] = lumberjack.TreeValue()
@@ -104,17 +105,21 @@ class MacroCommand(lumberjack.TreeNode):
             self._suppress = is_suppressed
 
             # Set the `enable` column display. This is purely visual.
-            # First, set display_value to a blank string so that we don't show any text.
-            self.values['enable'].display_value = ''
 
             if not is_suppressed:
                 # If not suppressed, display a checkmark and store True
                 self.values['enable'].value = True
-                self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+                self.values['enable'].display_value = ''
+                # self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
+                self.values['name'].color.special_by_name('default')
+                self.values['prefix'].color.special_by_name('default')
             elif is_suppressed:
                 # If it is suppressed, display nothing and store False
                 self.values['enable'].value = False
-                self.values['enable'].icon_resource = None
+                self.values['enable'].display_value = '#'
+                # self.values['enable'].icon_resource = None
+                self.values['name'].color.special_by_name('gray')
+                self.values['prefix'].color.special_by_name('gray')
 
         return locals()
 

@@ -37,7 +37,7 @@ Macro().bless(
                 }, {
                     'name':'enable',
                     # positive integers are pixel values (i.e. 20px)
-                    'width':20
+                    'width':24
                 }, {
                     'name':'prefix',
                     'width':24,

@@ -8,20 +8,12 @@ class CommandClass(replay.commander.CommanderClass):
     """Sets the selected command's `suppress` property in the `Macro()` object's
     `commands` list. Can be queried to return the current state of the selected command."""
 
-    def commander_arguments(self):
-        return [
-            {
-                'name': 'mode',
-                'datatype': 'boolean',
-                'default': True,
-                'flags': ['query', 'optional']
-            }
-        ]
-
     def commander_execute(self, msg, flags):
 
-        for line in replay.Macro().selected_descendants: line.suppress = True
-        
+        for line in replay.Macro().selected_descendants:
+            # Toggle the value
+            line.suppress = False if line.suppress else True
+
         replay.Macro().refresh_view()
 
 
