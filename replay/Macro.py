@@ -60,18 +60,6 @@ class Macro(lumberjack.Lumberjack):
 
     file_format = property(**file_format())
 
-    def current_line():
-        doc = """The current line in the macro, used to execute step-by-step. It is 
-        initially set to zero, to start with the first command. It is increased after 
-        running a step, so the run_next_line executes the next line next time."""
-        def fget(self):
-            return self.__class__._current_line
-        def fset(self, value):
-            self.__class__._current_line = value
-        return locals()
-
-    current_line = property(**current_line())
-
     def commands():
         doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
@@ -216,19 +204,23 @@ class Macro(lumberjack.Lumberjack):
             command.run()
 
     def run_next_line(self):
-        """Runs the next line in the macro."""
+        """Runs the next line in the macro, i. e. the primary one."""
         
-        # Select current command and run it:
-        command = self.commands[self.current_line]
-        command.run()
-        
-        # Increase the line counter, so next time we execute the next command:
-        self.current_line += 1
+        # Select the primary command:
+        command = self.primary
 
-        # If the line counter is out of bounds, restart the counter:
-        # NOTE: This will probably be changed in the future.
-        if self.current_line == len(self.commands):
-			self.current_line = 0
+        # If there's a primary selected command, run it:
+        if command:
+            command.run()
+        else:
+			return
+
+        # Get the index for the next command, which will now be the primary one: 
+        next_command_index = self.commands.index(command) + 1
+        if next_command_index == len(self.commands): next_command_index = 0
+
+        # Set as primary the next command:
+        self.primary = next_command_index
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
