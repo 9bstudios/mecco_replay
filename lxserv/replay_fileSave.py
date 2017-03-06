@@ -19,16 +19,20 @@ class CommandClass(replay.commander.CommanderClass):
     `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
     `replay.fileExport`, this command only supports saving to the LXM format."""
     def commander_execute(self, msg, flags):
+        macro = replay.Macro()
+
         # If macro is empty throw warning and return
-        if replay.Macro().is_empty:
+        if macro.is_empty:
            modo.dialogs.alert("Empty macro", "There are no recorded commands to save", dtype='warning')
            return
 
-        file_path = replay.Macro().file_path
+        file_path = macro.file_path
+        file_format = macro.file_format
         # If there is no associated file path try to get from command line or prompt the user for new destination
         if file_path is None:
             # Try to get the path from the command line:
             file_path = self.commander_arg_value(0)
+            file_format = "lxm"
             
             # Prompt the user
             if not file_path:
@@ -37,9 +41,9 @@ class CommandClass(replay.commander.CommanderClass):
                 if file_path is None:
                     return
             # And save it for the next time
-            replay.Macro().file_path = file_path
+            macro.file_path = file_path
 
-        replay.Macro().render_LXM(file_path)
+        macro.render(file_format, file_path)
 
 
 lx.bless(CommandClass, 'replay.fileSave')
