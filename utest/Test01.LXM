@@ -1,6 +1,6 @@
 #LXMacro#
-script.run "macro.scriptservice:19601433555:macro"
-transform.channel pos.Y 2.0
+script.run hash:"macro.scriptservice:19601433555:macro"
+transform.channel name:pos.Y value:2.0
 script.run "macro.scriptservice:27554333777:macro"
 transform.channel pos.Y -2.0
 script.run "macro.scriptservice:32235733333:macro"
@@ -12,8 +12,8 @@ transform.channel rot.X 90.0
 select.itemType mesh
 layer.mergeMeshes true
 transform.channel rot.Z 180.0
-select.typeFrom polygon;edge;vertex;item;pivot;center;ptag true
-poly.setMaterial GreenTestMaterial {0.0443 0.5543 0.1335} 0.8 0.04 true false false
+select.typeFrom typelist:polygon;edge;vertex;item;pivot;center;ptag enable:true
+poly.setMaterial name:GreenTestMaterial color:{0.0443 0.5543 0.1335} 0.8 0.04 true false false
 tool.set *.bevel on
 tool.noChange
 tool.attr poly.bevel group false

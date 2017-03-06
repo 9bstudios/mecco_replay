@@ -179,52 +179,96 @@ class MacroCommand(lumberjack.TreeNode):
         # Parse the arguments for this command:
         self.parse_args(command_string[-1][len(full_command.group(0)):])
 
+    def get_next_arg_name(self, args_string):
+
+        if not args_string: return None, None
+
+        start = re.search(r'\S', args_string)
+        if not start:
+			args_string = None
+			return None, args_string       
+        if start.group() in ["'", '"', '{']:
+			return None, args_string
+        start_index = start.start() 
+
+        next_space = re.search(r'\s', args_string[start_index:])
+        if not next_space:
+			args_string = None
+			return None, args_string
+        next_space_index = start_index + next_space.start()
+        
+        colon = re.search(r':', args_string[start_index:next_space_index])
+        if not colon:
+            return None, args_string
+        colon_index = start_index + colon.start()
+		
+        string_wrapper = re.search(r'["\'{]', args_string[start_index:colon_index])
+        if string_wrapper:
+            return None, args_string
+
+        result = args_string[start_index:colon_index]
+        args_string_left = args_string[colon_index+1:]
+
+        return result, args_string_left
+
+    def get_next_arg_value(self, args_string):
+
+        if not args_string: return None, None
+
+        start = re.search(r'\S', args_string)
+        if not start:
+            args_string = None
+            return None, args_string       
+        start_index = start.start() 
+        
+        if start.group() == "'":
+            start_index += 1
+            finish_index = start_index + re.search(r"'", args_string[start_index:]).start()
+        elif start.group() == '"':
+            start_index += 1
+            finish_index = start_index + re.search(r'"', args_string[start_index:]).start()
+        elif start.group() == '{':
+            start_index += 1
+            finish_index = start_index + re.search(r'}', args_string[start_index:]).start()
+        else:
+            finish_index = start_index + re.search(r'\s', args_string[start_index:]).start()
+
+        result = args_string[start_index:finish_index]
+        args_string_left = args_string[finish_index+1:]
+
+        return result, args_string_left
+
     def parse_args(self, args_string):
         """Parse a string containing arguments and stores them in 'args'."""
 
-        # Get all the arguments:
-        args = re.findall(r'(\S+)', args_string)
+        arg_counter = 0
 
-        # Process all the arguments.
-        # The list cannot be longer than the total number of `self.args`.
-        for arg_number, arg in enumerate(args[:len(self.args)]):
+        while args_string:
 
-            # Try to get the name and the value wrapped in string symbols:
-            full_argument = re.search(r'(\S+):["\'{](\S+)["\'}]', arg)
+            # Get the next argument's name (if given) and value:
+            arg_name, args_string = self.get_next_arg_name(args_string)
+            arg_value, args_string = self.get_next_arg_value(args_string)
+            if not arg_value: break
 
-            # Try to get the name and the value with no string symbols:
-            if not full_argument:
-				full_argument = re.search(r'(\S+):(\S+)', arg)
-
-            # If only the argument value wrapped in string symbols was given, don't use full_argument:
-            if re.search(r'["\'{](\S+)["\'}]', arg): full_argument = False
-
-            # Process the argument string, either with or without name:
-            if full_argument:
-
-                # Get the argument's name:
-                arg_name = full_argument.group(1)
+            # Get the argument number:
+            if arg_name:
 
                 # Check if the name of the argument is correct:
-                if arg_name in [self.args[i].argName for i in range(len(args))]:
-                    arg_number = [self.args[i].argName for i in range(len(args))].index(arg_name)
+                if arg_name in [self.args[i].argName for i in range(len(self.args))]:
+                    arg_number = [self.args[i].argName for i in range(len(self.args))].index(arg_name)
                 else:
                     raise Exception("Wrong argument name.")
-
-                # Get the argument's value:
-                arg_value = full_argument.group(2)
-
+                    
             else:
 
-                # If the name has not been given, then the value is the full string:
-                arg_value = arg
-
-            # Clean the argument value of "", '' and {} wraps:
-            if arg_value[0] == '"' or arg_value[0] == "'" or arg_value[0] == '{':
-                arg_value = arg_value[1:-1]
+                arg_number = arg_counter
 
             # Set the value of the argument:
             self.args[arg_number].value = arg_value
+
+            # Increase the argument counter, and check if it's not out of bounds:
+            arg_counter += 1
+            if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
 
     def retreive_args(self):
         """Retrieve a list of arguments and datatypes from MODO's commandservice.
