@@ -2,6 +2,7 @@
 
 from re import search
 from TreeValue import TreeValue
+from RowColor import RowColor
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
@@ -71,6 +72,8 @@ class TreeNode(object):
         for column in self._columns:
             self._values[column['name']] = TreeValue()
 
+        self._row_color = RowColor()
+
     # PROPERTIES
     # ----------
 
@@ -89,6 +92,42 @@ class TreeNode(object):
         return locals()
 
     columns = property(**columns())
+
+    def row_color():
+        doc = """A `RowColor()` object specifying the color of the current node.
+        Colors are defined using a set of pre-defined strings.
+
+        Colors should be defined by name using:
+        `node.row_color = 'red'`
+
+        The following names are available:
+        ```
+        - 'none'
+        - 'red'
+        - 'magenta'
+        - 'pink'
+        - 'brown'
+        - 'orange'
+        - 'yellow'
+        - 'green'
+        - 'light_g'
+        - 'cyan'
+        - 'blue'
+        - 'light_blue'
+        - 'ultrama'
+        - 'purple'
+        - 'light_pu'
+        - 'dark_grey'
+        - 'grey'
+        - 'white'
+        ```"""
+        def fget(self):
+            return self._row_color.name
+        def fset(self, value):
+            self._row_color.name = value
+        return locals()
+
+    row_color = property(**row_color())
 
     def selectable():
         doc = "Whether the node is selectable in the GUI. (boolean)"
@@ -235,9 +274,9 @@ class TreeNode(object):
 
     def state():
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.
-        Leave these alone."""
+        Leave these alone unless you know what you're doing."""
         def fget(self):
-            return self._state
+            return self._state | self._row_color.bitwise
         def fset(self, value):
             self._state = value
         return locals()

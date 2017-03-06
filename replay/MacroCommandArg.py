@@ -41,7 +41,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         # and the argument's username (nice name) as a `display_value`
         self.values['name'] = lumberjack.TreeValue()
         self.values['name'].input_region = 'MacroCommandArg'
-        self.values['name'].color.set_with_name('gray')
+        self.values['name'].color.special_by_name('gray')
 
         # Query argument metadata
         self.retreive_arg_meta()
@@ -60,7 +60,7 @@ class MacroCommandArg(lumberjack.TreeNode):
             self.values['command'].value = value
             for column, value in self.values.iteritems():
                 if value.value is not None:
-                    value.color.set_with_name('default')
+                    value.color.special_by_name('default')
         return locals()
 
     value = property(**value())

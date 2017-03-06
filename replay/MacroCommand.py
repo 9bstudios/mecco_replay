@@ -24,7 +24,7 @@ class MacroCommand(lumberjack.TreeNode):
         # Create default command value object and set formatting
         self.values['command'] = lumberjack.TreeValue()
         # 4113 is a special gray color for grayed out text in MODO
-        self.values['command'].color.set_with_name('gray')
+        self.values['command'].color.special_by_name('gray')
         self.values['command'].input_region = 'MacroCommandCommand'
 
         # Create default enable value object and set formatting
@@ -208,22 +208,22 @@ class MacroCommand(lumberjack.TreeNode):
         start = re.search(r'\S', args_string)
         if not start:
             args_string = None
-            return None, args_string       
+            return None, args_string
         if start.group() in ["'", '"', '{']:
             return None, args_string
-        start_index = start.start() 
+        start_index = start.start()
 
         next_space = re.search(r'\s', args_string[start_index:])
         if not next_space:
             args_string = None
             return None, args_string
         next_space_index = start_index + next_space.start()
-        
+
         colon = re.search(r':', args_string[start_index:next_space_index])
         if not colon:
             return None, args_string
         colon_index = start_index + colon.start()
-                
+
         string_wrapper = re.search(r'["\'{]', args_string[start_index:colon_index])
         if string_wrapper:
             return None, args_string
@@ -240,9 +240,9 @@ class MacroCommand(lumberjack.TreeNode):
         start = re.search(r'\S', args_string)
         if not start:
             args_string = None
-            return None, args_string       
-        start_index = start.start() 
-        
+            return None, args_string
+        start_index = start.start()
+
         if start.group() == "'":
             start_index += 1
             finish_index = start_index + re.search(r"'", args_string[start_index:]).start()
@@ -280,7 +280,7 @@ class MacroCommand(lumberjack.TreeNode):
                     arg_number = [self.args[i].argName for i in range(len(self.args))].index(arg_name)
                 else:
                     raise Exception("Wrong argument name.")
-                    
+
             else:
 
                 arg_number = arg_counter
