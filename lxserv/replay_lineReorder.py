@@ -33,13 +33,15 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
-            raise Exception('Wrong mode "%s".' % mode)
+            modo.dialogs.alert("Empty selection", 'Wrong mode "%s".' % mode, dtype='warning')
+            return
 
         macro = replay.Macro()
 
         # Checking index range
         if (mode == 'index') and (index >= len(macro.children)):
-            raise Exception('Index "%s" is out of range.' % index)
+            modo.dialogs.alert("Empty selection", 'Index "%s" is out of range.' % index, dtype='warning')
+            return
 
         # Checking if selection exists
         if len(macro.selected_children) == 0:
