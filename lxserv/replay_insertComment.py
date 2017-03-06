@@ -16,7 +16,7 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-        pass
+        modo.dialogs.alert("Not Implemented.", "Command not yet implemented.")
 
 
 lx.bless(CommandClass, 'replay.insertComment')

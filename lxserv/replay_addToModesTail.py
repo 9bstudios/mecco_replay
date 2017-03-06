@@ -32,16 +32,16 @@ lx.bless(FCLClass, 'replay.ModesTailFCL')
 class CommandClass(commander.CommanderClass):
     """Appends an FCL in the modes tail with the supplied command."""
 
-    def commander_arguments(self):
-        return [
-            {
-                'name': 'command',
-                'datatype': 'string'
-            }
-        ]
+    # def commander_arguments(self):
+    #     return [
+    #         {
+    #             'name': 'command',
+    #             'datatype': 'string'
+    #         }
+    #     ]
 
     def commander_execute(self, msg, flags):
-        pass
+        modo.dialogs.alert("Not Implemented.", "Command not yet implemented.")
 
     def append_to_fcl(self):
         # appends a list of commands that is available to FCLClass.list_commands(),

@@ -7,7 +7,7 @@ https://github.com/adamohern/commander for details"""
 class CommandClass(replay.commander.CommanderClass):
     """Maps the currently-open Macro to a key."""
     def commander_execute(self, msg, flags):
-        pass
+        modo.dialogs.alert("Not Implemented.", "Command not yet implemented.")
 
 
 lx.bless(CommandClass, 'replay.mapToKey')

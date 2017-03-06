@@ -5,6 +5,9 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay.commander.CommanderClass):
+    """Saves the current Macro() object to the destination stored in its
+    `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
+    `replay.fileExport`, this command only supports saving to the LXM format."""
 
     def commander_arguments(self):
         return [
@@ -15,9 +18,6 @@ class CommandClass(replay.commander.CommanderClass):
                }
            ]
 
-    """Saves the current Macro() object to the destination stored in its
-    `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
-    `replay.fileExport`, this command only supports saving to the LXM format."""
     def commander_execute(self, msg, flags):
         macro = replay.Macro()
 
@@ -33,7 +33,7 @@ class CommandClass(replay.commander.CommanderClass):
             # Try to get the path from the command line:
             file_path = self.commander_arg_value(0)
             file_format = "lxm"
-            
+
             # Prompt the user
             if not file_path:
                 file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \
