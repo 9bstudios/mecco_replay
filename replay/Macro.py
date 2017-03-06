@@ -231,11 +231,25 @@ class Macro(lumberjack.Lumberjack):
         # Close the .lxm input file:
         input_file.close()
 
-    def parse_json(self):
-        """Parse a json file and store its commands in the `commands` property.
-        Note that json must be formatted exactly as exported using the `render_json()`
-        method, else parse will raise an error."""
-        pass
+    def parse_json(self, input_path):
+        """Parse a json file and store its commands in the `commands` property."""
+        self.root.delete_descendants()
+
+        # Open the .lxm input file and save the path:
+        input_file = open(input_path, 'r')
+        
+        # Read the content
+        content = input_file.read()
+
+        # Parse json
+        jsonStruct = json.loads(content)
+
+        # Close the .lxm input file:
+        input_file.close()
+
+        # Loop over the commands to get all the command json data:
+        for cmdJson in jsonStruct:
+            self.add_command(command_json=cmdJson)
 
     def run(self):
         """Runs the macro."""

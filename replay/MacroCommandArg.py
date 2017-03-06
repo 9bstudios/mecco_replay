@@ -2,7 +2,6 @@
 
 import lx
 import re
-import json
 import lumberjack
 
 class MacroCommandArg(lumberjack.TreeNode):
@@ -52,7 +51,6 @@ class MacroCommandArg(lumberjack.TreeNode):
             all(isinstance(elem, basestring) for elem in kwargs.get('arg_string')):
 
             self.parse_string(kwargs.get('arg_string'))
-
 
     def value():
         doc = "The value property is really a proxy for the `command` cell value."

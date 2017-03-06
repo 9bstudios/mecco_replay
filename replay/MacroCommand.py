@@ -44,8 +44,9 @@ class MacroCommand(lumberjack.TreeNode):
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
             all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
-
             self.parse_string(kwargs.get('command_string'))
+        elif bool(kwargs.get('command_json')):
+            self.parse_json(kwargs.get('command_json'))
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
@@ -178,6 +179,27 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Parse the arguments for this command:
         self.parse_args(command_string[-1][len(full_command.group(0)):])
+
+    def parse_json(self, command_json):
+        """Parse a MODO command in json struct into its constituent parts, and
+        stores those in the `command` and `args` properties for the object."""
+
+        command_json = command_json["command"]
+
+        # Retrive command, prefix and comment
+        self.command = command_json["name"]
+        self.prefix = command_json["prefix"]
+        self.comment_before = command_json["comment"]
+        #return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
+
+        # Retrive args
+        json_args = command_json["args"]
+
+        # Assign arg values
+        for arg in self.args:
+            json_arg = next((x for x in json_args if x['argName'] == arg.argName))
+            if json_arg is not None:
+                arg.value = json_arg['value']
 
     def get_next_arg_name(self, args_string):
 
@@ -356,7 +378,7 @@ class MacroCommand(lumberjack.TreeNode):
             arg_dict['argExample'] = arg.argExample
             args_list.append(arg_dict)
 
-        return {full_cmd: args_list}
+        return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
 
     def run(self):
         """Runs the command."""
