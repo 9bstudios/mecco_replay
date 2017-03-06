@@ -344,17 +344,19 @@ class MacroCommand(lumberjack.TreeNode):
 
         full_cmd = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
 
-        argDict = dict()
+        args_list = list()
         for arg in self.args:
-            argDict['value'] = arg.value
-            argDict['argName'] = arg.argName
-            argDict['argUsername'] = arg.argUsername
-            argDict['argType'] = arg.argType
-            argDict['argTypeName'] = arg.argTypeName
-            argDict['argDesc'] = arg.argDesc
-            argDict['argExample'] = arg.argExample
+            arg_dict = dict()
+            arg_dict['value'] = arg.value
+            arg_dict['argName'] = arg.argName
+            arg_dict['argUsername'] = arg.argUsername
+            arg_dict['argType'] = arg.argType
+            arg_dict['argTypeName'] = arg.argTypeName
+            arg_dict['argDesc'] = arg.argDesc
+            arg_dict['argExample'] = arg.argExample
+            args_list.append(arg_dict)
 
-        return {full_cmd: argDict}
+        return {full_cmd: args_list}
 
     def run(self):
         """Runs the command."""
