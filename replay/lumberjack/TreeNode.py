@@ -65,7 +65,7 @@ class TreeNode(object):
 
         # Primary is usually the most recently selected node. If we initialize
         # a new node, however, that one becomes primary.
-        self.__class__._primary = self
+        #self.__class__._primary = self
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._columns:
@@ -109,6 +109,8 @@ class TreeNode(object):
             return self._selected
         def fset(self, value):
             self._selected = value
+            if value:
+				self.__class__._primary = self
         return locals()
 
     selected = property(**selected())
