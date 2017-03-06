@@ -220,7 +220,10 @@ class Macro(lumberjack.Lumberjack):
         if next_command_index == len(self.commands): next_command_index = 0
 
         # Set as primary the next command:
-        self.primary = next_command_index
+        self.commands[next_command_index].primary = self.commands[next_command_index]
+
+        self.root.deselect_descendants()
+        self.commands[next_command_index].selected = True
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""

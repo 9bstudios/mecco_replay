@@ -9,6 +9,7 @@ class CommandClass(replay.commander.CommanderClass):
     one-by-one."""
     def commander_execute(self, msg, flags):
         replay.Macro().run_next_line()
+        replay.Macro().refresh_view()
 
 
 lx.bless(CommandClass, 'replay.step')
