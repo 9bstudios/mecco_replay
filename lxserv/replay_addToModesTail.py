@@ -48,5 +48,8 @@ class CommandClass(commander.CommanderClass):
         # and is also stored between sessions (probably using user values)
         pass
 
+    def basic_Enable(self, msg):
+        return False
+
 
 lx.bless(CommandClass, 'replay.addToModesTail')

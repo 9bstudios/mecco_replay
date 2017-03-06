@@ -10,5 +10,7 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
         modo.dialogs.alert("Not Implemented.", "Command not yet implemented.")
 
+    def basic_Enable(self, msg):
+        return False
 
 lx.bless(CommandClass, 'replay.lineEdit')
