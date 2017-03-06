@@ -64,6 +64,9 @@ class TreeNode(object):
         # strings provided in the Lumberjack blessing_parameters() method.
         self._input_region = kwargs.get('input_region', None)
 
+        # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
+        self._meta = kwargs.get('meta', {})
+
         # Primary is usually the most recently selected node. If we initialize
         # a new node, however, that one becomes primary.
         #self.__class__._primary = self
@@ -72,7 +75,7 @@ class TreeNode(object):
         for column in self._columns:
             self._values[column['name']] = TreeValue()
 
-        self._row_color = RowColor()
+        self._meta['row_color'] = RowColor()
 
     # PROPERTIES
     # ----------
@@ -122,9 +125,10 @@ class TreeNode(object):
         - 'white'
         ```"""
         def fget(self):
-            return self._row_color.name
+            row_color = self.meta.get('row_color')
+            return row_color.name if row_color is not None else None
         def fset(self, value):
-            self._row_color.name = value
+            self._meta['row_color'].name = value
         return locals()
 
     row_color = property(**row_color())
@@ -141,6 +145,17 @@ class TreeNode(object):
         return locals()
 
     selectable = property(**selectable())
+
+    def meta():
+        doc = """Dictionary with metadata for the node. 'row_color' is stored here
+        by default. Feel free to add as many other keys as you like."""
+        def fget(self):
+            return self._meta
+        def fset(self, value):
+            self._meta = value
+        return locals()
+
+    meta = property(**meta())
 
     def selected():
         doc = "Whether the node is selected in the GUI. (boolean)"
@@ -278,7 +293,7 @@ class TreeNode(object):
         doc = """Bitwise flags used to define GUI states like expand/collapse etc.
         Leave these alone unless you know what you're doing."""
         def fget(self):
-            return self._state | self._row_color.bitwise
+            return self._state | self._meta['row_color'].bitwise
         def fset(self, value):
             self._state = value
         return locals()
