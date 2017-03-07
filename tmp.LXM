@@ -1,4 +1,0 @@
-#LXMacro#
-script.run "macro.scriptservice:19601433555:macro"
-transform.channel pos.X 1.0
-script.run "macro.scriptservice:47158833888:macro"
