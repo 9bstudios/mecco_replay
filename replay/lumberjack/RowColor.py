@@ -27,7 +27,7 @@ class RowColor(object):
     - 'white'
     ```"""
 
-    _current_color_name = 'none'
+    _current_color_name = None
 
     _lookup = {
         # LXmTREEITEM_ROWCOLOR_MASK
@@ -71,11 +71,33 @@ class RowColor(object):
         'white':      0x00110000
     }
 
-    def __init__(self, color = 'none'):
+    def __init__(self, color = None):
         self._current_color_name = color
 
     def name():
-        doc = """The name of the row color."""
+        doc = """The name of the row color. Use `None` for no color.
+
+        The following names are available:
+        ```
+        - 'none'
+        - 'red'
+        - 'magenta'
+        - 'pink'
+        - 'brown'
+        - 'orange'
+        - 'yellow'
+        - 'green'
+        - 'light_g'
+        - 'cyan'
+        - 'blue'
+        - 'light_blue'
+        - 'ultrama'
+        - 'purple'
+        - 'light_pu'
+        - 'dark_grey'
+        - 'grey'
+        - 'white'
+        ```"""
         def fget(self):
             return self._current_color_name
         def fset(self, value):
@@ -87,7 +109,8 @@ class RowColor(object):
     def bitwise():
         doc = """The bitwise int for the row color."""
         def fget(self):
-            return self._lookup[self.name]
+            name = self.name if self._current_color_name is not None else 'none'
+            return self._lookup[name]
         return locals()
 
     bitwise = property(**bitwise())
