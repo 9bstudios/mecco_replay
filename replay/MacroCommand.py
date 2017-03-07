@@ -235,7 +235,7 @@ class MacroCommand(lumberjack.TreeNode):
             return None, args_string
         start_index = start.start()
 
-        next_space = re.search(r'\s', args_string[start_index:])
+        next_space = re.search(r'\s|$', args_string[start_index:])
         if not next_space:
             args_string = None
             return None, args_string
@@ -275,7 +275,7 @@ class MacroCommand(lumberjack.TreeNode):
             start_index += 1
             finish_index = start_index + re.search(r'}', args_string[start_index:]).start()
         else:
-            finish_index = start_index + re.search(r'\s', args_string[start_index:]).start()
+            finish_index = start_index + re.search(r'\s|$', args_string[start_index:]).start()
 
         result = args_string[start_index:finish_index]
         args_string_left = args_string[finish_index+1:]
@@ -283,9 +283,9 @@ class MacroCommand(lumberjack.TreeNode):
         return result, args_string_left
 
     def convert_string_to_value(self, tp, arg_value):
-        if tp == 1 and isinstance[arg_value, basestring]:
+        if tp == 1 and isinstance(arg_value, basestring):
             return True if arg_value.lower() in ['true', 'on', 'yes'] else False
-        elif tp == 1 and isinstance[arg_value, (bool, int)]:
+        elif tp == 1 and isinstance(arg_value, (bool, int)):
             return int(arg_value)
         elif tp == 2:
             return float(arg_value)
