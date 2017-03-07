@@ -32,7 +32,7 @@ class CommandClass(replay.commander.CommanderClass):
                 return
 
         # Parse the file in replay.Macro() and rebuild the view:
-        macro.parse(input_path)
+        macro.parse_and_insert(input_path)
         macro.rebuild_view()
 
 lx.bless(CommandClass, 'replay.fileInsert')

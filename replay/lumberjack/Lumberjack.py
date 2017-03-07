@@ -373,8 +373,12 @@ class Lumberjack(object):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
-        self.root.children.append(self._TreeNodeClass(**kwargs))
-        return self.root.children[-1]
+        newNode = self._TreeNodeClass(**kwargs) 
+        if 'prev_node' not in kwargs:
+            kwargs['parent'].children.append(newNode)
+        else:
+            kwargs['parent'].children.insert(kwargs['prev_node'].index, newNode)
+        return newNode
 
     def find(self, column_name, search_term, regex=False):
         """Returns a list of `TreeNode()` objects with values matching search criteria.

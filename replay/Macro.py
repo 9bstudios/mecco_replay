@@ -138,6 +138,22 @@ class Macro(lumberjack.Lumberjack):
 
     def parse(self, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
+        self.root.delete_descendants()
+
+        format_name = self._parse_and_insert(input_path)
+
+        # Store file path and extension
+        self.file_path = input_path
+        self.file_format = format_name
+
+    def parse_and_insert(self, input_path):
+        if self.primary is None:
+            self._parse_and_insert(input_path)
+        else:
+            self._parse_and_insert(input_path, prev_node=self.primary)
+
+    def _parse_and_insert(self, input_path, **kwargs):
+        """Parse a macro file and store its commands in the `commands` property."""
 
         # Parse file extension
         unused, file_extension = os.path.splitext(input_path)
@@ -147,20 +163,15 @@ class Macro(lumberjack.Lumberjack):
         format_name = self.name_by_extension(file_extension)
 
         if format_name == "lxm":
-            self.parse_LXM(input_path)
+            self.parse_LXM(input_path, **kwargs)
         elif format_name == "py":
-            self.parse_Python(input_path)
+            self.parse_Python(input_path, **kwargs)
         else:
-            self.parse_json(input_path)
+            self.parse_json(input_path, **kwargs)
+        return format_name
 
-        # Store file path and extension
-        self.file_path = input_path
-        self.file_format = format_name
-
-    def parse_LXM(self, input_path):
+    def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
-
-        self.root.delete_descendants()
 
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
@@ -177,17 +188,16 @@ class Macro(lumberjack.Lumberjack):
 				continue
 
             # Parse the command and store it in the commands list:
-            self.add_command(command_string=command_with_comments)
+            self.add_command(command_string = command_with_comments, **kwargs)
             command_with_comments = []
 
         # Close the .lxm input file:
         input_file.close()
 
-    def parse_Python(self, input_path):
+    def parse_Python(self, input_path, **kwargs):
         """Parse a Python file and store its commands in the `commands` property.
         If the python code contains anything other than `lx.eval` and `lx.command`
         calls, parse will raise an error."""
-        self.root.delete_descendants()
 
         # Open the .py input file:
         input_file = open(input_path, 'r')
@@ -217,7 +227,7 @@ class Macro(lumberjack.Lumberjack):
                     command_with_comments.append(cmd)
 
                 # Parse the command and store it in the commands list:
-                self.add_command(command_string=command_with_comments)
+                self.add_command(command_string = command_with_comments, **kwargs)
                 command_with_comments = []
 
         except:
@@ -231,9 +241,8 @@ class Macro(lumberjack.Lumberjack):
         # Close the .lxm input file:
         input_file.close()
 
-    def parse_json(self, input_path):
+    def parse_json(self, input_path, **kwargs):
         """Parse a json file and store its commands in the `commands` property."""
-        self.root.delete_descendants()
 
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
@@ -249,7 +258,7 @@ class Macro(lumberjack.Lumberjack):
 
         # Loop over the commands to get all the command json data:
         for cmdJson in jsonStruct:
-            self.add_command(command_json=cmdJson)
+            self.add_command(command_json = cmdJson, **kwargs)
 
     def run(self):
         """Runs the macro."""
