@@ -15,6 +15,9 @@ class ChameleonCommandClass(replay.commander.CommanderClass):
         return replay.Chameleon().arguments
 
     def commander_execute(self, msg, flags):
-        replay.Chameleon().results = self.commander_args()
+        # Note that we use the `commander_argStrings` method rather than the
+        # typical `commander_args` because we don't want to alter the strings
+        # before sending them to the parser.
+        replay.Chameleon().results = self.commander_argStrings()
 
 lx.bless(ChameleonCommandClass, 'replay.chameleon')

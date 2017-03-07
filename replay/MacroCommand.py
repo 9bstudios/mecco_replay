@@ -316,11 +316,11 @@ class MacroCommand(lumberjack.TreeNode):
             # If we're told it's an int but are receiving a string, it's probably a
             # special case word like `true/false`, `on/off`, or `yes/no`. I don't
             # know of an automatic way of getting those, so we catch them manually.
-            if self.args[arg_number].argType == 1 and isinstance[arg_value, basestring]:
+            if self.args[arg_number].argType == 1 and isinstance(arg_value, basestring):
                 self.args[arg_number].value = True if arg_value.lower() in ['true', 'on', 'yes'] else False
 
             # If it looks like a duck and walks like a duck, it's an int()
-            elif self.args[arg_number].argType == 1 and isinstance[arg_value, (bool, int)]:
+            elif self.args[arg_number].argType == 1 and isinstance(arg_value, (bool, int)):
                 self.args[arg_number].value = int(arg_value)
 
             # If you tell me it's a Float but it can't be converted to float(), you're SOL.
