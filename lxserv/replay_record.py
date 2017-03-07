@@ -64,10 +64,10 @@ class RecordCommandClass(replay.commander.CommanderClass):
 
         if state:
             # In case it's already recording, start over.
-            lx.eval('macro.record false')
+            lx.eval('!!macro.record false')
 
             # Start recording.
-            lx.eval('macro.record true')
+            lx.eval('!!macro.record true')
 
         elif not state:
             try:
@@ -77,12 +77,22 @@ class RecordCommandClass(replay.commander.CommanderClass):
                 # Try saving the file.
                 lx.eval('!!macro.saveRecorded {%s}' % temp_file_path)
 
+            except:
+                # The Macro recording was probably empty.
+                raise Exception("Unable to save temp file.")
+
+            try:
                 # Open the saved macro for editing.
                 lx.eval('!!replay.fileInsert {%s}' % temp_file_path)
 
             except:
                 # The Macro recording was probably empty.
-                raise Exception("Unable to save and reload temp file. Abort.")
+                raise Exception("Unable to load temp file.")
+
+                import traceback
+                traceback.print_exc()
+
+
 
 
     def commander_query(self, arg_index):

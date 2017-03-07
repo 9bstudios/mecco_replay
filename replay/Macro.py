@@ -117,7 +117,7 @@ class Macro(lumberjack.Lumberjack):
                 return key
 
         return self.__class__._export_formats.keys()[0]
-        
+
         # Return lxm for unknown extensions
 
     def is_empty():
@@ -150,9 +150,11 @@ class Macro(lumberjack.Lumberjack):
 
     def parse_and_insert(self, input_path):
         if self.primary is None:
-            self._parse_and_insert(input_path)
+            # If there's no primary node, insert at zero
+            self._parse_and_insert(input_path, index=0)
         else:
-            self._parse_and_insert(input_path, prev_node=self.primary)
+            # If there's a primary node, insert right after it
+            self._parse_and_insert(input_path, index=self.primary.index+1)
 
     def _parse_and_insert(self, input_path, **kwargs):
         """Parse a macro file and store its commands in the `commands` property."""
@@ -197,9 +199,14 @@ class Macro(lumberjack.Lumberjack):
             if input_line[0] == "#":
 				continue
 
+            kwargs['index'] = kwargs.get('index', 0)
+
             # Parse the command and store it in the commands list:
             self.add_command(command_string = command_with_comments, **kwargs)
             command_with_comments = []
+
+            # We need to increment the index with each loop, lest we insert nodes in reverse order
+            kwargs['index'] += 1
 
         # Close the .lxm input file:
         input_file.close()
@@ -264,7 +271,7 @@ class Macro(lumberjack.Lumberjack):
 
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
-        
+
         # Read the content
         content = input_file.read()
 
@@ -280,14 +287,14 @@ class Macro(lumberjack.Lumberjack):
 
     def run(self):
         """Runs the macro."""
-        
+
         # Run every command in the macro:
         for command in self.commands:
             command.run()
 
     def run_next_line(self):
         """Runs the next line in the macro, i. e. the primary one."""
-        
+
         # Select the primary command:
         command = self.primary
 
@@ -297,7 +304,7 @@ class Macro(lumberjack.Lumberjack):
         else:
 			return
 
-        # Get the index for the next command, which will now be the primary one: 
+        # Get the index for the next command, which will now be the primary one:
         next_command_index = self.commands.index(command) + 1
         if next_command_index == len(self.commands): next_command_index = 0
 

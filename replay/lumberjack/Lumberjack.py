@@ -373,11 +373,11 @@ class Lumberjack(object):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
-        newNode = self._TreeNodeClass(**kwargs) 
-        if 'prev_node' not in kwargs:
+        newNode = self._TreeNodeClass(**kwargs)
+        if 'index' not in kwargs:
             kwargs['parent'].children.append(newNode)
         else:
-            kwargs['parent'].children.insert(kwargs['prev_node'].index, newNode)
+            kwargs['parent'].children.insert(kwargs['index'], newNode)
         return newNode
 
     def find(self, column_name, search_term, regex=False):
@@ -428,4 +428,3 @@ class Lumberjack(object):
                 child.index = index
             else:
                 raise Exception('Wrong mode value "%s" is specified.' % mode)
-
