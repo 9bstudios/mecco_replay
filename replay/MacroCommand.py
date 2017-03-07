@@ -313,7 +313,9 @@ class MacroCommand(lumberjack.TreeNode):
                 arg_number = arg_counter
 
             # Set the value of the argument:
-            if self.args[arg_number].argType == 1:
+            if self.args[arg_number].argType == 1 and isinstance[arg_value, basestring]:
+                self.args[arg_number].value = True if arg_value in ['true', 'on', 'yes'] else False
+            elif self.args[arg_number].argType == 1 and isinstance[arg_value, (bool, int)]:
                 self.args[arg_number].value = int(arg_value)
             elif self.args[arg_number].argType == 2:
                 self.args[arg_number].value = float(arg_value)
