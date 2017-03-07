@@ -55,15 +55,20 @@ class MacroCommandArg(lumberjack.TreeNode):
             self.parse_string(kwargs.get('arg_string'))
 
     def value():
-        doc = "The value property is really a proxy for the `command` cell value."
+        doc = """The value property is really a proxy for the `command` cell value.
+
+        NOTE: If you set it to a string, it will try to convert it to to the approrpiate
+        datatype based on argType."""
         def fget(self):
             return self.values['command'].value
         def fset(self, value):
-            self.values['command'].value = value
+            self.values['command'].value = self.convert_string_to_value(value)
 
             # If value is empty, gray out the name.
             for column, value in self.values.iteritems():
-                if value.value is not None:
+                if value.value is None:
+                    value.color.special_by_name('gray')
+                else:
                     value.color.special_by_name('default')
         return locals()
 
@@ -217,3 +222,16 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # Set the value of the argument:
         self._args[arg_number]['argValues'] = arg_value
+
+
+    def convert_string_to_value(self, arg_value):
+        if arg_value is None:
+            return None
+        elif self.argType == 1 and isinstance(arg_value, basestring):
+            return True if arg_value.lower() in ['true', 'on', 'yes'] else False
+        elif self.argType == 1 and isinstance(arg_value, (bool, int)):
+            return int(arg_value)
+        elif self.argType == 2:
+            return float(arg_value)
+        else:
+            return str(arg_value)
