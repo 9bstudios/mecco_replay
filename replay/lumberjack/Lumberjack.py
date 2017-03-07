@@ -397,7 +397,9 @@ class Lumberjack(object):
         but the overal structure of the node tree has not changed, use `refresh()`
         for performance."""
 
-        return self._tree_view.notify_NewShape()
+        # NOTE: We must _both_ notify attributes _and_ shape. (Facepalm.)
+        self.view.notify_NewAttributes()
+        self.view.notify_NewShape()
 
     def refresh_view(self):
         """Refreshes `TreeView()` cell values, but not structure. Must run every
@@ -405,7 +407,7 @@ class Lumberjack(object):
         (e.g. adding/removing nodes, reordering, reparenting) require the
         `rebuild()`` method."""
 
-        return self.view.notify_NewAttributes()
+        self.view.notify_NewAttributes()
 
     def reorder(self, mode, index):
         """ Reorder selected items according to mode and index arguments """
