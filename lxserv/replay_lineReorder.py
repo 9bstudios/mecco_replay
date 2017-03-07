@@ -51,7 +51,7 @@ class CommandClass(replay.commander.CommanderClass):
         # reorder commands
         macro.reorder(mode, index)
 
-        macro.refresh_view()
+        macro.rebuild_view()
 
 
 lx.bless(CommandClass, 'replay.lineReorder')
