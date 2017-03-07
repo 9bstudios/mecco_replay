@@ -178,9 +178,17 @@ class Macro(lumberjack.Lumberjack):
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
 
+        first_line = True
+
         command_with_comments = []
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
+            if first_line:
+                first_line = False
+                if input_line != "#LXMacro#\n":
+                    raise Exception("Wrong shebang {sb}".format(sb=input_line))
+                continue
+
             if not input_line: continue
 
             command_with_comments.append(input_line[:-1])
@@ -205,9 +213,17 @@ class Macro(lumberjack.Lumberjack):
         input_file = open(input_path, 'r')
 
         try:
+            first_line = True
+
             command_with_comments = []
             # Loop over the lines to get all the command strings:
             for input_line in input_file:
+                if first_line:
+                    first_line = False
+                    if input_line != "# python\n":
+                        raise Exception("Wrong shebang {sb}".format(sb=input_line))
+                    continue
+
                 if not input_line: continue
 
                 # If this line is a comment, just append it to the full command:
@@ -294,6 +310,8 @@ class Macro(lumberjack.Lumberjack):
 
         # Open the .lxm file
         output_file = open(output_path, 'w')
+
+        output_file.write("#LXMacro#\n")
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:

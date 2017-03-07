@@ -154,7 +154,8 @@ class MacroCommand(lumberjack.TreeNode):
         def fget(self):
             res = list(self._user_comment_before)
             for key, val in self.meta.iteritems():
-                res.append(self.render_meta(key, val))
+                if val != None:
+                    res.append(self.render_meta(key, val))
             return res
         def fset(self, value):
             del self._user_comment_before[:]
