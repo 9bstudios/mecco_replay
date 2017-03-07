@@ -131,12 +131,6 @@ class Macro(lumberjack.Lumberjack):
     def add_command(self, **kwargs):
         return self.add_child(**kwargs)
 
-    """Clear all commands and relevant data"""
-    def clear(self):
-        self.root.deselect_descendants()
-        self.root.delete_descendants()
-        self.file_path = None
-
     def parse(self, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
         self.root.deselect_descendants()

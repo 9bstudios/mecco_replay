@@ -380,6 +380,10 @@ class Lumberjack(object):
             kwargs['parent'].children.insert(kwargs['index'], newNode)
         return newNode
 
+    def clear(self):
+        """Deletes all nodes from the tree."""
+        self.root.delete_descendants()
+
     def find(self, column_name, search_term, regex=False):
         """Returns a list of `TreeNode()` objects with values matching search criteria.
 
