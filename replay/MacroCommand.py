@@ -221,12 +221,7 @@ class MacroCommand(lumberjack.TreeNode):
         for arg in self.args:
             json_arg = next((x for x in json_args if x['argName'] == arg.argName))
             if json_arg is not None:
-                if arg.argType == 1:
-                    arg.value = None if json_arg['value'] is None else int(json_arg['value'])
-                elif arg.argType == 2:
-                    arg.value = None if json_arg['value'] is None else float(json_arg['value'])
-                else:
-                    arg.value = None if json_arg['value'] is None else str(json_arg['value'])
+                arg.value = None if json_arg['value'] is None else self.convert_string_to_value(arg.argType, json_arg['value'])
 
     def get_next_arg_name(self, args_string):
 
@@ -287,6 +282,16 @@ class MacroCommand(lumberjack.TreeNode):
 
         return result, args_string_left
 
+    def convert_string_to_value(self, tp, arg_value):
+        if tp == 1 and isinstance[arg_value, basestring]:
+            return True if arg_value.lower() in ['true', 'on', 'yes'] else False
+        elif tp == 1 and isinstance[arg_value, (bool, int)]:
+            return int(arg_value)
+        elif tp == 2:
+            return float(arg_value)
+        else:
+            return str(arg_value)
+
     def parse_args(self, args_string):
         """Parse a string containing arguments and stores them in 'args'."""
 
@@ -312,24 +317,8 @@ class MacroCommand(lumberjack.TreeNode):
 
                 arg_number = arg_counter
 
-            # Make sure to save the proper datatype.
-            # If we're told it's an int but are receiving a string, it's probably a
-            # special case word like `true/false`, `on/off`, or `yes/no`. I don't
-            # know of an automatic way of getting those, so we catch them manually.
-            if self.args[arg_number].argType == 1 and isinstance(arg_value, basestring):
-                self.args[arg_number].value = True if arg_value.lower() in ['true', 'on', 'yes'] else False
-
-            # If it looks like a duck and walks like a duck, it's an int()
-            elif self.args[arg_number].argType == 1 and isinstance(arg_value, (bool, int)):
-                self.args[arg_number].value = int(arg_value)
-
-            # If you tell me it's a Float but it can't be converted to float(), you're SOL.
-            elif self.args[arg_number].argType == 2:
-                self.args[arg_number].value = float(arg_value)
-
-            # If argType is either 0 (generic) or 3 (string), just store the string.
-            else:
-                self.args[arg_number].value = str(arg_value)
+            # Set the value of the argument:
+            self.args[arg_number].value = self.convert_string_to_value(self.args[arg_number].argType, arg_value)
 
             # Increase the argument counter, and check if it's not out of bounds:
             if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
