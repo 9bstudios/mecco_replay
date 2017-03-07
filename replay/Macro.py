@@ -139,6 +139,7 @@ class Macro(lumberjack.Lumberjack):
 
     def parse(self, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
+        self.root.deselect_descendants()
         self.root.delete_descendants()
 
         format_name = self._parse_and_insert(input_path)
