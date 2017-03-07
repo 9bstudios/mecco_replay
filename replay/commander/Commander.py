@@ -160,6 +160,25 @@ class CommanderClass(lxu.command.BasicCommand):
         You should never need to touch this."""
         cls._commander_stored_values.append(value)
 
+    def commander_arg_string(self, index, default=None):
+        """Return a command argument's value as a string. If no argument value
+        exists, returns the default.
+
+        NOTE: This function _always_ returns a string, regardless of datatype.
+        The commander_args() method is simpler to use than this method.
+        You should probably use that one unless you have a reason to find a specific
+        argument as a string.
+
+        :param index: (int) index of argument to retrieve
+        :param default: value to return if argument is not set
+        :returns: argument value (str, int, float, or boolean as appropriate)"""
+
+        # If no value is set, return the default.
+        if not self.dyna_IsSet(index):
+            return default
+
+        # Return the string.
+        return self.dyna_String(index)
 
     def commander_arg_value(self, index, default=None):
         """Return a command argument value by index.
@@ -207,6 +226,18 @@ class CommanderClass(lxu.command.BasicCommand):
         for i in range(len(self.commander_arguments())):
             name = self.commander_arguments()[i][NAME]
             value = self.commander_arg_value(i)
+            args[name] = value
+        return args
+
+    def commander_argStrings(self):
+        """Returns a dictionary of argument values as strings in name:value pairs.
+
+        NOTE: Always returns strings, regardless of datatype. If you want datatype
+        detection (and you probably do), use commander_args()."""
+        args = {}
+        for i in range(len(self.commander_arguments())):
+            name = self.commander_arguments()[i][NAME]
+            value = self.commander_arg_string(i)
             args[name] = value
         return args
 
