@@ -23,7 +23,7 @@ class Chameleon(object):
         def fget(self):
             return self._arguments
         def fset(self, value):
-            self._arguments = value
+            self.__class__._arguments = value
         return locals()
 
     arguments = property(**arguments())
@@ -37,7 +37,7 @@ class Chameleon(object):
         def fget(self):
             return self._results
         def fset(self, value):
-            self._results = value
+            self.__class__._results = value
         return locals()
 
     results = property(**results())

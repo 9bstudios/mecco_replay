@@ -60,6 +60,13 @@ class MacroCommandArg(lumberjack.TreeNode):
             return self.values['command'].value
         def fset(self, value):
             self.values['command'].value = value
+            
+            # Special case for booleans, which are passed in by prase_string using
+            # the original values found in the macro (usually 'true' or 'false')
+            if self.argType == 3 and value in ['true', 'false']:
+                self.values['command'].value = True if value == 'true' else False
+
+            # If value is empty, gray out the name.
             for column, value in self.values.iteritems():
                 if value.value is not None:
                     value.color.special_by_name('default')
