@@ -133,6 +133,7 @@ class Macro(lumberjack.Lumberjack):
 
     """Clear all commands and relevant data"""
     def clear(self):
+        self.root.deselect_descendants()
         self.root.delete_descendants()
         self.file_path = None
 
