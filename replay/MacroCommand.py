@@ -221,7 +221,12 @@ class MacroCommand(lumberjack.TreeNode):
         for arg in self.args:
             json_arg = next((x for x in json_args if x['argName'] == arg.argName))
             if json_arg is not None:
-                arg.value = json_arg['value']
+                if arg.argType == 1:
+                    arg.value = None if json_arg['value'] is None else int(json_arg['value'])
+                elif arg.argType == 2:
+                    arg.value = None if json_arg['value'] is None else float(json_arg['value'])
+                else:
+                    arg.value = None if json_arg['value'] is None else str(json_arg['value'])
 
     def get_next_arg_name(self, args_string):
 
@@ -313,7 +318,7 @@ class MacroCommand(lumberjack.TreeNode):
             elif self.args[arg_number].argType == 2:
                 self.args[arg_number].value = float(arg_value)
             else:
-                self.args[arg_number].value = arg_value
+                self.args[arg_number].value = str(arg_value)
 
             # Increase the argument counter, and check if it's not out of bounds:
             if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
