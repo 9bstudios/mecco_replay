@@ -33,13 +33,10 @@ class CommandClass(replay.commander.CommanderClass):
                 'flags': ['optional']
             })
 
-            lx.out(replay.Chameleon().arguments[-1])
 
         lx.eval('?replay.chameleon')
 
-        lx.out(replay.Chameleon().results)
         for arg in args:
-            lx.out(arg.argName, replay.Chameleon().results.get(arg.argName))
             arg.value = replay.Chameleon().results.get(arg.argName)
 
         replay.Macro().refresh_view()
