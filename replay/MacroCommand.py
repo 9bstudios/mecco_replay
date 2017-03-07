@@ -308,7 +308,12 @@ class MacroCommand(lumberjack.TreeNode):
                 arg_number = arg_counter
 
             # Set the value of the argument:
-            self.args[arg_number].value = arg_value
+            if self.args[arg_number].argType == 1:
+                self.args[arg_number].value = int(arg_value)
+            elif self.args[arg_number].argType == 2:
+                self.args[arg_number].value = float(arg_value)
+            else:
+                self.args[arg_number].value = arg_value
 
             # Increase the argument counter, and check if it's not out of bounds:
             if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
@@ -381,7 +386,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         for arg in self.args:
             if arg.value is not None:
-                result += " {name}:{value}".format(name=arg.argName, value=wrap_quote(arg.value))
+                result += " {name}:{value}".format(name=arg.argName, value=wrap_quote(str(arg.value)))
         return result
 
     def render_Python(self):
