@@ -16,9 +16,15 @@ class CommandClass(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-        modo.dialogs.alert("Not Implemented.", "Command not yet implemented.")
+        comment = self.commander_arg_value(0)
+        macro = replay.Macro()
 
-    def basic_Enable(self, msg):
-        return False
+        try:
+            macro.insert_comment_before_current_command(comment)
+        except Exception as e:
+            modo.dialogs.alert("Warning", str(e), dtype='warning')
+            return
+
+        macro.rebuild_view()
 
 lx.bless(CommandClass, 'replay.insertComment')
