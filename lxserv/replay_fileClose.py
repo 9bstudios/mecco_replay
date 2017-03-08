@@ -21,8 +21,13 @@ class CommandClass(replay.commander.CommanderClass):
                     file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \
                                                  names = ('LXM',), unames = ('LXM file'), ext=('LXM',))
                 macro.render_LXM(file_path)
+
+        # No more file path
+        macro.file_path = None
+        macro.file_format = None
         # Clear current macro
         macro.clear()
+        # Rebuild treeview
         macro.rebuild_view()
 
 lx.bless(CommandClass, 'replay.fileClose')
