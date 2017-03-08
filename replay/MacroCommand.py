@@ -14,7 +14,6 @@ class MacroCommand(lumberjack.TreeNode):
 
     _args = {}
     _suppress = False
-    _whitespace_before = None
     _user_comment_before = []
 
     def __init__(self, **kwargs):
@@ -125,17 +124,6 @@ class MacroCommand(lumberjack.TreeNode):
         return locals()
 
     suppress = property(**suppress())
-
-    def whitespace_before():
-        doc = """Integer number of lines to insert before the current command when
-        exporting to code."""
-        def fget(self):
-            return self._whitespace_before
-        def fset(self, value):
-            self._whitespace_before = value
-        return locals()
-
-    whitespace_before = property(**whitespace_before())
 
     def parse_meta(self, line):
 	meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
