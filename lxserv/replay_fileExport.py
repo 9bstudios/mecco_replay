@@ -31,11 +31,6 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
-        # If macro is empty throw warning and return
-        if macro.is_empty:
-           modo.dialogs.alert("Empty macro", "There are no recorded commands to save", dtype='warning')
-           return
-
         format_val = self.commander_arg_value(0)
         file_path = self.commander_arg_value(1)
         if file_path is None:
@@ -47,5 +42,9 @@ class CommandClass(replay.commander.CommanderClass):
 
         replay.Macro().render(format_val, file_path)
 
+    def basic_Enable(self):
+        if replay.Macro().is_empty:
+            return False
+        return True
 
 lx.bless(CommandClass, 'replay.fileExport')
