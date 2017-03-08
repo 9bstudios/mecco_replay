@@ -40,7 +40,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro.render(file_format, file_path)
 
-    def basic_Enable(self):
+    def basic_Enable(self, msg):
         if replay.Macro().is_empty:
             return False
         return True
