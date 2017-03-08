@@ -23,7 +23,7 @@ class TreeNode(object):
     # values can be positive integers for literal pixel widths, or negative integers
     # for ratios of the sum-total of all other negative integers. (If one column is
     # width -1 and another is -3, the first is 25%, the second is 75%.)
-    _columns = []
+    _column_definitions = []
     _columns_move_primary = 0
 
     # Node that is "primary" in the GUI, aka most recently selected
@@ -73,7 +73,7 @@ class TreeNode(object):
         #self.__class__._primary = self
 
         # Add empty TreeValue objects for each column, ready to accept values.
-        for column in self._columns:
+        for column in self._column_definitions:
             self._values[column['name']] = TreeValue()
 
         self.row_color = RowColor().name
@@ -81,7 +81,7 @@ class TreeNode(object):
     # PROPERTIES
     # ----------
 
-    def columns():
+    def column_definitions():
         doc = """List of column names for the node tree. Common to all nodes.
         Set during `Lumberjack().bless()`
 
@@ -90,12 +90,12 @@ class TreeNode(object):
         for ratios of the sum-total of all other negative integers. (If one column is
         width -1 and another is -3, the first is 25%, the second is 75%.)"""
         def fget(self):
-            return self._columns
+            return self._column_definitions
         def fset(self, value):
-            self.__class__._columns = value
+            self.__class__._column_definitions = value
         return locals()
 
-    columns = property(**columns())
+    column_definitions = property(**column_definitions())
 
     def row_color():
         doc = """A `RowColor()` object specifying the color of the current node.
@@ -187,7 +187,7 @@ class TreeNode(object):
         doc = """The values for each column in the node. (dictionary)
 
         The dictionary should have one key for each column name defined in the
-        Lumberjack blessing_parameters `'columns'` key. The values themselves
+        Lumberjack blessing_parameters `'column_definitions'` key. The values themselves
         are `TreeValue()` objects, each with a `value` property for the internal
         value, but also containing metadata like font, color, etc.
 

@@ -234,18 +234,18 @@ class TreeView( lxifc.TreeView,
 
     def treeview_ColumnCount(self):
         """Returns the number of columns in the treeview."""
-        return len(self.root.columns)
+        return len(self.root.column_definitions)
 
     def treeview_ColumnInternalName(self, columnIndex):
         """Returns the internal name of a given column for use in configs, etc.
         Important that these never change."""
-        if columnIndex < len(self.root.columns):
-            return self.root.columns[columnIndex].get('name')
+        if columnIndex < len(self.root.column_definitions):
+            return self.root.column_definitions[columnIndex].get('name')
 
     def treeview_ColumnIconResource(self, columnIndex):
         """Returns the name of a 13px icon resource for the column header."""
-        if columnIndex < len(self.root.columns):
-            icon_resource = self.root.columns[columnIndex].get('icon_resource')
+        if columnIndex < len(self.root.column_definitions):
+            icon_resource = self.root.column_definitions[columnIndex].get('icon_resource')
             if icon_resource:
                 return icon_resource
         # Without returning something, MODO will crash.
@@ -266,8 +266,8 @@ class TreeView( lxifc.TreeView,
             'right': 2
         }
 
-        if columnIndex < len(self.root.columns):
-            string_value = self.root.columns[columnIndex].get('justify', 'left')
+        if columnIndex < len(self.root.column_definitions):
+            string_value = self.root.column_definitions[columnIndex].get('justify', 'left')
             return lookup[string_value]
 
     def treeview_PrimaryColumnPosition(self):
@@ -278,8 +278,8 @@ class TreeView( lxifc.TreeView,
     def treeview_ColumnByIndex(self, columnIndex):
         """Returns a tuple with the name and width of a given column."""
         try:
-            name = self.root.columns[columnIndex]['name']
-            width = self.root.columns[columnIndex]['width']
+            name = self.root.column_definitions[columnIndex]['name']
+            width = self.root.column_definitions[columnIndex]['width']
             return (name, width)
         except:
             raise Exception('treeview_ColumnByIndex failed. Possibly malformed column dictionary.')
@@ -331,7 +331,7 @@ class TreeView( lxifc.TreeView,
         # of the override, and the queried value from CommandCell() is the default.
         # Mostly you use the override if you want an eyeball icon instead of a checkmark, for example.
 
-        column_name = self.root.columns[columnIndex]['name']
+        column_name = self.root.column_definitions[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
             if cell_value_obj.cell_command is not None:
@@ -346,7 +346,7 @@ class TreeView( lxifc.TreeView,
         # BatchCommand() is used if you have multiple cells selected, and is
         # used to change all of them with a single click.
 
-        column_name = self.root.columns[columnIndex]['name']
+        column_name = self.root.column_definitions[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
             if cell_value_obj.batch_command is not None:
@@ -357,9 +357,9 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        # columns = self.root.columns
+        # column_definitions = self.root.column_definitions
         # try:
-        #     tooltip = self.targetNode().values[columns[columnIndex]['name']].tooltip
+        #     tooltip = self.targetNode().values[column_definitions[columnIndex]['name']].tooltip
         #     if tooltip:
         #         return tooltip
         # except:
@@ -378,7 +378,7 @@ class TreeView( lxifc.TreeView,
         # NOTE: This code fires very, very frequently.
         # Speed is very important.
 
-        column_name = self.root.columns[columnIndex]['name']
+        column_name = self.root.column_definitions[columnIndex]['name']
 
         try:
             target_region = self.targetNode().values[column_name].input_region
@@ -440,7 +440,7 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(self.root.columns)
+        return len(self.root.column_definitions)
 
     def attr_GetString(self, index):
         """Returns a rich text string to display in a cell. Rich text can include
@@ -458,23 +458,23 @@ class TreeView( lxifc.TreeView,
 
         (NOTE: Empty cells render with zero height in the tree. Ugly.)"""
 
-        columns = self.root.columns
+        column_definitions = self.root.column_definitions
         node = self.targetNode()
 
         # I'll be honest: I don't understand this loop. It's here for some
         # reason, and the method fails if I try to do it without the loop.
         # So it's here. If you can think of a better way, by all means.
-        for n in range(len(columns)):
+        for n in range(len(column_definitions)):
             if index == n:
 
                 # If we're using a treeview_CellCommand() query to render the cell,
                 # we don't send a string.
-                if node.values[columns[n]['name']].use_cell_command_for_display:
+                if node.values[column_definitions[n]['name']].use_cell_command_for_display:
                     lx.notimpl()
 
                 try:
                     # Print the `display_value` in the cell
-                    return node.values[columns[n]['name']].display_value
+                    return node.values[column_definitions[n]['name']].display_value
                 except:
                     break
 

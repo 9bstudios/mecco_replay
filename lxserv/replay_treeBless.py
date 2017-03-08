@@ -24,9 +24,9 @@ Macro().bless(
     # :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
     ident = 'RRTV',
 
-    # :param columns:         a list of dictionaries, one for each column. Values in each
+    # :param column_definitions:         a list of dictionaries, one for each column. Values in each
     #                         node's values dictionary must correspond with these strings
-    columns = {
+    column_definitions = {
         'primary_position': 2,
         'list': [
                 {

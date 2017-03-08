@@ -121,7 +121,7 @@ class Lumberjack(object):
         pass
 
     @classmethod
-    def bless(cls, viewport_type, nice_name, internal_name, ident, columns, input_regions, notifiers):
+    def bless(cls, viewport_type, nice_name, internal_name, ident, column_definitions, input_regions, notifiers):
         """Blesses the TreeView into existence in the MODO GUI.
 
         Requires seven arguments.
@@ -137,7 +137,8 @@ class Lumberjack(object):
 
         :param ident:           arbitrary unique four-letter all-caps identifier (ID4)
 
-        :param columns:         A dictionary containing, at minimum, a key called 'list' containing a list
+        :param column_definitions:
+                                A dictionary containing, at minimum, a key called 'list' containing a list
                                 of dictionaries corresponding to each column in the view. The 'name' strings
                                 for each column must correspond with the value entries for each node.
 
@@ -148,7 +149,7 @@ class Lumberjack(object):
                                 Example:
 
                                 ```
-                                columns = {
+                                column_definitions = {
                                     'primary_position': 1,
                                     'list': [
                                             {
@@ -215,11 +216,11 @@ class Lumberjack(object):
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = cls._TreeNodeClass()
-        cls._root.columns = columns.get('list', [])
+        cls._root.column_definitions = column_definitions.get('list', [])
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(root=cls._root)
-        cls._tree_view.set_primary_column_position(columns.get('primary_position', 0))
+        cls._tree_view.set_primary_column_position(column_definitions.get('primary_position', 0))
         cls._tree_view.set_input_regions(input_regions)
 
         # We store these as read-only properties of the class, just in case
@@ -320,18 +321,18 @@ class Lumberjack(object):
 
     TreeNodeClass = property(**TreeNodeClass())
 
-    def columns():
+    def column_definitions():
         doc = """List of columns and their widths for the treeview in the
         format `('name', width)`, where width can be a positive integer in pixels
         or a negative integer representing a width relative to the total of all
         netagive values."""
         def fget(self):
-            return self._root.columns
+            return self._root.column_definitions
         def fset(self, value):
-            self._root.columns = value
+            self._root.column_definitions = value
         return locals()
 
-    columns = property(**columns())
+    column_definitions = property(**column_definitions())
 
     def children():
         doc = """A list of `TreeNode()` objects that are children of the current
