@@ -140,7 +140,7 @@ class TreeNode(object):
         def fset(self, value):
             if value == False:
                 self._selected = False
-                self._primary = None
+                self.primary = None
             self._selectable = value
         return locals()
 
@@ -164,7 +164,7 @@ class TreeNode(object):
         def fset(self, value):
             self._selected = value
             if value:
-				self.__class__._primary = self
+                self.primary = self
         return locals()
 
     selected = property(**selected())
@@ -176,7 +176,7 @@ class TreeNode(object):
         It is possible to set the primary node to False, meaning there is no
         current primary."""
         def fget(self):
-            return self._primary
+            return self.__class__._primary
         def fset(self, value):
             self.__class__._primary = value
         return locals()
