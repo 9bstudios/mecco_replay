@@ -48,8 +48,23 @@ class CommandClass(replay.commander.CommanderClass):
             modo.dialogs.alert("Empty selection", "There are no selected commands to reorder", dtype='warning')
             return
 
-        # reorder commands
-        macro.reorder(mode, index)
+        # Getting
+        sel_children = macro.selected_children
+
+        # Sorting children in descending order to preserve order in macro
+        sel_children.sort(key=lambda x: x.index, reverse=True)
+
+        for child in sel_children:
+            if mode == "up":
+                child.reorder_up()
+            elif mode == "down":
+                child.reorder_down()
+            elif mode == "top":
+                child.reorder_top()
+            elif mode == "bottom":
+                child.reorder_bottom()
+            elif mode == "index":
+                child.index = index
 
         macro.rebuild_view()
 

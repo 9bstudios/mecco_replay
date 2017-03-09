@@ -281,7 +281,7 @@ class Lumberjack(object):
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
-    def view(self):
+    def treeview(self):
         """Returns the class `TreeView()` object."""
         if self.__class__._tree_view:
             return self.__class__._tree_view
@@ -295,7 +295,7 @@ class Lumberjack(object):
 
     @property
     def selected_children(self):
-        """Returns the selected `TreeNode()` objects in the tree."""
+        """Returns the selected `TreeNode()` objects at the root of the tree."""
         return self.root.selected_children
 
     def clear_selection(self):
@@ -331,11 +331,9 @@ class Lumberjack(object):
         doc = """List of columns and their widths for the treeview in the
         format `('name', width)`, where width can be a positive integer in pixels
         or a negative integer representing a width relative to the total of all
-        netagive values."""
+        netagive values. Set during bless. Cannot change during a session."""
         def fget(self):
             return self._root.column_definitions
-        def fset(self, value):
-            self._root.column_definitions = value
         return locals()
 
     column_definitions = property(**column_definitions())
@@ -409,8 +407,8 @@ class Lumberjack(object):
         for performance."""
 
         # NOTE: We must _both_ notify attributes _and_ shape. (Facepalm.)
-        self.view.notify_NewAttributes()
-        self.view.notify_NewShape()
+        self.treeview.notify_NewAttributes()
+        self.treeview.notify_NewShape()
 
     def refresh_view(self):
         """Refreshes `TreeView()` cell values, but not structure. Must run every
@@ -418,26 +416,4 @@ class Lumberjack(object):
         (e.g. adding/removing nodes, reordering, reparenting) require the
         `rebuild()`` method."""
 
-        self.view.notify_NewAttributes()
-
-    def reorder(self, mode, index):
-        """ Reorder selected items according to mode and index arguments """
-        # Getting
-        sel_children = self.selected_children
-
-        # Sorting children in descending order to preserve order in macro
-        sel_children.sort(key=lambda x: x.index, reverse=True)
-
-        for child in sel_children:
-            if mode == "up":
-                child.reorder_up()
-            elif mode == "down":
-                child.reorder_down()
-            elif mode == "top":
-                child.reorder_top()
-            elif mode == "bottom":
-                child.reorder_bottom()
-            elif mode == "index":
-                child.index = index
-            else:
-                raise Exception('Wrong mode value "%s" is specified.' % mode)
+        self.treeview.notify_NewAttributes()
