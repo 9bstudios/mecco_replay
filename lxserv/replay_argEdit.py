@@ -26,7 +26,7 @@ class CommandClass(replay.commander.CommanderClass):
                 'datatype': 'string',
                 'flags': ['reqforvariable']
             }, {
-                'name': 'argument',
+                'name': 'value',
                 'label': self.argLabel,
                 'datatype': 'string', # required, but ignored. Could be anything.
                 'flags': ['variable', 'query']
@@ -37,9 +37,9 @@ class CommandClass(replay.commander.CommanderClass):
         return [("replay.notifier", "")]
 
     def commander_execute(self, msg, flags):
-        argName = self.commander_arg_value(0)
-        argValue = self.commander_argStrings['value']
-        nodes = replay.Macro().selected_children
+        argName = self.commander_args()['argName']
+        argValue = self.commander_args()['value']
+        nodes = replay.Macro().selected_commands
 
         for node in nodes:
             for arg in node.args:
@@ -52,8 +52,8 @@ class CommandClass(replay.commander.CommanderClass):
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def commander_query(self, argIndex):
-        argName = self.commander_arg_value(0)
-        nodes = replay.Macro().selected_children
+        argName = self.commander_args()['argName']
+        nodes = replay.Macro().selected_commands
 
         argValues = set()
         for node in nodes:
@@ -71,17 +71,17 @@ class CommandClass(replay.commander.CommanderClass):
             return list(argValues)
 
     def argLabel(self):
-        return self.commander_arg_value(0)
+        return self.commander_args()['argName']
 
     def basic_ArgType(self, argIndex):
-        argName = self.commander_arg_value(0)
-        nodes = replay.Macro().selected_children
+        argName = self.commander_args()['argName']
+        nodes = replay.Macro().selected_commands
 
         argTypes = set()
         for node in nodes:
             for arg in node.args:
                 if arg.argName == argName:
-                    argTypes.add(arg.argTypeName)
+                    argTypes.add((arg.argType, arg.argTypeName))
 
         if not argTypes:
             return None
@@ -91,9 +91,20 @@ class CommandClass(replay.commander.CommanderClass):
             # String is our fallback.
             return lx.symbol.sTYPE_STRING
 
-        return list(argTypes)[0]
+        argTypeName = list(argTypes)[0][1]
+        if argTypeName:
+            return argTypeName
+        else:
+            int_type = list(argTypes)[0][0]
+            lookup = [
+                lx.symbol.sTYPE_STRING, # generic object
+                lx.symbol.sTYPE_INTEGER,
+                lx.symbol.sTYPE_FLOAT,
+                lx.symbol.sTYPE_STRING
+            ]
+            return lookup[int_type]
 
     def basic_Enable(self, msg):
-        return bool(replay.Macro().selected_children)
+        return bool(replay.Macro().selected_descendants)
 
 lx.bless(CommandClass, 'replay.argEdit')

@@ -74,8 +74,24 @@ class Macro(lumberjack.Lumberjack):
         def fget(self):
             return self.root.children
         return locals()
-
+        
     commands = property(**commands())
+
+
+    def selected_commands():
+        doc = """Returns a list of implicitly selected `MacroCommand()` objects,
+        including both selected nodes and nodes that have selected descendants."""
+        def fget(self):
+            nodes = set()
+            for node in self.root.children:
+                if bool(node.selected_descendants) or node.selected:
+                    nodes.add(node)
+            return list(nodes)
+        return locals()
+
+    selected_commands = property(**selected_commands())
+
+
 
     @property
     def import_format_names(self):
