@@ -32,7 +32,6 @@ class Lumberjack(object):
 
     `Lumberjack().children[n].selectable = False`
     `Lumberjack().children[n].selected = True`
-    `Lumberjack().children[n].primary = True`
     `Lumberjack().children[n].setParent(node)`
     `Lumberjack().children[n].clear_children(node)`
     `Lumberjack().children[n].reorder(index)`
@@ -215,13 +214,16 @@ class Lumberjack(object):
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        cls._root = cls._TreeNodeClass()
-        cls._root.column_definitions = column_definitions.get('list', [])
+        cls._root = cls._TreeNodeClass(
+            column_definitions = column_definitions.get('list', [])
+        )
 
         # Our internal handle for the view itself.
-        cls._tree_view = cls._TreeViewSubclass(root=cls._root)
-        cls._tree_view.set_primary_column_position(column_definitions.get('primary_position', 0))
-        cls._tree_view.set_input_regions(input_regions)
+        cls._tree_view = cls._TreeViewSubclass(
+            root = cls._root,
+            primary_column_position = column_definitions.get('primary_position', 0),
+            input_regions = input_regions
+        )
 
         # We store these as read-only properties of the class, just in case
         # we ever need them.
@@ -287,12 +289,6 @@ class Lumberjack(object):
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
-    def primary(self):
-        """Returns the primary `TreeNode()` object in the tree.
-        Usually this is the most recently selected or created."""
-        return self._root.primary
-
-    @property
     def selected_descendants(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.selected_descendants
@@ -305,6 +301,16 @@ class Lumberjack(object):
     def clear_tree_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
+
+    def primary():
+        doc = """The primary node is typically the most recently selected."""
+        def fget(self):
+            return self._primary
+        def fset(self, value):
+            self._primary = value
+        return locals()
+
+    primary = property(**primary())
 
     def TreeNodeClass():
         doc = """The `TreeNode()`` subclass to use when populating the tree.

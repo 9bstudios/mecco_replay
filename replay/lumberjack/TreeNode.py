@@ -26,10 +26,13 @@ class TreeNode(object):
     _column_definitions = []
     _columns_move_primary = 0
 
-    # Node that is "primary" in the GUI, aka most recently selected
-    _primary = None
+    # We sometimes need to tell the controller when things update.
+    _controller = None
 
     def __init__(self, **kwargs):
+
+        # Whether selectable in GUI
+        self._controller = kwargs.get('controller', True)
 
         # Whether selectable in GUI
         self._selectable = kwargs.get('selectable', True)
@@ -68,9 +71,15 @@ class TreeNode(object):
         # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
         self._meta = kwargs.get('meta', {})
 
-        # Primary is usually the most recently selected node. If we initialize
-        # a new node, however, that one becomes primary.
-        #self.__class__._primary = self
+        # List of column names for the node tree. Common to all nodes.
+        # Set during `Lumberjack().bless()`
+        #
+        # Each column is a dictionary with at least two keys: 'name', and 'width'. Width
+        # values can be positive integers for literal pixel widths, or negative integers
+        # for ratios of the sum-total of all other negative integers. (If one column is
+        # width -1 and another is -3, the first is 25%, the second is 75%.)
+        if 'column_definitions' in kwargs:
+            self._column_definitions = kwargs.get('column_definitions')
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
@@ -80,22 +89,6 @@ class TreeNode(object):
 
     # PROPERTIES
     # ----------
-
-    def column_definitions():
-        doc = """List of column names for the node tree. Common to all nodes.
-        Set during `Lumberjack().bless()`
-
-        Each column is a dictionary with at least two keys: 'name', and 'width'. Width
-        values can be positive integers for literal pixel widths, or negative integers
-        for ratios of the sum-total of all other negative integers. (If one column is
-        width -1 and another is -3, the first is 25%, the second is 75%.)"""
-        def fget(self):
-            return self._column_definitions
-        def fset(self, value):
-            self.__class__._column_definitions = value
-        return locals()
-
-    column_definitions = property(**column_definitions())
 
     def row_color():
         doc = """A `RowColor()` object specifying the color of the current node.
@@ -138,10 +131,8 @@ class TreeNode(object):
         def fget(self):
             return self._selectable
         def fset(self, value):
-            if value == False:
-                self._selected = False
-                self.primary = None
             self._selectable = value
+            self.selected = False
         return locals()
 
     selectable = property(**selectable())
@@ -164,24 +155,10 @@ class TreeNode(object):
         def fset(self, value):
             self._selected = value
             if value:
-                self.primary = self
+                self.controller.primary = self
         return locals()
 
     selected = property(**selected())
-
-    def primary():
-        doc = """Class property teturns the primary TreeNode in the tree.
-
-        Typically the most recently selected or created node will be primary.
-        It is possible to set the primary node to False, meaning there is no
-        current primary."""
-        def fget(self):
-            return self.__class__._primary
-        def fset(self, value):
-            self.__class__._primary = value
-        return locals()
-
-    primary = property(**primary())
 
     def values():
         doc = """The values for each column in the node. (dictionary)
@@ -414,7 +391,6 @@ class TreeNode(object):
     def delete(self):
         """Deletes the current node and reparents all of its children to its parent."""
         self.selected = False
-        self.primary = None
 
         # Delete all attributes
         self.delete_attributes()
@@ -428,8 +404,6 @@ class TreeNode(object):
     def delete_descendants(self):
         """Deletes all children, grandchildren etc from the current node. To delete
         the node itself, use `delete()`"""
-        if self.primary in self.descendants:
-            self.primary = self
         del self.children[:]
 
     def delete_attributes(self):

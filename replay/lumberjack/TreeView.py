@@ -17,8 +17,8 @@ class TreeView( lxifc.TreeView,
     # These are used for shape and attribute changes
     _listenerClients = {}
 
-    def __init__(self, node = None, curIndex = 0, root = None):
-        # `self.root` returns the root TreeNode() object for the treeview.
+    def __init__(self, **kwargs):
+        # `self._root` returns the root TreeNode() object for the treeview.
         # Fun fact about MODO API inheritance: if our TreeView class were to
         # inherit `object` as is the norm, everything breaks. This causes various
         # problems with inheritance. For one, class variables are only reliable
@@ -27,8 +27,8 @@ class TreeView( lxifc.TreeView,
         # Note: TreeView classes require a root TreeNode object. Without this,
         # Bad Things happen. Be sure to include this parameter when instantiating
         # the class for the first time.
-        if root:
-            self.__class__._root = root
+        if 'root' in kwargs and kwargs.get('root') is not None:
+            self.__class__._root = kwargs.get('root')
 
         # Because TreeView() does not inherit `object`, you cannot put the _root
         # classvariable declaration outside of __init__() without affecting all
@@ -55,41 +55,36 @@ class TreeView( lxifc.TreeView,
         except AttributeError:
             self.__class__._input_regions = []
 
-        self.m_currentNode = node
-        self.m_currentIndex = curIndex
+        try:
+            self._controller
+        except AttributeError:
+            self.__class__._controller = None
+
+        self.m_currentNode = kwargs.get('node') if 'node' in kwargs else None
+        self.m_currentIndex = kwargs.get('curIndex') if 'curIndex' in kwargs else 0
+
+        # Moves the primary column to the specified column index.
+        #
+        # The "primary" column (i.e. the one with the twirly carrot icon for hide/show
+        # node children) is always the first column in the columns list, but is not
+        # necessarily left-most in the TreeView (witness the items list).
+        #
+        # To move it over to the selcond-from-left slot, for example, provide this
+        # function a value of 1.
+        self.__class__._primary_column_position = kwargs.get('primary_column_position') if 'primary_column_position' in kwargs else 0
+
+        # The available input regions as blessed by the parent `Lumberjack.bless()`
+        # function. Once blessed, this should not change at any time during a MODO session.
+        self.__class__._input_regions = kwargs.get('input_regions') if 'input_regions' in kwargs else 0
+
+        # The controller object for the TreeNode and TreeView objects. We occasionally
+        # need to phone home to tell it about important updates or ask for global information.
+        # Added during the blessing.
+        self.__class__._controller = kwargs.get('controller') if 'controller' in kwargs else 0
 
     # --------------------------------------------------------------------------------------------------
     # Listener port
     # --------------------------------------------------------------------------------------------------
-
-    # Wanted to use a property for this instead of a setter method, but wasn't able
-    # to make it work for some reason.
-    def set_primary_column_position(self, index):
-        """Moves the primary column to the specified column index.
-
-        The "primary" column (i.e. the one with the twirly carrot icon for hide/show
-        node children) is always the first column in the columns list, but is not
-        necessarily left-most in the TreeView (witness the items list).
-
-        To move it over to the selcond-from-left slot, for example, provide this
-        function a value of 1."""
-        self.__class__._primary_column_position = index
-
-    def set_input_regions(self, input_regions):
-        """The available input regions as blessed by the parent `Lumberjack.bless()`
-        function. Once blessed, this should not change at any time during a MODO session."""
-        self.__class__._input_regions = input_regions
-
-    def root():
-        doc = """Root TreeNode object for the TreeView. This is typically set only
-        once during the Lumberjack blessing."""
-        def fget(self):
-            return self._root
-        def fset(self, value):
-            self.__class__._root = value
-        return locals()
-
-    root = property(**root())
 
     @classmethod
     def addListenerClient(cls,listener):
@@ -188,11 +183,11 @@ class TreeView( lxifc.TreeView,
 
     def tree_ToRoot(self):
         """Move back to the root tier of the tree"""
-        self.m_currentNode = self.root
+        self.m_currentNode = self._root
 
     def tree_IsRoot(self):
         """Check if the current tier in the tree is the root tier"""
-        return (self.m_currentNode == self.root)
+        return (self.m_currentNode == self._root)
 
     def tree_ChildIsLeaf(self):
         """If the current tier has no children then it is
@@ -234,18 +229,18 @@ class TreeView( lxifc.TreeView,
 
     def treeview_ColumnCount(self):
         """Returns the number of columns in the treeview."""
-        return len(self.root.column_definitions)
+        return len(self._root.column_definitions)
 
     def treeview_ColumnInternalName(self, columnIndex):
         """Returns the internal name of a given column for use in configs, etc.
         Important that these never change."""
-        if columnIndex < len(self.root.column_definitions):
-            return self.root.column_definitions[columnIndex].get('name')
+        if columnIndex < len(self._root.column_definitions):
+            return self._root.column_definitions[columnIndex].get('name')
 
     def treeview_ColumnIconResource(self, columnIndex):
         """Returns the name of a 13px icon resource for the column header."""
-        if columnIndex < len(self.root.column_definitions):
-            icon_resource = self.root.column_definitions[columnIndex].get('icon_resource')
+        if columnIndex < len(self._root.column_definitions):
+            icon_resource = self._root.column_definitions[columnIndex].get('icon_resource')
             if icon_resource:
                 return icon_resource
         # Without returning something, MODO will crash.
@@ -266,8 +261,8 @@ class TreeView( lxifc.TreeView,
             'right': 2
         }
 
-        if columnIndex < len(self.root.column_definitions):
-            string_value = self.root.column_definitions[columnIndex].get('justify', 'left')
+        if columnIndex < len(self._root.column_definitions):
+            string_value = self._root.column_definitions[columnIndex].get('justify', 'left')
             return lookup[string_value]
 
     def treeview_PrimaryColumnPosition(self):
@@ -278,16 +273,16 @@ class TreeView( lxifc.TreeView,
     def treeview_ColumnByIndex(self, columnIndex):
         """Returns a tuple with the name and width of a given column."""
         try:
-            name = self.root.column_definitions[columnIndex]['name']
-            width = self.root.column_definitions[columnIndex]['width']
+            name = self._root.column_definitions[columnIndex]['name']
+            width = self._root.column_definitions[columnIndex]['width']
             return (name, width)
         except:
             raise Exception('treeview_ColumnByIndex failed. Possibly malformed column dictionary.')
 
     def treeview_ToPrimary(self):
         """Move the tree to the primary selection"""
-        if self.m_currentNode.primary:
-            self.m_currentNode = self.m_currentNode.primary
+        if self._controller.primary:
+            self.m_currentNode = self._controller.primary
             self.tree_ToParent()
             return True
         return False
@@ -306,7 +301,7 @@ class TreeView( lxifc.TreeView,
 
     def treeview_Select(self, mode):
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self.root.clear_tree_selection()
+            self._root.clear_tree_selection()
             self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
@@ -316,7 +311,7 @@ class TreeView( lxifc.TreeView,
             self.targetNode().selected = False
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self.root.clear_tree_selection()
+            self._root.clear_tree_selection()
 
     def treeview_CellCommand(self, columnIndex):
         """Cells can contain commands similar to Forms, and this is especially
@@ -331,7 +326,7 @@ class TreeView( lxifc.TreeView,
         # of the override, and the queried value from CommandCell() is the default.
         # Mostly you use the override if you want an eyeball icon instead of a checkmark, for example.
 
-        column_name = self.root.column_definitions[columnIndex]['name']
+        column_name = self._root.column_definitions[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
             if cell_value_obj.cell_command is not None:
@@ -346,7 +341,7 @@ class TreeView( lxifc.TreeView,
         # BatchCommand() is used if you have multiple cells selected, and is
         # used to change all of them with a single click.
 
-        column_name = self.root.column_definitions[columnIndex]['name']
+        column_name = self._root.column_definitions[columnIndex]['name']
         cell_value_obj = self.targetNode().values.get(column_name)
         if cell_value_obj is not None:
             if cell_value_obj.batch_command is not None:
@@ -357,7 +352,7 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        # column_definitions = self.root.column_definitions
+        # column_definitions = self._root.column_definitions
         # try:
         #     tooltip = self.targetNode().values[column_definitions[columnIndex]['name']].tooltip
         #     if tooltip:
@@ -378,7 +373,7 @@ class TreeView( lxifc.TreeView,
         # NOTE: This code fires very, very frequently.
         # Speed is very important.
 
-        column_name = self.root.column_definitions[columnIndex]['name']
+        column_name = self._root.column_definitions[columnIndex]['name']
 
         try:
             target_region = self.targetNode().values[column_name].input_region
@@ -440,7 +435,7 @@ class TreeView( lxifc.TreeView,
     # --------------------------------------------------------------------------------------------------
 
     def attr_Count(self):
-        return len(self.root.column_definitions)
+        return len(self._root.column_definitions)
 
     def attr_GetString(self, index):
         """Returns a rich text string to display in a cell. Rich text can include
@@ -458,7 +453,7 @@ class TreeView( lxifc.TreeView,
 
         (NOTE: Empty cells render with zero height in the tree. Ugly.)"""
 
-        column_definitions = self.root.column_definitions
+        column_definitions = self._root.column_definitions
         node = self.targetNode()
 
         # I'll be honest: I don't understand this loop. It's here for some
