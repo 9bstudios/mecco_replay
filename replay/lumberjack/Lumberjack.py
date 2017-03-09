@@ -301,6 +301,11 @@ class Lumberjack(object):
         """Returns the selected `TreeNode()` objects at the root of the tree."""
         return self.root.selected_children
 
+    def select_event(self):
+        """Fired by `TreeNode` objects whenever the node's `selected` property is changed.
+        Implement in Lumberjack subclass to fire custom notifiers, etc."""
+        pass
+
     def clear_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()

@@ -4,6 +4,7 @@ import lx, re, os
 import json
 import lumberjack
 from MacroCommand import MacroCommand
+from Notifier import Notifier
 
 class Macro(lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
@@ -112,6 +113,11 @@ class Macro(lumberjack.Lumberjack):
 
     def add_command(self, **kwargs):
         return self.add_child(**kwargs)
+
+    def select_event(self):
+        """Fires whenever a TreeNode `selected` state is changed."""
+        notifier = Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def parse(self, input_path):
         """Parse a macro file and store its commands in the `commands` property."""

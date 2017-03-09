@@ -431,17 +431,22 @@ class CommanderClass(lxu.command.BasicCommand):
         # To keep things simpler for commander users, let them return
         # a value using only an index (no ValueArray nonsense)
         commander_query_result = self.commander_query(index)
+        if not isinstance(commander_query_result, (list, tuple, set)):
+            commander_query_result = [commander_query_result]
 
         # Need to add the proper datatype based on result from commander_query
 
         if isinstance(commander_query_result, basestring):
-            va.AddString(commander_query_result)
+            for value in commander_query_result:
+                va.AddString(value)
 
         elif isinstance(commander_query_result, int):
-            va.AddInt(commander_query_result)
+            for value in commander_query_result:
+                va.AddInt(value)
 
         elif isinstance(commander_query_result, float):
-            va.AddFloat(commander_query_result)
+            for value in commander_query_result:
+                va.AddFloat(value)
 
         return lx.result.OK
 

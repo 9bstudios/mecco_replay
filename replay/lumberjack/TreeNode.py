@@ -157,6 +157,7 @@ class TreeNode(object):
             self._selected = value
             if value:
                 self._controller.primary = self
+            self._controller.select_event()
         return locals()
 
     selected = property(**selected())
