@@ -298,7 +298,7 @@ class Lumberjack(object):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.selected_children
 
-    def clear_tree_selection(self):
+    def clear_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
 

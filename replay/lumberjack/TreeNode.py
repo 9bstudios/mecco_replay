@@ -41,7 +41,7 @@ class TreeNode(object):
         self._selected = kwargs.get('selected', False)
 
         # Dict of TreeValue objects for each column; {column_name: TreeValue()}
-        self._values = kwargs.get('values', {})
+        self._columns = kwargs.get('columns', {})
 
         # Nodes can be either `child` or `attribute`, but must be one or the other.
         self._is_attribute = kwargs.get('is_attribute', False)
@@ -83,7 +83,7 @@ class TreeNode(object):
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
-            self._values[column['name']] = TreeValue()
+            self._columns[column['name']] = TreeValue()
 
         self.row_color = RowColor().name
 
@@ -160,23 +160,23 @@ class TreeNode(object):
 
     selected = property(**selected())
 
-    def values():
-        doc = """The values for each column in the node. (dictionary)
+    def columns():
+        doc = """One TreeValue object for each column in the node. (dictionary)
 
         The dictionary should have one key for each column name defined in the
-        Lumberjack blessing_parameters `'column_definitions'` key. The values themselves
+        Lumberjack blessing_parameters `'column_definitions'` key. The columns themselves
         are `TreeValue()` objects, each with a `value` property for the internal
         value, but also containing metadata like font, color, etc.
 
-        Empty values and invalid keys (not matching a column name) will be
+        Empty columns and invalid keys (not matching a column name) will be
         ignored."""
         def fget(self):
-            return self._values
-        def fset(self, values):
-            self._values = values
+            return self._columns
+        def fset(self, columns):
+            self._columns = columns
         return locals()
 
-    values = property(**values())
+    columns = property(**columns())
 
     def parent():
         doc = """The parent node of the current `TreeNode()` object. The root
@@ -188,16 +188,6 @@ class TreeNode(object):
         return locals()
 
     parent = property(**parent())
-
-    def root():
-        doc = """The root node of the current `TreeNode()` hierarchy."""
-        def fget(self):
-            if not self.parent:
-                return self
-            return self.parent.root
-        return locals()
-
-    root = property(**root())
 
     def is_attribute():
         doc = """If True, node will be considered an attribute of the parent node rather
@@ -370,11 +360,6 @@ class TreeNode(object):
         newNode = self.__class__(**kwargs)
         kwargs['parent'].attributes.append(newNode)
         return newNode
-
-    def clear_tree_selection(self):
-        """Deselects all TreeNodes in the current tree."""
-        for node in self.root.descendants:
-            node.selected = False
 
     def select_descendants(self):
         """Selects all children, grandchildren, etc."""

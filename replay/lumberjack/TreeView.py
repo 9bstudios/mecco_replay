@@ -301,7 +301,7 @@ class TreeView( lxifc.TreeView,
 
     def treeview_Select(self, mode):
         if mode == lx.symbol.iTREEVIEW_SELECT_PRIMARY:
-            self._root.clear_tree_selection()
+            self._controller.clear_selection()
             self.targetNode().selected = True
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_ADD:
@@ -311,7 +311,7 @@ class TreeView( lxifc.TreeView,
             self.targetNode().selected = False
 
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
-            self._root.clear_tree_selection()
+            self._controller.clear_selection()
 
     def treeview_CellCommand(self, columnIndex):
         """Cells can contain commands similar to Forms, and this is especially
