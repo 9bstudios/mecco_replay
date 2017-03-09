@@ -13,9 +13,9 @@ class CommandClass(replay.commander.CommanderClass):
             {
                 'name': 'format',
                 'datatype': 'string',
-                'default': replay.Macro().format_names[0],
+                'default': replay.Macro().export_format_names,
                 'values_list_type': 'popup',
-                'values_list': replay.Macro().format_names,
+                'values_list': replay.Macro().export_format_names,
                 'flags': ['optional']
             }, {
                 'name': 'destination',
@@ -34,14 +34,14 @@ class CommandClass(replay.commander.CommanderClass):
         format_val = self.commander_arg_value(0)
         file_path = self.commander_arg_value(1)
 
-        xf = macro.export_formats
-        format_extensions = [v[0] for k, v in xf.iteritems()]
-        format_unames = [v[1] for k, v in xf.iteritems()]
-        format_names = [v[2] for k, v in xf.iteritems()]
-
         if file_path is None:
-            file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Export file', \
-                    names = format_names, unames = format_unames, ext = format_extensions)
+            file_path = modo.dialogs.customFile(
+                dtype = 'fileSave',
+                title = 'Export file',
+                names = macro.export_format_names,
+                unames = macro.export_format_unames,
+                ext = macro.export_format_extensions
+            )
             if file_path is None:
                 return
             format_val = lx.eval('dialog.fileSaveFormat ?')

@@ -54,13 +54,13 @@ class Lumberjack(object):
     An optional display_value overrides the value parameter for display
     in the TreeView UI, but the `value` is always used internally.
 
-    `Lumberjack().children[n].values[col_name] = value`
-    `Lumberjack().children[n].values[col_name].value = value # equiv of above`
-    `Lumberjack().children[n].values[col_name].display_value = display_value`
-    `Lumberjack().children[n].values[col_name].input_region = region_name`
-    `Lumberjack().children[n].values[col_name].color.set_with_hex("#ffffff")`
-    `Lumberjack().children[n].values[col_name].font.set_bold()`
-    `Lumberjack().children[n].values[col_name].font.set_italic()`
+    `Lumberjack().children[n].columns[col_name] = value`
+    `Lumberjack().children[n].columns[col_name].value = value # equiv of above`
+    `Lumberjack().children[n].columns[col_name].display_value = display_value`
+    `Lumberjack().children[n].columns[col_name].input_region = region_name`
+    `Lumberjack().children[n].columns[col_name].color.set_with_hex("#ffffff")`
+    `Lumberjack().children[n].columns[col_name].font.set_bold()`
+    `Lumberjack().children[n].columns[col_name].font.set_italic()`
 
     Attributes are TreeNodes that appear under the `+` sign in the MODO UI.
     They have the same columns as other nodes, but are separate from the
@@ -101,6 +101,7 @@ class Lumberjack(object):
     _ident = ""
     _nice_name = ""
     _viewport_type = ""
+    _primary = None
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
     # your own class and then tell your Lumberjack Object to use it by changing
@@ -215,14 +216,16 @@ class Lumberjack(object):
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
         cls._root = cls._TreeNodeClass(
-            column_definitions = column_definitions.get('list', [])
+            column_definitions = column_definitions.get('list', []),
+            controller = cls()
         )
 
         # Our internal handle for the view itself.
         cls._tree_view = cls._TreeViewSubclass(
             root = cls._root,
             primary_column_position = column_definitions.get('primary_position', 0),
-            input_regions = input_regions
+            input_regions = input_regions,
+            controller = cls()
         )
 
         # We store these as read-only properties of the class, just in case

@@ -22,25 +22,25 @@ class MacroCommand(lumberjack.TreeNode):
         self._user_comment_before = []
 
         # Create default command value object and set formatting
-        self.values['command'] = lumberjack.TreeValue()
+        self.columns['command'] = lumberjack.TreeValue()
         # 4113 is a special gray color for grayed out text in MODO
-        self.values['command'].color.special_by_name('gray')
-        self.values['command'].input_region = 'MacroCommandCommand'
+        self.columns['command'].color.special_by_name('gray')
+        self.columns['command'].input_region = 'MacroCommandCommand'
 
         # Create default enable value object and set formatting
-        self.values['enable'] = lumberjack.TreeValue()
-        # self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
-        self.values['enable'].display_value = ''
-        self.values['enable'].input_region = 'MacroCommandEnable'
-        self.values['enable'].color.special_by_name('gray')
+        self.columns['enable'] = lumberjack.TreeValue()
+        # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
+        self.columns['enable'].display_value = ''
+        self.columns['enable'].input_region = 'MacroCommandEnable'
+        self.columns['enable'].color.special_by_name('gray')
 
         # Create default dialogs value object and set formatting
-        self.values['prefix'] = lumberjack.TreeValue()
-        self.values['prefix'].input_region = 'MacroCommandPrefix'
+        self.columns['prefix'] = lumberjack.TreeValue()
+        self.columns['prefix'].input_region = 'MacroCommandPrefix'
 
         # Create default name value object
-        self.values['name'] = lumberjack.TreeValue()
-        self.values['name'].input_region = 'MacroCommandName'
+        self.columns['name'] = lumberjack.TreeValue()
+        self.columns['name'].input_region = 'MacroCommandName'
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
@@ -52,15 +52,15 @@ class MacroCommand(lumberjack.TreeNode):
     def command():
         doc = "The base MODO command, e.g. `item.name`."
         def fget(self):
-            command = self.values.get('command')
+            command = self.columns.get('command')
             if command:
                 return command.value
             else:
                 return None
         def fset(self, value):
-            self.values['command'].value = value
+            self.columns['command'].value = value
             self.retreive_args()
-            self.values['name'].value = self.command_meta()['username']
+            self.columns['name'].value = self.command_meta()['username']
         return locals()
 
     command = property(**command())
@@ -77,9 +77,9 @@ class MacroCommand(lumberjack.TreeNode):
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
-            return self.values['prefix'].value
+            return self.columns['prefix'].value
         def fset(self, value):
-            self.values['prefix'].value = value
+            self.columns['prefix'].value = value
         return locals()
 
     prefix = property(**prefix())
@@ -108,18 +108,18 @@ class MacroCommand(lumberjack.TreeNode):
 
             if not is_suppressed:
                 # If not suppressed, display a checkmark and store True
-                self.values['enable'].value = True
-                self.values['enable'].display_value = ''
-                # self.values['enable'].icon_resource = 'MIMG_CHECKMARK'
-                self.values['name'].color.special_by_name('default')
-                self.values['prefix'].color.special_by_name('default')
+                self.columns['enable'].value = True
+                self.columns['enable'].display_value = ''
+                # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
+                self.columns['name'].color.special_by_name('default')
+                self.columns['prefix'].color.special_by_name('default')
             elif is_suppressed:
                 # If it is suppressed, display nothing and store False
-                self.values['enable'].value = False
-                self.values['enable'].display_value = '#'
-                # self.values['enable'].icon_resource = None
-                self.values['name'].color.special_by_name('gray')
-                self.values['prefix'].color.special_by_name('gray')
+                self.columns['enable'].value = False
+                self.columns['enable'].display_value = '#'
+                # self.columns['enable'].icon_resource = None
+                self.columns['name'].color.special_by_name('gray')
+                self.columns['prefix'].color.special_by_name('gray')
 
         return locals()
 
@@ -319,7 +319,11 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Populate the list.
         for n in range(len(argNames)):
-            self.args.append(MacroCommandArg(parent=self, arg_index=n))
+            self.args.append(MacroCommandArg(
+                parent=self,
+                arg_index=n,
+                controller=self._controller
+            ))
 
 
     def command_meta(self):

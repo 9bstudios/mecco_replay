@@ -32,9 +32,6 @@ class TreeNode(object):
     def __init__(self, **kwargs):
 
         # Whether selectable in GUI
-        self._controller = kwargs.get('controller', True)
-
-        # Whether selectable in GUI
         self._selectable = kwargs.get('selectable', True)
 
         # Whether selected in GUI
@@ -79,7 +76,11 @@ class TreeNode(object):
         # for ratios of the sum-total of all other negative integers. (If one column is
         # width -1 and another is -3, the first is 25%, the second is 75%.)
         if 'column_definitions' in kwargs:
-            self._column_definitions = kwargs.get('column_definitions')
+            self.__class__._column_definitions = kwargs.get('column_definitions')
+
+        # Controller is added during blessing. Should never change thereafter.
+        if 'controller' in kwargs:
+            self.__class__._controller = kwargs.get('controller')
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
@@ -155,10 +156,19 @@ class TreeNode(object):
         def fset(self, value):
             self._selected = value
             if value:
-                self.controller.primary = self
+                self._controller.primary = self
         return locals()
 
     selected = property(**selected())
+
+    def column_definitions():
+        doc = """Returns the column definitions for the treeview. Declared during blessing,
+        should never change during a session."""
+        def fget(self):
+            return self._column_definitions
+        return locals()
+
+    column_definitions = property(**column_definitions())
 
     def columns():
         doc = """One TreeValue object for each column in the node. (dictionary)
@@ -435,14 +445,14 @@ class TreeNode(object):
 
         for child in self.children:
 
-            if not child.values.get(column_name, None):
+            if not child.columns.get(column_name, None):
                 continue
 
             if regex:
-                result = search(search_term, child.values[column_name])
+                result = search(search_term, child.columns[column_name])
 
             elif not regex:
-                result = child.values[column_name]
+                result = child.columns[column_name]
 
             if result:
                 found.append(child)

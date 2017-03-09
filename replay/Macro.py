@@ -23,6 +23,13 @@ class Macro(lumberjack.Lumberjack):
     _file_format = None
 
     # export formats in (file extension, user name of format, file pattern)
+    _import_formats = {
+                       'lxm' : ('lxm', 'LXM file', '*.LXM;*.lxm'),
+                       'py' : ('py', 'Python file', '*.py'),
+                       'json' : ('json', 'JSON file', '*.json')
+                       }
+
+    # export formats in (file extension, user name of format, file pattern)
     _export_formats = {
                        'lxm' : ('lxm', 'LXM file', '*.LXM;*.lxm'),
                        'py' : ('py', 'Python file', '*.py'),
@@ -69,13 +76,31 @@ class Macro(lumberjack.Lumberjack):
 
     commands = property(**commands())
 
-    def export_formats():
-        doc = """List of format names used internally."""
-        def fget(self):
-            return self.__class__._export_formats
-        return locals()
+    @property
+    def import_format_names(self):
+        return [k for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_extensions(self):
+        return [v[0] for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_unames(self):
+        return [v[1] for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_patterns(self):
+        return [v[2] for k, v in self._import_formats.iteritems()]
 
-    format_names = property(**format_names())
+    @property
+    def export_format_names(self):
+        return [k for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_extensions(self):
+        return [v[0] for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_unames(self):
+        return [v[1] for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_patterns(self):
+        return [v[2] for k, v in self._export_formats.iteritems()]
 
     def is_empty():
         doc = """Return true if there are no recorded commands."""

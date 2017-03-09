@@ -26,11 +26,16 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Get the path from the user, if not given as argument:
         if not input_path:
-            input_path = modo.dialogs.customFile(dtype = 'fileOpen', title = 'Open LXM file', \
-               names = macro.format_names, unames = macro.format_unames, patterns = macro.format_patterns)
+            input_path = modo.dialogs.customFile(
+                dtype = 'fileOpen',
+                title = 'Open LXM file',
+                names = macro.import_format_names, 
+                unames = macro.import_format_unames, 
+                patterns = macro.import_format_patterns
+            )
             if input_path is None:
                 return
-        
+
         # Parse the file in replay.Macro() and rebuild the view:
         macro.parse(input_path)
         macro.rebuild_view()
