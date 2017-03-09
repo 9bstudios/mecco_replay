@@ -435,17 +435,14 @@ class CommanderClass(lxu.command.BasicCommand):
             commander_query_result = [commander_query_result]
 
         # Need to add the proper datatype based on result from commander_query
-
-        if isinstance(commander_query_result, basestring):
-            for value in commander_query_result:
+        for value in commander_query_result:
+            if isinstance(value, basestring):
                 va.AddString(value)
 
-        elif isinstance(commander_query_result, int):
-            for value in commander_query_result:
+            elif isinstance(value, int):
                 va.AddInt(value)
 
-        elif isinstance(commander_query_result, float):
-            for value in commander_query_result:
+            elif isinstance(value, float):
                 va.AddFloat(value)
 
         return lx.result.OK
