@@ -26,8 +26,8 @@ class TreeNode(object):
     _column_definitions = []
     _columns_move_primary = 0
 
-    # Node that is "primary" in the GUI, aka most recently selected
-    _primary = None
+    # We sometimes need to tell the controller when things update.
+    _controller = None
 
     def __init__(self, **kwargs):
 
@@ -38,7 +38,7 @@ class TreeNode(object):
         self._selected = kwargs.get('selected', False)
 
         # Dict of TreeValue objects for each column; {column_name: TreeValue()}
-        self._values = kwargs.get('values', {})
+        self._columns = kwargs.get('columns', {})
 
         # Nodes can be either `child` or `attribute`, but must be one or the other.
         self._is_attribute = kwargs.get('is_attribute', False)
@@ -68,34 +68,28 @@ class TreeNode(object):
         # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
         self._meta = kwargs.get('meta', {})
 
-        # Primary is usually the most recently selected node. If we initialize
-        # a new node, however, that one becomes primary.
-        #self.__class__._primary = self
+        # List of column names for the node tree. Common to all nodes.
+        # Set during `Lumberjack().bless()`
+        #
+        # Each column is a dictionary with at least two keys: 'name', and 'width'. Width
+        # values can be positive integers for literal pixel widths, or negative integers
+        # for ratios of the sum-total of all other negative integers. (If one column is
+        # width -1 and another is -3, the first is 25%, the second is 75%.)
+        if 'column_definitions' in kwargs:
+            self.__class__._column_definitions = kwargs.get('column_definitions')
+
+        # Controller is added during blessing. Should never change thereafter.
+        if 'controller' in kwargs:
+            self.__class__._controller = kwargs.get('controller')
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
-            self._values[column['name']] = TreeValue()
+            self._columns[column['name']] = TreeValue()
 
         self.row_color = RowColor().name
 
     # PROPERTIES
     # ----------
-
-    def column_definitions():
-        doc = """List of column names for the node tree. Common to all nodes.
-        Set during `Lumberjack().bless()`
-
-        Each column is a dictionary with at least two keys: 'name', and 'width'. Width
-        values can be positive integers for literal pixel widths, or negative integers
-        for ratios of the sum-total of all other negative integers. (If one column is
-        width -1 and another is -3, the first is 25%, the second is 75%.)"""
-        def fget(self):
-            return self._column_definitions
-        def fset(self, value):
-            self.__class__._column_definitions = value
-        return locals()
-
-    column_definitions = property(**column_definitions())
 
     def row_color():
         doc = """A `RowColor()` object specifying the color of the current node.
@@ -138,10 +132,8 @@ class TreeNode(object):
         def fget(self):
             return self._selectable
         def fset(self, value):
-            if value == False:
-                self._selected = False
-                self.primary = None
             self._selectable = value
+            self.selected = False
         return locals()
 
     selectable = property(**selectable())
@@ -164,42 +156,37 @@ class TreeNode(object):
         def fset(self, value):
             self._selected = value
             if value:
-                self.primary = self
+                self._controller.primary = self
         return locals()
 
     selected = property(**selected())
 
-    def primary():
-        doc = """Class property teturns the primary TreeNode in the tree.
-
-        Typically the most recently selected or created node will be primary.
-        It is possible to set the primary node to False, meaning there is no
-        current primary."""
+    def column_definitions():
+        doc = """Returns the column definitions for the treeview. Declared during blessing,
+        should never change during a session."""
         def fget(self):
-            return self.__class__._primary
-        def fset(self, value):
-            self.__class__._primary = value
+            return self._column_definitions
         return locals()
 
-    primary = property(**primary())
+    column_definitions = property(**column_definitions())
 
-    def values():
-        doc = """The values for each column in the node. (dictionary)
+    def columns():
+        doc = """One TreeValue object for each column in the node. (dictionary)
 
         The dictionary should have one key for each column name defined in the
-        Lumberjack blessing_parameters `'column_definitions'` key. The values themselves
+        Lumberjack blessing_parameters `'column_definitions'` key. The columns themselves
         are `TreeValue()` objects, each with a `value` property for the internal
         value, but also containing metadata like font, color, etc.
 
-        Empty values and invalid keys (not matching a column name) will be
+        Empty columns and invalid keys (not matching a column name) will be
         ignored."""
         def fget(self):
-            return self._values
-        def fset(self, values):
-            self._values = values
+            return self._columns
+        def fset(self, columns):
+            self._columns = columns
         return locals()
 
-    values = property(**values())
+    columns = property(**columns())
 
     def parent():
         doc = """The parent node of the current `TreeNode()` object. The root
@@ -211,16 +198,6 @@ class TreeNode(object):
         return locals()
 
     parent = property(**parent())
-
-    def root():
-        doc = """The root node of the current `TreeNode()` hierarchy."""
-        def fget(self):
-            if not self.parent:
-                return self
-            return self.parent.root
-        return locals()
-
-    root = property(**root())
 
     def is_attribute():
         doc = """If True, node will be considered an attribute of the parent node rather
@@ -394,11 +371,6 @@ class TreeNode(object):
         kwargs['parent'].attributes.append(newNode)
         return newNode
 
-    def clear_tree_selection(self):
-        """Deselects all TreeNodes in the current tree."""
-        for node in self.root.descendants:
-            node.selected = False
-
     def select_descendants(self):
         """Selects all children, grandchildren, etc."""
         for child in self.children:
@@ -413,8 +385,11 @@ class TreeNode(object):
 
     def delete(self):
         """Deletes the current node and reparents all of its children to its parent."""
-        self.selected = False
-        self.primary = None
+
+        # If we don't clear out the `primary` property for the controller,
+        # this node will live on as a zombie, eating the brains of...
+        if self._controller.primary == self:
+            self._controller.primary = None
 
         # Delete all attributes
         self.delete_attributes()
@@ -428,8 +403,10 @@ class TreeNode(object):
     def delete_descendants(self):
         """Deletes all children, grandchildren etc from the current node. To delete
         the node itself, use `delete()`"""
-        if self.primary in self.descendants:
-            self.primary = self
+        # If we don't clear out the `primary` property for the controller,
+        # this node will live on as a zombie, eating the brains of...
+        if self._controller.primary in self.descendants:
+            self._controller.primary = None
         del self.children[:]
 
     def delete_attributes(self):
@@ -476,14 +453,14 @@ class TreeNode(object):
 
         for child in self.children:
 
-            if not child.values.get(column_name, None):
+            if not child.columns.get(column_name, None):
                 continue
 
             if regex:
-                result = search(search_term, child.values[column_name])
+                result = search(search_term, child.columns[column_name])
 
             elif not regex:
-                result = child.values[column_name]
+                result = child.columns[column_name]
 
             if result:
                 found.append(child)

@@ -25,25 +25,25 @@ class MacroCommandArg(lumberjack.TreeNode):
         self._argExample = None
 
         # `command` field displays the actual argument value
-        self.values['command'] = lumberjack.TreeValue()
-        self.values['command'].input_region = 'MacroCommandArg'
-        self.values['command'].value = None
+        self.columns['command'] = lumberjack.TreeValue()
+        self.columns['command'].input_region = 'MacroCommandArg'
+        self.columns['command'].value = None
 
         # `enable` field is empty for arguments
-        self.values['enable'] = lumberjack.TreeValue()
-        self.values['command'].input_region = None
-        self.values['enable'].display_value = ''
+        self.columns['enable'] = lumberjack.TreeValue()
+        self.columns['command'].input_region = None
+        self.columns['enable'].display_value = ''
 
         # `prefix` field is empty for arguments
-        self.values['prefix'] = lumberjack.TreeValue()
-        self.values['command'].input_region = None
-        self.values['prefix'].display_value = ''
+        self.columns['prefix'] = lumberjack.TreeValue()
+        self.columns['command'].input_region = None
+        self.columns['prefix'].display_value = ''
 
         # `name` field contains the argument name as a `value`,
         # and the argument's username (nice name) as a `display_value`
-        self.values['name'] = lumberjack.TreeValue()
-        self.values['name'].input_region = 'MacroCommandArg'
-        self.values['name'].color.special_by_name('gray')
+        self.columns['name'] = lumberjack.TreeValue()
+        self.columns['name'].input_region = 'MacroCommandArg'
+        self.columns['name'].color.special_by_name('gray')
 
         # Query argument metadata
         self.retreive_arg_meta()
@@ -60,12 +60,12 @@ class MacroCommandArg(lumberjack.TreeNode):
         NOTE: If you set it to a string, it will try to convert it to to the approrpiate
         datatype based on argType."""
         def fget(self):
-            return self.values['command'].value
+            return self.columns['command'].value
         def fset(self, value):
-            self.values['command'].value = self.convert_string_to_value(value)
+            self.columns['command'].value = self.convert_string_to_value(value)
 
             # If value is empty, gray out the name.
-            for column, value in self.values.iteritems():
+            for column, value in self.columns.iteritems():
                 if value.value is None:
                     value.color.special_by_name('gray')
                 else:
@@ -77,9 +77,9 @@ class MacroCommandArg(lumberjack.TreeNode):
     def argName():
         doc = "The argName property is really a proxy for the `name` cell value."
         def fget(self):
-            return self.values['name'].value
+            return self.columns['name'].value
         def fset(self, value):
-            self.values['name'].value = value
+            self.columns['name'].value = value
         return locals()
 
     argName = property(**argName())
@@ -93,7 +93,7 @@ class MacroCommandArg(lumberjack.TreeNode):
             # we need to store the username in both the `display_value` for the `name`
             # column, and also in an internal `_argUsername` variable.
             self._argUsername = value
-            self.values['name'].display_value = value
+            self.columns['name'].display_value = value
         return locals()
 
     argUsername = property(**argUsername())

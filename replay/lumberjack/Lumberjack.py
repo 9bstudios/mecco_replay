@@ -32,7 +32,6 @@ class Lumberjack(object):
 
     `Lumberjack().children[n].selectable = False`
     `Lumberjack().children[n].selected = True`
-    `Lumberjack().children[n].primary = True`
     `Lumberjack().children[n].setParent(node)`
     `Lumberjack().children[n].clear_children(node)`
     `Lumberjack().children[n].reorder(index)`
@@ -55,13 +54,13 @@ class Lumberjack(object):
     An optional display_value overrides the value parameter for display
     in the TreeView UI, but the `value` is always used internally.
 
-    `Lumberjack().children[n].values[col_name] = value`
-    `Lumberjack().children[n].values[col_name].value = value # equiv of above`
-    `Lumberjack().children[n].values[col_name].display_value = display_value`
-    `Lumberjack().children[n].values[col_name].input_region = region_name`
-    `Lumberjack().children[n].values[col_name].color.set_with_hex("#ffffff")`
-    `Lumberjack().children[n].values[col_name].font.set_bold()`
-    `Lumberjack().children[n].values[col_name].font.set_italic()`
+    `Lumberjack().children[n].columns[col_name] = value`
+    `Lumberjack().children[n].columns[col_name].value = value # equiv of above`
+    `Lumberjack().children[n].columns[col_name].display_value = display_value`
+    `Lumberjack().children[n].columns[col_name].input_region = region_name`
+    `Lumberjack().children[n].columns[col_name].color.set_with_hex("#ffffff")`
+    `Lumberjack().children[n].columns[col_name].font.set_bold()`
+    `Lumberjack().children[n].columns[col_name].font.set_italic()`
 
     Attributes are TreeNodes that appear under the `+` sign in the MODO UI.
     They have the same columns as other nodes, but are separate from the
@@ -102,6 +101,7 @@ class Lumberjack(object):
     _ident = ""
     _nice_name = ""
     _viewport_type = ""
+    _primary = None
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
     # your own class and then tell your Lumberjack Object to use it by changing
@@ -215,13 +215,18 @@ class Lumberjack(object):
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        cls._root = cls._TreeNodeClass()
-        cls._root.column_definitions = column_definitions.get('list', [])
+        cls._root = cls._TreeNodeClass(
+            column_definitions = column_definitions.get('list', []),
+            controller = cls()
+        )
 
         # Our internal handle for the view itself.
-        cls._tree_view = cls._TreeViewSubclass(root=cls._root)
-        cls._tree_view.set_primary_column_position(column_definitions.get('primary_position', 0))
-        cls._tree_view.set_input_regions(input_regions)
+        cls._tree_view = cls._TreeViewSubclass(
+            root = cls._root,
+            primary_column_position = column_definitions.get('primary_position', 0),
+            input_regions = input_regions,
+            controller = cls()
+        )
 
         # We store these as read-only properties of the class, just in case
         # we ever need them.
@@ -279,18 +284,12 @@ class Lumberjack(object):
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
-    def view(self):
+    def treeview(self):
         """Returns the class `TreeView()` object."""
         if self.__class__._tree_view:
             return self.__class__._tree_view
         else:
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
-
-    @property
-    def primary(self):
-        """Returns the primary `TreeNode()` object in the tree.
-        Usually this is the most recently selected or created."""
-        return self._root.primary
 
     @property
     def selected_descendants(self):
@@ -299,12 +298,22 @@ class Lumberjack(object):
 
     @property
     def selected_children(self):
-        """Returns the selected `TreeNode()` objects in the tree."""
+        """Returns the selected `TreeNode()` objects at the root of the tree."""
         return self.root.selected_children
 
-    def clear_tree_selection(self):
+    def clear_selection(self):
         """Returns the selected `TreeNode()` objects in the tree."""
         return self.root.deselect_descendants()
+
+    def primary():
+        doc = """The primary node is typically the most recently selected."""
+        def fget(self):
+            return self._primary
+        def fset(self, value):
+            self.__class__._primary = value
+        return locals()
+
+    primary = property(**primary())
 
     def TreeNodeClass():
         doc = """The `TreeNode()`` subclass to use when populating the tree.
@@ -325,11 +334,9 @@ class Lumberjack(object):
         doc = """List of columns and their widths for the treeview in the
         format `('name', width)`, where width can be a positive integer in pixels
         or a negative integer representing a width relative to the total of all
-        netagive values."""
+        netagive values. Set during bless. Cannot change during a session."""
         def fget(self):
             return self._root.column_definitions
-        def fset(self, value):
-            self._root.column_definitions = value
         return locals()
 
     column_definitions = property(**column_definitions())
@@ -383,6 +390,7 @@ class Lumberjack(object):
 
     def clear(self):
         """Deletes all nodes from the tree."""
+        self.primary = None
         self.root.delete_descendants()
 
     def find(self, column_name, search_term, regex=False):
@@ -403,8 +411,8 @@ class Lumberjack(object):
         for performance."""
 
         # NOTE: We must _both_ notify attributes _and_ shape. (Facepalm.)
-        self.view.notify_NewAttributes()
-        self.view.notify_NewShape()
+        self.treeview.notify_NewAttributes()
+        self.treeview.notify_NewShape()
 
     def refresh_view(self):
         """Refreshes `TreeView()` cell values, but not structure. Must run every
@@ -412,26 +420,4 @@ class Lumberjack(object):
         (e.g. adding/removing nodes, reordering, reparenting) require the
         `rebuild()`` method."""
 
-        self.view.notify_NewAttributes()
-
-    def reorder(self, mode, index):
-        """ Reorder selected items according to mode and index arguments """
-        # Getting
-        sel_children = self.selected_children
-
-        # Sorting children in descending order to preserve order in macro
-        sel_children.sort(key=lambda x: x.index, reverse=True)
-
-        for child in sel_children:
-            if mode == "up":
-                child.reorder_up()
-            elif mode == "down":
-                child.reorder_down()
-            elif mode == "top":
-                child.reorder_top()
-            elif mode == "bottom":
-                child.reorder_bottom()
-            elif mode == "index":
-                child.index = index
-            else:
-                raise Exception('Wrong mode value "%s" is specified.' % mode)
+        self.treeview.notify_NewAttributes()

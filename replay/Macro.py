@@ -23,6 +23,13 @@ class Macro(lumberjack.Lumberjack):
     _file_format = None
 
     # export formats in (file extension, user name of format, file pattern)
+    _import_formats = {
+                       'lxm' : ('lxm', 'LXM file', '*.LXM;*.lxm'),
+                       'py' : ('py', 'Python file', '*.py'),
+                       'json' : ('json', 'JSON file', '*.json')
+                       }
+
+    # export formats in (file extension, user name of format, file pattern)
     _export_formats = {
                        'lxm' : ('lxm', 'LXM file', '*.LXM;*.lxm'),
                        'py' : ('py', 'Python file', '*.py'),
@@ -69,56 +76,31 @@ class Macro(lumberjack.Lumberjack):
 
     commands = property(**commands())
 
-    def format_names():
-        doc = """List of format names used internally."""
-        def fget(self):
-            return self.__class__._export_formats.keys()
-        return locals()
+    @property
+    def import_format_names(self):
+        return [k for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_extensions(self):
+        return [v[0] for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_unames(self):
+        return [v[1] for k, v in self._import_formats.iteritems()]
+    @property
+    def import_format_patterns(self):
+        return [v[2] for k, v in self._import_formats.iteritems()]
 
-    format_names = property(**format_names())
-
-    def format_unames():
-        doc = """List of format User names used to display in file dialogs."""
-        def fget(self):
-            res = list()
-            for val in self.__class__._export_formats.itervalues():
-                res.append(val[1])
-            return res
-        return locals()
-
-    format_unames = property(**format_unames())
-
-    def format_patterns():
-        doc = """List of format patterns used to display in file open dialogs."""
-        def fget(self):
-            res = list()
-            for val in self.__class__._export_formats.itervalues():
-                res.append(val[2])
-            return res
-        return locals()
-
-    format_patterns = property(**format_patterns())
-
-    def format_extensions():
-        doc = """List of extensions to be used in file dialogs."""
-        def fget(self):
-            res = list()
-            for val in self.__class__._export_formats.itervalues():
-                res.append(val[0])
-            return res
-        return locals()
-
-    format_extensions = property(**format_extensions())
-
-    def name_by_extension(self, extension):
-        doc = """Returns format name by given extension"""
-        for key, val in self.__class__._export_formats.iteritems():
-            if val[0].lower() == extension.lower():
-                return key
-
-        return self.__class__._export_formats.keys()[0]
-
-        # Return lxm for unknown extensions
+    @property
+    def export_format_names(self):
+        return [k for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_extensions(self):
+        return [v[0] for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_unames(self):
+        return [v[1] for k, v in self._export_formats.iteritems()]
+    @property
+    def export_format_patterns(self):
+        return [v[2] for k, v in self._export_formats.iteritems()]
 
     def is_empty():
         doc = """Return true if there are no recorded commands."""
@@ -158,14 +140,17 @@ class Macro(lumberjack.Lumberjack):
         file_extension = file_extension[1:]
 
         # Lookup extension name
-        format_name = self.name_by_extension(file_extension)
+        for key, val in self._export_formats.iteritems():
+            if val[0] == file_extension.lower():
+                format_name = key
+                break
 
-        if format_name == "lxm":
-            self.parse_LXM(input_path, **kwargs)
-        elif format_name == "py":
+        if format_name == "py":
             self.parse_Python(input_path, **kwargs)
-        else:
+        elif format_name == 'json':
             self.parse_json(input_path, **kwargs)
+        else:
+            self.parse_LXM(input_path, **kwargs)
         return format_name
 
     def parse_LXM(self, input_path, **kwargs):
