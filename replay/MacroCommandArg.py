@@ -64,12 +64,10 @@ class MacroCommandArg(lumberjack.TreeNode):
         def fset(self, value):
             self.columns['command'].value = self.convert_string_to_value(value)
 
-            # If value is empty, gray out the name.
-            for column, value in self.columns.iteritems():
-                if value.value is None:
-                    value.color.special_by_name('gray')
-                else:
-                    value.color.special_by_name('default')
+            if self.columns['command'].value is None:
+                self.columns['name'].color.special_by_name('gray')
+            else:
+                self.columns['name'].color.special_by_name('default')
         return locals()
 
     value = property(**value())
@@ -172,7 +170,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         self.argName = values_list[arg_index]
 
         values_list = lx.evalN("query commandservice command.argUsernames ? {%s}" % base_command)
-        self.argUsername = "%s \03(c:4113)(%s)" % (values_list[arg_index], self.argName) 
+        self.argUsername = "%s \03(c:4113)(%s)" % (values_list[arg_index], self.argName)
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [

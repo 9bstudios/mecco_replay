@@ -1,15 +1,5 @@
 # python
 
-# Joe Angell [12:23 PM]
-# - Flag the variable datatype arguments with VARIABLE_DATATYPE
-# - Flag any arguments that need to be set to resolve the variable datatype with REQFORVARIABLE.  For example, item.channel needs to know which channel its targeting before it can figure out the datatype for the "value" argument
-# - Implement ArgSetDatatype() to return the datatype.
-#
-# In your case, I expect the REQFORVARIABLE argument to be called "argument", and
-# represents a specific argument on the command, with the command itself being the
-# one selected in the tree (rather than providing it as yet another argument).
-# The VARIABLE_DATATYPE argument would be "value", and would be queriable.
-
 import lx, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
@@ -17,7 +7,8 @@ https://github.com/adamohern/commander for details"""
 
 
 class CommandClass(replay.commander.CommanderClass):
-    """Inserts a comment-only command object into the `Macro().commands` list."""
+    """Editor for command argument values. Accepts an argName and a value query.
+    Designed specifically for use with `replay.argEditFCL`."""
 
     def commander_arguments(self):
         return [
