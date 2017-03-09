@@ -310,7 +310,7 @@ class Lumberjack(object):
         def fget(self):
             return self._primary
         def fset(self, value):
-            self._primary = value
+            self.__class__._primary = value
         return locals()
 
     primary = property(**primary())
@@ -390,6 +390,7 @@ class Lumberjack(object):
 
     def clear(self):
         """Deletes all nodes from the tree."""
+        self.primary = None
         self.root.delete_descendants()
 
     def find(self, column_name, search_term, regex=False):

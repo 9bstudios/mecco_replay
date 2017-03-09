@@ -385,7 +385,11 @@ class TreeNode(object):
 
     def delete(self):
         """Deletes the current node and reparents all of its children to its parent."""
-        self.selected = False
+
+        # If we don't clear out the `primary` property for the controller,
+        # this node will live on as a zombie, eating the brains of...
+        if self._controller.primary == self:
+            self._controller.primary = None
 
         # Delete all attributes
         self.delete_attributes()
@@ -399,6 +403,10 @@ class TreeNode(object):
     def delete_descendants(self):
         """Deletes all children, grandchildren etc from the current node. To delete
         the node itself, use `delete()`"""
+        # If we don't clear out the `primary` property for the controller,
+        # this node will live on as a zombie, eating the brains of...
+        if self._controller.primary in self.descendants:
+            self._controller.primary = None
         del self.children[:]
 
     def delete_attributes(self):

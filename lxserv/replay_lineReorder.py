@@ -51,19 +51,31 @@ class CommandClass(replay.commander.CommanderClass):
         # Getting
         sel_children = macro.selected_children
 
-        # Sorting children in descending order to preserve order in macro
-        sel_children.sort(key=lambda x: x.index, reverse=True)
-
-        for child in sel_children:
-            if mode == "up":
+        # If going up, we move up starting with the top of the list and move down.
+        if mode == "up":
+            for child in sel_children:
                 child.reorder_up()
-            elif mode == "down":
+
+        elif mode == "down":
+            # If going any other direction, start
+            sel_children.sort(key=lambda x: x.index, reverse=True)
+
+            for child in sel_children:
                 child.reorder_down()
-            elif mode == "top":
+
+        elif mode == "top":
+            # If going any other direction, start
+            sel_children.sort(key=lambda x: x.index, reverse=True)
+            
+            for child in sel_children:
                 child.reorder_top()
-            elif mode == "bottom":
+
+        elif mode == "bottom":
+            for child in sel_children:
                 child.reorder_bottom()
-            elif mode == "index":
+
+        elif mode == "index":
+            for child in sel_children:
                 child.index = index
 
         macro.rebuild_view()
