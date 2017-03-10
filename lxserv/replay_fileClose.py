@@ -11,7 +11,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
         # If content is not empty ask user for save
-        if not macro.is_empty:
+        if macro.unsaved_changes and not macro.is_empty:
             file_path = macro.file_path
             if file_path is None:
                 file_path = "Untitled"
@@ -25,6 +25,7 @@ class CommandClass(replay.commander.CommanderClass):
         # No more file path
         macro.file_path = None
         macro.file_format = None
+        macro.unsaved_changes = False
         # Clear current macro
         macro.clear()
         # Rebuild treeview

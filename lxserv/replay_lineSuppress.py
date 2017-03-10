@@ -15,6 +15,7 @@ class CommandClass(replay.commander.CommanderClass):
             line.suppress = False if line.suppress else True
 
         replay.Macro().refresh_view()
+        replay.Macro().unsaved_changes = True
 
 
 lx.bless(CommandClass, 'replay.lineSuppress')

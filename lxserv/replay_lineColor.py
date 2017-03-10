@@ -43,5 +43,6 @@ class CommandClass(replay.commander.CommanderClass):
             line.row_color = color_name
 
         replay.Macro().rebuild_view()
+        replay.Macro().unsaved_changes = True
 
 lx.bless(CommandClass, 'replay.lineColor')

@@ -38,6 +38,9 @@ class Macro(lumberjack.Lumberjack):
                        }
     _current_line = 0
 
+    # Keeps track of unsaved changes for use in `replay.fileClose`.
+    _unsaved_changes = False
+
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
     _TreeNodeClass = MacroCommand
@@ -68,13 +71,23 @@ class Macro(lumberjack.Lumberjack):
 
     file_format = property(**file_format())
 
+    def unsaved_changes():
+        doc = """Boolean. True if the current Macro() has unsaved changes."""
+        def fget(self):
+            return self.__class__._unsaved_changes
+        def fset(self, value):
+            self.__class__._unsaved_changes = value
+        return locals()
+
+    unsaved_changes = property(**unsaved_changes())
+
     def commands():
         doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
         def fget(self):
             return self.root.children
         return locals()
-        
+
     commands = property(**commands())
 
 

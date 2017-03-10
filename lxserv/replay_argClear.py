@@ -16,6 +16,7 @@ class CommandClass(replay.commander.CommanderClass):
             node.value = None
 
         replay.Macro().refresh_view()
+        replay.Macro().unsaved_changes = True
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)

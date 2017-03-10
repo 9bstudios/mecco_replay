@@ -66,7 +66,7 @@ class CommandClass(replay.commander.CommanderClass):
         elif mode == "top":
             # If going any other direction, start
             sel_children.sort(key=lambda x: x.index, reverse=True)
-            
+
             for child in sel_children:
                 child.reorder_top()
 
@@ -79,6 +79,7 @@ class CommandClass(replay.commander.CommanderClass):
                 child.index = index
 
         macro.rebuild_view()
+        replay.Macro().unsaved_changes = True
 
 
 lx.bless(CommandClass, 'replay.lineReorder')

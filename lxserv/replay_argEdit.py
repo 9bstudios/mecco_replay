@@ -68,6 +68,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Notify the TreeView to update itself.
         replay.Macro().refresh_view()
+        replay.Macro().unsaved_changes = True
 
         # TODO For some reason this breaks minisliders.
         # notifier = replay.Notifier()
