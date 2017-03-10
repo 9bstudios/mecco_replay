@@ -29,8 +29,8 @@ class CommandClass(replay.commander.CommanderClass):
             input_path = modo.dialogs.customFile(
                 dtype = 'fileOpen',
                 title = 'Open LXM file',
-                names = macro.import_format_names, 
-                unames = macro.import_format_unames, 
+                names = macro.import_format_names,
+                unames = macro.import_format_unames,
                 patterns = macro.import_format_patterns
             )
             if input_path is None:
@@ -39,5 +39,8 @@ class CommandClass(replay.commander.CommanderClass):
         # Parse the file in replay.Macro() and rebuild the view:
         macro.parse(input_path)
         macro.rebuild_view()
+
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
 lx.bless(CommandClass, 'replay.fileOpen')

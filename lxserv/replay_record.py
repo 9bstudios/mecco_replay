@@ -92,6 +92,8 @@ class RecordCommandClass(replay.commander.CommanderClass):
                 import traceback
                 traceback.print_exc()
 
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
 
 
