@@ -1,4 +1,4 @@
-import lx, modo, replay
+import lx, modo, replay, os
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -16,6 +16,13 @@ class CommandClass(replay.commander.CommanderClass):
                 'flags': ['optional']
             }
         ]
+
+    def basic_ButtonName(self):
+        input_path = self.commander_arg_value(0)
+        if input_path:
+            return os.path.basename(input_path)
+        else:
+            lx.notimpl()
 
     def commander_execute(self, msg, flags):
 
@@ -39,6 +46,8 @@ class CommandClass(replay.commander.CommanderClass):
         # Parse the file in replay.Macro() and rebuild the view:
         macro.parse(input_path)
         macro.rebuild_view()
+
+        lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
