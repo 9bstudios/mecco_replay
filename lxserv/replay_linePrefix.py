@@ -43,5 +43,6 @@ class CommandClass(replay.commander.CommanderClass):
             command.prefix = prefix
 
         replay.Macro().refresh_view()
+        replay.Macro().unsaved_changes = True
 
 lx.bless(CommandClass, 'replay.linePrefix')

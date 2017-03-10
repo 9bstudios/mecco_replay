@@ -24,6 +24,11 @@ class CommandClass(replay.commander.CommanderClass):
             }
         ]
 
+    def cmd_Flags(self):
+        """Set command flags. This method can be overridden if special flags
+        are needed."""
+        return lx.symbol.fCMD_UI | lx.symbol.fCMD_UNDO
+
     def commander_notifiers(self):
         # We need to update our values whenever the replay notifier fires for
         # selection state changes and tree updates.
@@ -68,30 +73,129 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Notify the TreeView to update itself.
         replay.Macro().refresh_view()
+        replay.Macro().unsaved_changes = True
 
-        # TODO For some reason this breaks minisliders.
-        # notifier = replay.Notifier()
-        # notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
 
-    def commander_query(self, argIndex):
+    def cmd_Query(self, index, vaQuery):
         """Fires whenever the value is displayed in the form. Should return the value(s)
         to be displayed in the edit field. If multiple values are provided, MODO will
         display "mixed..." in the edit field for batch editing."""
+
+        # Create the ValueArray object
+        va = lx.object.ValueArray()
+        va.set(vaQuery)
+
+        if index != 1:
+            return lx.result.OK
+
+        # GATHER VALUES
+        # -------------
+
         argName = self.commander_args()['argName']
 
         argValues = set()
         for arg in self.args_by_argName(argName):
-            argValues.add(arg.value)
 
+            # Try to establish datatype by name
+            datatype = arg.argTypeName
+
+            # If not, fall back on the `arg.argType` property:
+            if not datatype:
+                datatype = [
+                    lx.symbol.sTYPE_STRING,     # generic object (as string)
+                    lx.symbol.sTYPE_INTEGER,    # integer
+                    lx.symbol.sTYPE_FLOAT,      # float
+                    lx.symbol.sTYPE_STRING      # string
+                ][arg.argType]
+
+            argValues.add((arg.value, datatype))
+
+        # If there are no values to return, don't bother.
         if not argValues:
-            return None
+            return lx.result.OK
 
+        # Some arg values will be stored as strings when in fact they should
+        # really be numbers. (Since not all MODO command args specify a datatype.)
+        # We assume that if the datatype is undeclared and the string can be
+        # converted to a float, we should do it.
         if self.can_float(argName):
-            values_list = [float(v) for v in argValues]
+            values_list = [(float(v), lx.symbol.sTYPE_FLOAT) for (v, d) in argValues]
         else:
             values_list = list(argValues)
 
-        return values_list[0] if len(argValues) == 1 else values_list
+        # RETURN VALUES
+        # -------------
+
+        # Need to add the proper datatype based on result from commander_query
+        for value, datatype in values_list:
+
+            # Sometimes we get passed empty values. Ignore those.
+            if value is None:
+                continue
+
+            # Sadly, I am not aware of any way of handling datatypes except
+            # by manually testing for them and doing the appropriate action.
+            # MODO doesn't make this easy.
+
+            # Strings
+            if datatype in [
+                    lx.symbol.sTYPE_DATE,
+                    lx.symbol.sTYPE_DATETIME,
+                    lx.symbol.sTYPE_FILEPATH,
+                    lx.symbol.sTYPE_STRING,
+                    lx.symbol.sTYPE_VERTMAPNAME
+                    ]:
+                try:
+                    va.AddString(str(value))
+                except:
+                    raise Exception("Invalid string", value, type(value), datatype)
+
+            # Integers
+            elif datatype in [
+                    lx.symbol.sTYPE_INTEGER,
+                    lx.symbol.sTYPE_BOOLEAN
+                    ]:
+                va.AddInt(int(value))
+
+            # Floats
+            elif datatype in [
+                    lx.symbol.sTYPE_ACCELERATION,
+                    lx.symbol.sTYPE_ANGLE,
+                    lx.symbol.sTYPE_AXIS,
+                    lx.symbol.sTYPE_COLOR1,
+                    lx.symbol.sTYPE_FLOAT,
+                    lx.symbol.sTYPE_FORCE,
+                    lx.symbol.sTYPE_LIGHT,
+                    lx.symbol.sTYPE_MASS,
+                    lx.symbol.sTYPE_PERCENT,
+                    lx.symbol.sTYPE_SPEED,
+                    lx.symbol.sTYPE_TIME,
+                    lx.symbol.sTYPE_UVCOORD
+                    ]:
+                va.AddFloat(float(value))
+
+            # Vectors (i.e. strings that need parsing)
+            elif datatype in [
+                    lx.symbol.sTYPE_ANGLE3,
+                    lx.symbol.sTYPE_COLOR,
+                    lx.symbol.sTYPE_DISTANCE3,
+                    lx.symbol.sTYPE_FLOAT3,
+                    lx.symbol.sTYPE_PERCENT3
+                    ]:
+                emptyValue = va.AddEmptyValue()
+                emptyValue.SetString(str(value))
+
+            # If the datatype isn't handled explicitly above, we try adding it
+            # to a generic value object. Failing that, barf.
+            else:
+                try:
+                    va.AddValue(value)
+                except:
+                    raise Exception("Could not detect query datatype.")
+
+        return lx.result.OK
 
     def argLabel(self):
         """Displays the proper label for each argument, rather than a generic one."""

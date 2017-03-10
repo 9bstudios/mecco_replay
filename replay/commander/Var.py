@@ -18,6 +18,7 @@ sTYPE_FLOATs = [
         'angle',
         'axis',
         'color1',
+        'distance',
         'float',
         'force',
         'light',
@@ -42,6 +43,7 @@ sTYPE_STRINGs = [
 sTYPE_STRING_vectors = [
         'angle3',
         'color',
+        'distance3',
         'float3',
         'percent3'
     ]

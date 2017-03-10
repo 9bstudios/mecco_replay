@@ -38,6 +38,9 @@ class Macro(lumberjack.Lumberjack):
                        }
     _current_line = 0
 
+    # Keeps track of unsaved changes for use in `replay.fileClose`.
+    _unsaved_changes = False
+
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
     _TreeNodeClass = MacroCommand
@@ -68,13 +71,23 @@ class Macro(lumberjack.Lumberjack):
 
     file_format = property(**file_format())
 
+    def unsaved_changes():
+        doc = """Boolean. True if the current Macro() has unsaved changes."""
+        def fget(self):
+            return self.__class__._unsaved_changes
+        def fset(self, value):
+            self.__class__._unsaved_changes = value
+        return locals()
+
+    unsaved_changes = property(**unsaved_changes())
+
     def commands():
         doc = """The list of `MacroCommand()` objects for the macro, in
         order from first to last."""
         def fget(self):
             return self.root.children
         return locals()
-        
+
     commands = property(**commands())
 
 
@@ -132,6 +145,14 @@ class Macro(lumberjack.Lumberjack):
 
     def select_event(self):
         """Fires whenever a TreeNode `selected` state is changed."""
+        # Welcome to an advanced course on Stupid Things About MODO!
+        # If we modify a color channel and then suddenly our form control
+        # disappears (because of a selection change), MODO will crash. Yay!
+        # For those who do not like this behavior, we black out the current
+        # color selection whenever we make a change.
+        lx.eval('select.color {0 0 0}')
+
+
         notifier = Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 

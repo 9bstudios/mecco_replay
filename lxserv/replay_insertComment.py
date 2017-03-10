@@ -26,5 +26,6 @@ class CommandClass(replay.commander.CommanderClass):
             return
 
         macro.rebuild_view()
+        replay.Macro().unsaved_changes = True
 
 lx.bless(CommandClass, 'replay.insertComment')

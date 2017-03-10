@@ -40,4 +40,6 @@ class CommandClass(replay.commander.CommanderClass):
         macro.parse_and_insert(input_path)
         macro.rebuild_view()
 
+        replay.Macro().unsaved_changes = True
+
 lx.bless(CommandClass, 'replay.fileInsert')

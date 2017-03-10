@@ -260,7 +260,7 @@ class CommanderClass(lxu.command.BasicCommand):
     def cmd_Flags(self):
         """Set command flags. This method can be overridden if special flags
         are needed."""
-        return lx.symbol.fCMD_POSTCMD | lx.symbol.fCMD_MODEL | lx.symbol.fCMD_UNDO
+        return lx.symbol.fCMD_MODEL | lx.symbol.fCMD_UNDO
 
     def arg_UIHints(self, index, hints):
         """Adds pretty labels to arguments in command dialogs. If no label parameter
@@ -431,13 +431,8 @@ class CommanderClass(lxu.command.BasicCommand):
         # To keep things simpler for commander users, let them return
         # a value using only an index (no ValueArray nonsense)
         commander_query_result = self.commander_query(index)
-        if not isinstance(commander_query_result, (list, tuple, set, dict)):
+        if not isinstance(commander_query_result, (list, tuple, set)):
             values = [commander_query_result]
-            datatype = None
-
-        if isinstance(commander_query_result, dict):
-            values = commander_query_result.get('values')
-            datatype = commander_query_result.get('datatype')
 
         # Need to add the proper datatype based on result from commander_query
         for value in values:
@@ -451,15 +446,16 @@ class CommanderClass(lxu.command.BasicCommand):
 
                 elif isinstance(value, float):
                     va.AddFloat(value)
+
+            # if there is a mismatch between this datatype and the Declared
+            # query type, the va.AddWhatever will fail. In that case, we
+            # can try adding a generic value as a last effort, then fail.
             except:
-                # TODO
-                # emptyValue = va.AddEmptyValue()
-                # emptyValue.SetString("0.0, 1.0, 0.0")
                 try:
                     if isinstance(value, basestring):
                         va.AddValue(value)
                 except:
-                    pass
+                    raise Exception("Could not detect query datatype.")
 
         return lx.result.OK
 

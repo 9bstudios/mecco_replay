@@ -1,9 +1,14 @@
 # python
 
+# Possible alternative approach from Joe:
+# We do have a "confirm quit" event, which we send over the internal application
+# port.  You can get to this from ILxSessionListener::CheckQuitUI().
+# If you return LXe_FALSE from CheckQuitUI(), the app won't quit.
+
 import lxifc, modo, lx
 svc_listen = lx.service.Listener()
 
-class SimpleCmdListener(lxifc.CmdSysListener):
+class CmdListener(lxifc.CmdSysListener):
     def __init__(self):
         svc_listen.AddListener(self)
         self.armed = True
@@ -31,4 +36,4 @@ class SimpleCmdListener(lxifc.CmdSysListener):
         # ... and rearm on RefireEnd
         self.armed = True
 
-cmdListener1 = SimpleCmdListener()
+cmdListener1 = CmdListener()
