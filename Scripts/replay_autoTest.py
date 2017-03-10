@@ -1,11 +1,14 @@
 # python
 
-import lx, modo, replay, traceback, os
+import lx, modo, replay, traceback, os, sys
 
 kitpath = lx.eval('query platformservice alias ? "kit_mecco_replay:"')
 
 # open event log
 lx.eval('layout.createOrClose EventLog "Event Log_layout" true @macros.layouts@EventLog@ width:600 height:600 persistent:true')
+
+# open replay palette
+lx.eval('layout.createOrClose ReplayPalette ReplayPalette true "Replay Palette" width:400 height:600 persistent:true style:palette')
 
 # -------------------
 # BASIC FILE COMMANDS
@@ -14,7 +17,7 @@ lx.eval('layout.createOrClose EventLog "Event Log_layout" true @macros.layouts@E
 # make sure we don't mess up any scene files
 lx.eval('scene.closeAll')
 
-test_file = ['Test01.LXM']
+test_file = 'Test01.LXM'
 
 # Open a macro
 try:
@@ -58,51 +61,15 @@ try:
 except:
     traceback.print_exc()
 
-# Close a macro
-try:
-    lx.eval('replay.fileClose')
-    lx.out("Closed %s" % test_file)
-except:
-    traceback.print_exc()
-
-# --------------
-# RECORD A MACRO
-# --------------
-
-try:
-    lx.eval('replay.record true')
-    lx.out("Started recording.")
-
-    lx.eval('script.run hash:macro.scriptservice:19601433555:macro')
-    lx.eval('transform.channel name:pos.Y value:2.0')
-    lx.eval('script.run hash:macro.scriptservice:27554333777:macro')
-    lx.eval('transform.channel name:pos.Y value:-2.0')
-    lx.eval('script.run hash:macro.scriptservice:32235733333:macro')
-    lx.eval('script.run hash:macro.scriptservice:47158833888:macro')
-    lx.eval('transform.channel name:pos.X value:2.0')
-    lx.eval('script.run hash:macro.scriptservice:45422344000:macro')
-    lx.eval('transform.channel name:pos.X value:-2.0')
-    lx.eval('transform.channel name:rot.X value:90.0')
-    lx.eval('select.itemType type:mesh')
-    lx.eval('layer.mergeMeshes comp:True')
-    lx.eval('transform.channel name:rot.Z value:180.0')
-    lx.eval('poly.setMaterial name:GreenTestMaterial color:"0.0443 0.5543 0.1335" diffuse:0.8 specular:0.04 smoothing:True default:False useLib:False')
-    lx.out("Ran some commands for testing.")
-
-    lx.eval('replay.record false')
-    lx.out("Stopped recording.")
-except:
-    traceback.print_exc()
-
 # -----------------
 # EXPORT TEST CASES
 # -----------------
 
 # Ask for a
-file_path = modo.dialogs.dirBrowse(title)
+file_path = modo.dialogs.dirBrowse('Where to save test files?')
 # User cancelled. Abort.
 if file_path is None:
-    return
+    sys.exit()
 
 # Save a macro
 try:
