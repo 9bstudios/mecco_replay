@@ -2,10 +2,59 @@
 
 import lxifc, lx
 
+DROPSOURCE_COMMAND = "replay_command"
+DROP_SERVER = "replay_dropserver"
+
+class ReplayValueArray(lxifc.ValueArray):
+    def __init__(self):
+        self.m_list = list()
+
+    def va_AddEmptyValue(self):
+        self.m_list.append(None)
+
+    def va_AddFloat(self, value):
+        self.m_list.append(value)
+
+    def va_AddInt(self, value):
+        self.m_list.append(value)
+
+    def va_AddString(self, value):
+        self.m_list.append(value)
+
+    def va_AddValue(self, value):
+        self.m_list.append(value)
+
+    def va_Count(self):
+        return len(self.m_list)
+
+    def va_FirstUnique(self):
+        return ""
+
+    def va_GetFloat(self, index):
+        return float(self.m_list[index])
+
+    def va_GetInt(self, index):
+        return int(self.m_list[index])
+
+    def va_GetString(self, index):
+        return str(self.m_list[index])
+
+    def va_GetValue(self, index):
+        return self.m_list[index]
+
+    def va_Reset(self):
+        del self.m_list[:]
+ 
+    def va_Type(self):
+        return type(self)
+ 
+    def va_TypeName(self):
+        return "Replay.ValueArray"
+
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
-                lxifc.Attributes ):
+                lxifc.Attributes):
 
     """TreeView interface for the MODO API. Boilerplate pulled from:
     http://modo.sdk.thefoundry.co.uk/wiki/Python_Treeview_Example
@@ -422,14 +471,70 @@ class TreeView( lxifc.TreeView,
 
         That's it, really.
         """
-        lx.notimpl()
+        if columnIndex != 0:
+            return ""
+        if self.m_currentNode == self._root:
+            return DROPSOURCE_COMMAND
+        else:
+            return ""
 
     def treeview_GetDragDropSourceObject(self, columnIndex, type):
-        lx.notimpl()
+        try:
+            if columnIndex != 0:
+                return None
+
+            if type != DROPSOURCE_COMMAND:
+                return None
+
+            class Source(ReplayValueArray):
+                def va_Type(self):
+                    return type(self)
+ 
+                def va_TypeName(self):
+                    return "Replay.Source"
+        
+            res = Source()
+            obj = lx.object.TreeView(self)
+            obj.set(res)
+
+            for child in self._root.selected_children:
+                obj.AddInt(child.index)
+
+            return res
+        except Exception, e:
+            lx.out(str(e))
+            return None
 
     def treeview_GetDragDropDestinationObject(self, columnIndex, location):
-        lx.notimpl()
+        try:
+            if columnIndex != 0:
+                return None
+            
+            if location != 0 and location != 2:
+                return None
 
+            class Destination(ReplayValueArray):
+                def va_Type(self):
+                    return type(self)
+ 
+                def va_TypeName(self):
+                    return "Replay.Destination"
+
+            res = Destination()
+            obj = lx.object.ValueArray()
+            obj.set(res)
+            if location == 2:
+                obj.AddInt(self.m_currentIndex + 1)
+            else:
+                obj.AddInt(self.m_currentIndex)
+            
+           # tv = lx.object.TreeView()
+           # tv.set(self)
+            obj.AddValue(lx.object.Value())
+            return res
+        except Exception, e:
+            lx.out(str(e))
+            return None
     # --------------------------------------------------------------------------------------------------
     # Attributes
     # --------------------------------------------------------------------------------------------------
@@ -476,3 +581,68 @@ class TreeView( lxifc.TreeView,
         # If node.columns[] doesn't contain a key for some reason,
         # we need to fail gracefully lest we crash MODO.
         lx.notimpl()
+
+
+class DropServer(lxifc.Drop):
+
+    def drop_ActionList(self, source, dest, addDropAction):
+        lx.out("action list: ")
+        try:
+            sourceInterface = lx.object.ValueArray()
+            sourceInterface.set(source)
+            if sourceInterface.TypeName() != "Replay.Source":
+                return
+
+            destInterface = lx.object.ValueArray()
+            destInterface.set(dest)
+            if destInterface.TypeName() != "Replay.Destination":
+                return
+            
+            obj = lx.object.AddDropAction()
+            obj.set(addDropAction)
+            obj.AddAction(1, "Move item(s)")
+        except Exception, e:
+            lx.out(str(e))
+            pass
+       
+    def drop_Drop(self, source, dest, action):
+        lx.out("drop")
+        try:
+            sourceInterface = lx.object.ValueArray()
+            sourceInterface.set(source)
+            if sourceInterface.TypeName() != "Replay.Source":
+                return
+
+            destInterface = lx.object.ValueArray()
+            destInterface.set(dest)
+            if destInterface.TypeName() != "Replay.Destination":
+                return
+            
+            if action != 1:
+                return
+            lx.out("dropping")
+
+            treeView = destInterface.GetValue(1)
+            lx.out("dropping1")
+            indexToMove = destInterface.GetInt(0)
+            lx.out("dropping2")
+
+            for idx in xrange(0, sourceInterface.Count()):
+                treeView._root.children[idx].index = indexToMove
+
+        except Exception, e:
+            lx.out(str(e))
+            pass
+       
+    def drop_Preview(self, source, dest, action, draw):
+        lx.out("preview: ", source)
+        lx.notimpl()
+       
+    def drop_Recognize(self, source):
+        lx.out("recognoze: ", source)
+        return True
+
+tags = {lx.symbol.sDROP_SOURCETYPE: DROPSOURCE_COMMAND,
+        lx.symbol.sDROP_ACTIONNAMES : "1@moveAction"}
+ 
+lx.bless(DropServer, DROP_SERVER, tags)
