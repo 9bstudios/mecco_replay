@@ -39,6 +39,8 @@ class CommandClass(replay.commander.CommanderClass):
             macro.file_path = file_path
 
         macro.render(file_format, file_path)
+        
+        lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
 
     def basic_Enable(self, msg):
         if replay.Macro().is_empty:

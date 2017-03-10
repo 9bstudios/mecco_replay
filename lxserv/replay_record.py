@@ -38,6 +38,11 @@ class RecordCommandClass(replay.commander.CommanderClass):
             }
         ]
 
+    def commander_notifiers(self):
+        # We need to update our values whenever the replay notifier fires for
+        # selection state changes and tree updates.
+        return [("replay.notifier", "")]
+
     @classmethod
     def set_state(cls, state):
         cls._recording = state
@@ -58,6 +63,10 @@ class RecordCommandClass(replay.commander.CommanderClass):
             state = False if self._recording else True
 
         self.set_state(state)
+
+        # notify the button to update
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
         # Do the work
         # -----------
@@ -91,7 +100,6 @@ class RecordCommandClass(replay.commander.CommanderClass):
 
                 import traceback
                 traceback.print_exc()
-
 
 
 

@@ -11,5 +11,7 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().run_next_line()
         replay.Macro().refresh_view()
 
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
 lx.bless(CommandClass, 'replay.step')

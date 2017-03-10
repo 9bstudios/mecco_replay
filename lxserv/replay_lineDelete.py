@@ -13,5 +13,8 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().rebuild_view()
         replay.Macro().unsaved_changes = True
 
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
 
 lx.bless(CommandClass, 'replay.lineDelete')

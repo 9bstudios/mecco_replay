@@ -23,16 +23,22 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_notifiers(self):
         return [("replay.notifier", "")]
 
+    def remove_duplicates(self, seq):
+        """Removes duplicate list items while maintaining list order."""
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if not (x in seen or seen_add(x))]
+
     def list_commands(self):
         nodes = replay.Macro().selected_commands
 
-        args = set()
+        args = []
         for node in nodes:
             for arg in node.args:
-                args.add(arg.argName)
+                args.append(arg.argName)
 
         commands_list = []
-        for arg in args:
+        for arg in self.remove_duplicates(args):
             commands_list.append('replay.argEdit %s ?' % arg)
 
         return commands_list
