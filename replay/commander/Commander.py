@@ -260,7 +260,7 @@ class CommanderClass(lxu.command.BasicCommand):
     def cmd_Flags(self):
         """Set command flags. This method can be overridden if special flags
         are needed."""
-        return lx.symbol.fCMD_POSTCMD | lx.symbol.fCMD_MODEL | lx.symbol.fCMD_UNDO
+        return lx.symbol.fCMD_MODEL | lx.symbol.fCMD_UNDO
 
     def arg_UIHints(self, index, hints):
         """Adds pretty labels to arguments in command dialogs. If no label parameter

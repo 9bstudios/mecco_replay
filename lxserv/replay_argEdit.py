@@ -24,6 +24,11 @@ class CommandClass(replay.commander.CommanderClass):
             }
         ]
 
+    def cmd_Flags(self):
+        """Set command flags. This method can be overridden if special flags
+        are needed."""
+        return lx.symbol.fCMD_UI | lx.symbol.fCMD_UNDO
+
     def commander_notifiers(self):
         # We need to update our values whenever the replay notifier fires for
         # selection state changes and tree updates.
@@ -71,8 +76,8 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().unsaved_changes = True
 
         # TODO For some reason this breaks minisliders.
-        # notifier = replay.Notifier()
-        # notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
 
     def cmd_Query(self, index, vaQuery):
         """Fires whenever the value is displayed in the form. Should return the value(s)

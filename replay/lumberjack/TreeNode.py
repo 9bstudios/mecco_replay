@@ -381,7 +381,10 @@ class TreeNode(object):
     def deselect_descendants(self):
         """Deselects all children, grandchildren, etc."""
         for child in self.children:
-            child.selected = False
+            if child.selected:
+                # Only change it if we need to, since setting `select`
+                # fires the update notifier.
+                child.selected = False
             child.deselect_descendants()
 
     def delete(self):
