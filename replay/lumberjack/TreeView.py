@@ -293,7 +293,6 @@ class TreeView( lxifc.TreeView,
         return self.targetNode().selected
 
     def treeview_IsDescendantSelected (self):
-        # TODO: This doesn't seem to work.
         # Backwards for some reason...
         for child in self.targetNode().children:
             if child.selected:
@@ -445,7 +444,7 @@ class TreeView( lxifc.TreeView,
         e.g. '\03(c:4113)Gray Text' < prints "Gray Text" in... gray.
 
         We handle most of the rich text formatting in the TreeValue object and
-        its Font and Color sidecar objects. (TODO: Add icon objects.)
+        its Font and Color sidecar objects.
 
         This value should be thought of as an override for `treeview_CellCommand()`.
         If `attr_GetString()` fires `lx.notimpl()`, the tree will fallback on

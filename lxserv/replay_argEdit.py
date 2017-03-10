@@ -75,7 +75,6 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().refresh_view()
         replay.Macro().unsaved_changes = True
 
-        # TODO For some reason this breaks minisliders.
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
 
