@@ -145,6 +145,15 @@ class Macro(lumberjack.Lumberjack):
 
     def select_event(self):
         """Fires whenever a TreeNode `selected` state is changed."""
+
+        # Welcome to an advanced course on Stupid Things About MODO!
+        # If we modify a color channel and then suddenly our form control
+        # disappears (because of a selection change), MODO will crash. Yay!
+        # For those who do not like this behavior, we black out the current
+        # color selection whenever we make a change.
+        lx.eval('select.color {0 0 0}')
+
+        # Oh, and also fire our notifier.
         notifier = Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 

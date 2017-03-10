@@ -66,13 +66,6 @@ class CommandClass(replay.commander.CommanderClass):
         for arg in self.args_by_argName(argName):
             arg.value = argValue
 
-        # Welcome to an advanced course on Stupid Things About MODO!
-        # If we modify a color channel and then suddenly our form control
-        # disappears (because of a selection change), MODO will crash. Yay!
-        # For those who do not like this behavior, we black out the current
-        # color selection whenever we make a change.
-        lx.eval('select.color {0 0 0}')
-
         # Notify the TreeView to update itself.
         replay.Macro().refresh_view()
         replay.Macro().unsaved_changes = True
