@@ -1,4 +1,4 @@
-import lx, modo, replay
+import lx, lxifc, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -31,22 +31,38 @@ class CommandClass(replay.commander.CommanderClass):
         mode = self.commander_arg_value(0)
         index = self.commander_arg_value(1)
 
+        # Create action list needed to perform this operation
+        actionList = self.prepare_action_list(mode, index)
+
+        # Return on errors
+        if actionList is None:
+            return
+
+        # Register Undo object performing operation and apply it
+        undo_svc = lx.service.Undo()
+        if undo_svc.State() != lx.symbol.iUNDO_INVALID:
+            undo_svc.Apply(UndoReorder(actionList))
+
+    def prepare_action_list(self, mode, index):
+
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
             modo.dialogs.alert("Empty selection", 'Wrong mode "%s".' % mode, dtype='warning')
-            return
+            return None
 
         macro = replay.Macro()
 
         # Checking index range
         if (mode == 'index') and (index >= len(macro.children)):
             modo.dialogs.alert("Empty selection", 'Index "%s" is out of range.' % index, dtype='warning')
-            return
+            return None
 
         # Checking if selection exists
         if len(macro.selected_children) == 0:
             modo.dialogs.alert("Empty selection", "There are no selected commands to reorder", dtype='warning')
-            return
+            return None
+
+        actionList = MoveActionList()
 
         # Getting
         sel_children = macro.selected_children
@@ -54,35 +70,81 @@ class CommandClass(replay.commander.CommanderClass):
         # If going up, we move up starting with the top of the list and move down.
         if mode == "up":
             for child in sel_children:
-                child.reorder_up()
+                actionList.append(child.index, child.index - 1)
 
         elif mode == "down":
             # If going any other direction, start
             sel_children.sort(key=lambda x: x.index, reverse=True)
 
             for child in sel_children:
-                child.reorder_down()
+                actionList.append(child.index, child.index - 1)
 
-        elif mode == "top":
-            # If going any other direction, start
-            sel_children.sort(key=lambda x: x.index, reverse=True)
-
+        elif mode == "top":            
             for child in sel_children:
-                child.reorder_top()
+                actionList.append(child.index, 0)
 
         elif mode == "bottom":
+            # If going any other direction, start
+            sel_children.sort(key=lambda x: x.index, reverse=True)
+            
             for child in sel_children:
-                child.reorder_bottom()
+                actionList.append(child.index, len(child.parent.children) - 1)
 
         elif mode == "index":
-            for child in sel_children:
-                child.index = index
+            # Sort all children standing below target index in reverse order
+            sel_children_above = [x for x in sel_children if x.index > index]
+            sel_children_below = [x for x in sel_children if x.index <= index]
+            sel_children_below.sort(key=lambda x: x.index, reverse=True)
+            for child in sel_children_above + sel_children_below:
+                actionList.append(child.index, index)
 
+        return actionList
+
+
+class MoveActionList:
+    """ Contains list of source and target indices
+        Provides generators for undo and redo operations"""
+    def __init__(self):
+        self.m_actions = list()
+
+    def append(self, from_idx, to_idx):
+        self.m_actions.append((from_idx, to_idx))
+
+    def iter_redo(self):
+        """Iterates indiex pairs for redo"""
+        for action in self.m_actions:
+            yield action
+
+    def iter_undo(self):
+        """Iterates indiex pairs for undo"""
+        for from_idx, to_idx in reversed(self.m_actions):
+            yield (to_idx, from_idx)
+
+class UndoReorder(lxifc.Undo):
+    def __init__(self, actionList):
+        self.m_actionList = actionList
+
+    def reorder(self, indices):
+        """Reorder indices of marco.children for each index pair in indices"""
+        macro = replay.Macro()
+
+        # change indices
+        for from_idx, to_idx in indices:
+            macro.children[from_idx].index = to_idx
+
+        # Rebuild view
         macro.rebuild_view()
         replay.Macro().unsaved_changes = True
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
+    def undo_Forward(self):
+        self.reorder(self.m_actionList.iter_redo())
+    
+    def undo_Reverse(self):
+        self.reorder(self.m_actionList.iter_undo())
+
 
 lx.bless(CommandClass, 'replay.lineReorder')
+

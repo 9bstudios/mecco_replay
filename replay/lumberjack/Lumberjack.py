@@ -34,11 +34,6 @@ class Lumberjack(object):
     `Lumberjack().children[n].selected = True`
     `Lumberjack().children[n].setParent(node)`
     `Lumberjack().children[n].clear_children(node)`
-    `Lumberjack().children[n].reorder(index)`
-    `Lumberjack().children[n].reorder_up()`
-    `Lumberjack().children[n].reorder_down()`
-    `Lumberjack().children[n].reorder_top()`
-    `Lumberjack().children[n].reorder_bottom()`
     `Lumberjack().children[n].delete()`
     `Lumberjack().children[n].delete_descendants()`
     `Lumberjack().children[n].row_color = row_color_string`
