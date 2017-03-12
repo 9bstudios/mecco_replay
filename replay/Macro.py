@@ -388,10 +388,3 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.render_json(file_path)
 
-    def insert_comment_before_current_command(self, comment):
-        selecteds = self.selected_children
-        if len(selecteds) == 0:
-            raise Exception("There is no selected command")
-        for sel in selecteds:
-            for line in ("#" + line for line in comment.split('\n')):
-                sel.user_comment_before.append(line)

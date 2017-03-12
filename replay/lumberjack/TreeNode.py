@@ -420,30 +420,6 @@ class TreeNode(object):
             for attribute in self._attributes:
                 self._attributes.remove(attribute)
 
-    def reorder_up(self):
-        """Reorder the current node up one index in the tree.
-        Returns the new index."""
-        if self.index > 0:
-            self.index -= 1
-        return self.index
-
-    def reorder_down(self):
-        """Reorder the current node down one index in the tree.
-        Returns the new index."""
-        if self.index + 1 < len(self.siblings):
-            self.index += 1
-        return self.index
-
-    def reorder_top(self):
-        """Reorder the current node to the top of its branch in the tree."""
-        self.index = 0
-
-    def reorder_bottom(self):
-        """Reorder the current node to the bottom of its branch in the tree.
-        Returns the new index."""
-        self.index = len(self._parent.children) - 1
-        return self.index
-
     def find_in_descendants(self, column_name, search_term, regex=False):
         """Returns a list of descendant nodes with values matching search criteria.
 
