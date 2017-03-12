@@ -1,4 +1,4 @@
-import lx, modo, replay
+import lx, lxifc, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -39,10 +39,57 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
         prefix = self.commander_arg_value(0, '')
 
-        for command in replay.Macro().selected_descendants:
-            command.prefix = prefix
+        # Add actions needed to undo and redo this command
+        actionList = PrefixActionList()
+        for line in replay.Macro().selected_descendants:
+            actionList.append(line.index, line.prefix, prefix)
 
-        replay.Macro().refresh_view()
+        # Register Undo object performing operation and apply it
+        undo_svc = lx.service.Undo()
+        if undo_svc.State() != lx.symbol.iUNDO_INVALID:
+            undo_svc.Apply(UndoLinePrefix(actionList))
+
+class PrefixActionList:
+    def __init__(self):
+        self.m_actions = list()
+
+    def append(self, index, prev_prefix, new_prefix):
+        """Add action in action list"""
+        self.m_actions.append((index, prev_prefix, new_prefix))
+
+    def iter_redo(self):
+        """iterate actions for redo"""
+        for index, prev_prefix, new_prefix in self.m_actions:
+            yield (index, new_prefix)
+
+    def iter_undo(self):
+        """iterate actions for undo"""
+        for index, prev_prefix, new_prefix in self.m_actions:
+            yield (index, prev_prefix)
+
+class UndoLinePrefix(lxifc.Undo):
+    def __init__(self, actionList):
+        self.m_actionList = actionList
+
+    def apply(self, actions):
+        """Change prefix for each item in actions"""
+        macro = replay.Macro()
+
+        # Change prefix of selected nodes
+        for index, prefix in actions:
+            macro.children[index].prefix = prefix 
+
+        # Rebuild view
+        macro.rebuild_view()
         replay.Macro().unsaved_changes = True
+
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
+    def undo_Forward(self):
+        self.apply(self.m_actionList.iter_redo())
+    
+    def undo_Reverse(self):
+        self.apply(self.m_actionList.iter_undo())
 
 lx.bless(CommandClass, 'replay.linePrefix')
