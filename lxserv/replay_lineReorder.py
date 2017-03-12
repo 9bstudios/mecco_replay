@@ -128,6 +128,7 @@ class UndoReorder(lxifc.Undo):
         """Reorder indices of marco.children for each index pair in indices"""
         macro = replay.Macro()
 
+        # change indices
         for from_idx, to_idx in indices:
             macro.children[from_idx].index = to_idx
 

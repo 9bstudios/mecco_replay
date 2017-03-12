@@ -43,6 +43,7 @@ class UndoInsertComment(lxifc.Undo):
         self.m_line_counts_before = [-1]*len(self.m_indices)
 
     def finalize_command(self, macro):
+        """Does common command finalizing operations"""
         macro.rebuild_view()
         replay.Macro().unsaved_changes = True
 
@@ -51,9 +52,13 @@ class UndoInsertComment(lxifc.Undo):
 
     def undo_Forward(self):
         macro = replay.Macro()
+        # Iterate all selected indices and add comment for each
         for index_idx in xrange(0, len(self.m_indices)):
+            # index - index of command to modify
             index = self.m_indices[index_idx]
+            # Store line count of old comment for restoring in undo
             self.m_line_counts_before[index_idx] = len(macro.children[index].user_comment_before)
+            # Add # before each line in comment and append it
             for line in ("#" + line for line in self.m_comment.split('\n')):
                 macro.children[index].user_comment_before.append(line)
 
@@ -61,9 +66,13 @@ class UndoInsertComment(lxifc.Undo):
     
     def undo_Reverse(self):
         macro = replay.Macro()
+        # Iterate all selected indices and remove previously added comments
         for index_idx in xrange(0, len(self.m_indices)):
+            # Get index of selected item
             index = self.m_indices[index_idx]
+            # Get count of lines in comment before adding new ones
             line_count_before = self.m_line_counts_before[index_idx]
+            # Cat comment to restore previous state
             macro.children[index].user_comment_before = macro.children[index].user_comment_before[:line_count_before]
 
         self.finalize_command(macro)
