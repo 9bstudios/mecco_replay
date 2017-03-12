@@ -40,6 +40,7 @@ class UndoInsertComment(lxifc.Undo):
     def __init__(self, indices, comment):
         self.m_indices = indices
         self.m_comment = comment
+        self.m_line_counts_before = [-1]*len(self.m_indices)
 
     def finalize_command(self, macro):
         macro.rebuild_view()
@@ -50,13 +51,22 @@ class UndoInsertComment(lxifc.Undo):
 
     def undo_Forward(self):
         macro = replay.Macro()
-        for index in self.m_indices:
+        for index_idx in xrange(0, len(self.m_indices)):
+            index = self.m_indices[index_idx]
+            self.m_line_counts_before[index_idx] = len(macro.children[index].user_comment_before)
             for line in ("#" + line for line in self.m_comment.split('\n')):
                 macro.children[index].user_comment_before.append(line)
 
         self.finalize_command(macro)
     
     def undo_Reverse(self):
-        pass
+        macro = replay.Macro()
+        for index_idx in xrange(0, len(self.m_indices)):
+            index = self.m_indices[index_idx]
+            line_count_before = self.m_line_counts_before[index_idx]
+            macro.children[index].user_comment_before = macro.children[index].user_comment_before[:line_count_before]
+
+        self.finalize_command(macro)
+        
 
 lx.bless(CommandClass, 'replay.insertComment')
