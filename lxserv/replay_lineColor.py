@@ -83,6 +83,9 @@ class UndoLineColor(lxifc.Undo):
         macro.rebuild_view()
         replay.Macro().unsaved_changes = True
 
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
     def undo_Forward(self):
         self.apply(self.m_actionList.iter_redo())
     

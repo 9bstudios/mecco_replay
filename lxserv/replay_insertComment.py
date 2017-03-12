@@ -52,6 +52,7 @@ class UndoInsertComment(lxifc.Undo):
 
     def undo_Forward(self):
         macro = replay.Macro()
+
         # Iterate all selected indices and add comment for each
         for index_idx in xrange(0, len(self.m_indices)):
             # index - index of command to modify
