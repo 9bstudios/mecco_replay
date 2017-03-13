@@ -49,6 +49,11 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoLinePrefix(actionList))
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        return bool(replay.Macro().selected_descendants)
+
 class PrefixActionList:
     def __init__(self):
         self.m_actions = list()
@@ -77,7 +82,7 @@ class UndoLinePrefix(lxifc.Undo):
 
         # Change prefix of selected nodes
         for index, prefix in actions:
-            macro.children[index].prefix = prefix 
+            macro.children[index].prefix = prefix
 
         # Rebuild view
         macro.rebuild_view()
@@ -88,7 +93,7 @@ class UndoLinePrefix(lxifc.Undo):
 
     def undo_Forward(self):
         self.apply(self.m_actionList.iter_redo())
-    
+
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
 

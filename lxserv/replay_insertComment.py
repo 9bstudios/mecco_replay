@@ -35,6 +35,11 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoInsertComment(indices, comment))
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        return bool(replay.Macro().selected_descendants)
+
 
 class UndoInsertComment(lxifc.Undo):
     def __init__(self, indices, comment):
@@ -64,7 +69,7 @@ class UndoInsertComment(lxifc.Undo):
                 macro.children[index].user_comment_before.append(line)
 
         self.finalize_command(macro)
-    
+
     def undo_Reverse(self):
         macro = replay.Macro()
         # Iterate all selected indices and remove previously added comments
@@ -77,6 +82,6 @@ class UndoInsertComment(lxifc.Undo):
             macro.children[index].user_comment_before = macro.children[index].user_comment_before[:line_count_before]
 
         self.finalize_command(macro)
-        
+
 
 lx.bless(CommandClass, 'replay.insertComment')

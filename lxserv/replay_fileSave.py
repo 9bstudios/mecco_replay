@@ -46,6 +46,8 @@ class CommandClass(replay.commander.CommanderClass):
         lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
 
     def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
         if replay.Macro().is_empty:
             return False
         return True

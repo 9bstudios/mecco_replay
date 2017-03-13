@@ -43,6 +43,11 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoReorder(actionList))
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        return bool(replay.Macro().selected_descendants)
+
     def prepare_action_list(self, mode, index):
 
         # Checking mode validity
@@ -79,14 +84,14 @@ class CommandClass(replay.commander.CommanderClass):
             for child in sel_children:
                 actionList.append(child.index, child.index - 1)
 
-        elif mode == "top":            
+        elif mode == "top":
             for child in sel_children:
                 actionList.append(child.index, 0)
 
         elif mode == "bottom":
             # If going any other direction, start
             sel_children.sort(key=lambda x: x.index, reverse=True)
-            
+
             for child in sel_children:
                 actionList.append(child.index, len(child.parent.children) - 1)
 
@@ -141,10 +146,9 @@ class UndoReorder(lxifc.Undo):
 
     def undo_Forward(self):
         self.reorder(self.m_actionList.iter_redo())
-    
+
     def undo_Reverse(self):
         self.reorder(self.m_actionList.iter_undo())
 
 
 lx.bless(CommandClass, 'replay.lineReorder')
-

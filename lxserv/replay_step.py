@@ -13,6 +13,13 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoLineColor())
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        if replay.Macro().is_empty:
+            return False
+        return True
+
 class UndoLineColor(lxifc.Undo):
     def __init__(self):
         # Indices to save for undo operation
@@ -36,7 +43,7 @@ class UndoLineColor(lxifc.Undo):
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
-    
+
     def undo_Reverse(self):
         macro = replay.Macro()
         # Undo of executed operation will revert the modifications

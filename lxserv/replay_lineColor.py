@@ -50,6 +50,11 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoLineColor(actionList))
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        return bool(replay.Macro().selected_descendants)
+
 class ColorActionList:
     def __init__(self):
         self.m_actions = list()

@@ -52,7 +52,9 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().render(format_val, file_path)
 
     def basic_Enable(self, msg):
-        if replay.Macro().is_empty:
+        if lx.eval('replay.record query:?'):
+            return False
+        if not replay.Macro().file_path:
             return False
         return True
 

@@ -19,6 +19,11 @@ class CommandClass(replay.commander.CommanderClass):
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoLineSuppress(indices))
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        return bool(replay.Macro().selected_descendants)
+
 class UndoLineSuppress(lxifc.Undo):
     def __init__(self, indices):
         self.m_indices = indices
@@ -40,7 +45,7 @@ class UndoLineSuppress(lxifc.Undo):
 
     def undo_Forward(self):
         self.toggle()
-    
+
     def undo_Reverse(self):
         self.toggle()
 
