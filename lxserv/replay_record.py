@@ -1,4 +1,4 @@
-import lx, lxifc, modo, replay
+import lx, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -62,13 +62,12 @@ class RecordCommandClass(replay.commander.CommanderClass):
         else:
             state = False if self._recording else True
 
-        # Register Undo object performing operation and apply it
-        undo_svc = lx.service.Undo()
-        if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoRecord(self._recording, state))
+        self.set_state(state)
 
-    @classmethod
-    def record(cls):
+        # notify the button to update
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
         # Do the work
         # -----------
 
@@ -103,27 +102,10 @@ class RecordCommandClass(replay.commander.CommanderClass):
                 traceback.print_exc()
 
 
+
     def commander_query(self, arg_index):
         if arg_index  == 1:
             return self._recording
 
-class UndoRecord(lxifc.Undo):
-    def __init__(self, old_value, new_value):
-        self.m_old_value = old_value
-        self.m_new_value = new_value
-
-    def undo_Forward(self):
-        RecordCommandClass.set_state(self.m_new_value)
-
-        # notify the button to update
-        notifier = replay.Notifier()
-        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
-    
-    def undo_Reverse(self):
-        RecordCommandClass.set_state(self.m_old_value)
-
-        # notify the button to update
-        notifier = replay.Notifier()
-        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
 lx.bless(RecordCommandClass, 'replay.record')
