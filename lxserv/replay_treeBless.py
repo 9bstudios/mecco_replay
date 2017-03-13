@@ -70,7 +70,6 @@ Macro().bless(
 
     input_regions = [
         '(anywhere)', # 0 is reserved ".anywhere" region index
-        'MacroCommandName',
         'MacroCommandCommand',
         'MacroCommandArg',
         'MacroCommandEnable',
