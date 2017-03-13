@@ -24,6 +24,9 @@ class CommandClass(replay.commander.CommanderClass):
         file_path = macro.file_path
         file_format = macro.file_format
         # If there is no associated file path try to get from command line or prompt the user for new destination
+
+        default_path = lx.eval('query platformservice alias ? {scripts:}')
+
         if file_path is None:
             # Try to get the path from the command line:
             file_path = self.commander_arg_value(0)
@@ -32,14 +35,14 @@ class CommandClass(replay.commander.CommanderClass):
             # Prompt the user
             if not file_path:
                 file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \
-                       names = ('LXM',), unames = ('LXM file'), ext=('LXM',))
+                       names = ('LXM',), unames = ('LXM file'), ext=('LXM',), path = default_path)
                 if file_path is None:
                     return
             # And save it for the next time
             macro.file_path = file_path
 
         macro.render(file_format, file_path)
-        
+
         lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
 
     def basic_Enable(self, msg):
