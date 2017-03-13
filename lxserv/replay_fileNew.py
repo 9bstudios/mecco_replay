@@ -11,7 +11,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         # There's really  no concept of a "blank" document. We just start
         # from a blank macro by closing the current one.
-        lx.eval('replay.fileClose')
+        lx.eval('!!replay.fileClose')
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
