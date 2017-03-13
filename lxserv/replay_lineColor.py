@@ -9,7 +9,7 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_arguments(self):
         return [
             {
-                'name': 'color_name',
+                'name': 'line_color',
                 'datatype': 'string',
                 'default': 'none',
                 'values_list_type': 'popup',
@@ -32,7 +32,8 @@ class CommandClass(replay.commander.CommanderClass):
                     'dark_grey',
                     'grey',
                     'white'
-                ]
+                ],
+                'flags': ['query']
             }
         ]
 
@@ -88,7 +89,7 @@ class UndoLineColor(lxifc.Undo):
 
     def undo_Forward(self):
         self.apply(self.m_actionList.iter_redo())
-    
+
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
 
