@@ -248,10 +248,6 @@ class CommandClass(replay.commander.CommanderClass):
             return lookup[argType[0]]
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
-        if not replay.Macro().file_path:
-            return False
         return bool(replay.Macro().selected_descendants)
 
 lx.bless(CommandClass, 'replay.argEdit')
