@@ -8,6 +8,8 @@ class CommandClass(replay.commander.CommanderClass):
     export methods. Accepts optional format and destination arguments. If either
     of these is not provided, a `modo.dialogs.customFile()` will be thrown."""
 
+    _path = lx.eval('query platformservice alias ? {scripts:untitled}')
+
     def commander_arguments(self):
         return [
             {
@@ -34,8 +36,6 @@ class CommandClass(replay.commander.CommanderClass):
         format_val = self.commander_arg_value(0)
         file_path = self.commander_arg_value(1)
 
-        default_path = lx.eval('query platformservice alias ? {scripts:}')
-
         if file_path is None:
             file_path = modo.dialogs.customFile(
                 dtype = 'fileSave',
@@ -43,10 +43,11 @@ class CommandClass(replay.commander.CommanderClass):
                 names = macro.export_format_names,
                 unames = macro.export_format_unames,
                 ext = macro.export_format_extensions,
-                path = default_path
+                path = self._path
             )
             if file_path is None:
                 return
+            self.__class__._path = file_path
             format_val = lx.eval('dialog.fileSaveFormat ?')
 
         replay.Macro().render(format_val, file_path)
