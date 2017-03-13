@@ -8,6 +8,8 @@ class CommandClass(replay.commander.CommanderClass):
     """Reads a file from disk and parses it into the `Macro()` object's built-in
     parse methods."""
 
+    _path = lx.eval('query platformservice alias ? {scripts:}')
+
     def commander_arguments(self):
         return [
             {
@@ -24,8 +26,6 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
-        default_path = lx.eval('query platformservice alias ? {scripts:}')
-
         # Get the path from the user, if not given as argument:
         if not input_path:
             input_path = modo.dialogs.customFile(
@@ -34,10 +34,11 @@ class CommandClass(replay.commander.CommanderClass):
                 names = macro.import_format_names,
                 unames = macro.import_format_unames,
                 patterns = macro.import_format_patterns,
-                path = default_path
+                path = self._path
             )
             if input_path is None:
                 return
+            self.__class__._path = input_path
 
         # Parse the file in replay.Macro() and rebuild the view:
         macro.parse_and_insert(input_path)

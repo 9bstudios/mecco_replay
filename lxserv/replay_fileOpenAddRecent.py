@@ -21,7 +21,7 @@ class CommandClass(replay.commander.CommanderClass):
         """Removes duplicate list items while maintaining list order."""
         seen = set()
         seen_add = seen.add
-        return [x for x in seq if not (x in seen or seen_add(x))]
+        return [x for x in seq if not (x.lower() in seen or seen_add(x.lower()))]
 
     def commander_execute(self, msg, flags):
         path = self.commander_args()['path']
