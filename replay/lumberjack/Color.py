@@ -11,9 +11,9 @@ class Color(object):
     def markup(self):
         """Returns the markup string for use in treeview cells."""
         if self._special:
-            return '\03({}:{})'.format('c', self._special)
+            return '\x03({}:{})'.format('c', self._special)
         if self._internal_rgb:
-            return '\03({}:{})'.format('c', self.bitwise_rgb())
+            return '\x03({}:{})'.format('c', self.bitwise_rgb())
         return ''
 
     # Bitwise

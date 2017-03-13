@@ -170,7 +170,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         self.argName = values_list[arg_index]
 
         values_list = lx.evalN("query commandservice command.argUsernames ? {%s}" % base_command)
-        self.argUsername = "%s \03(c:4113)(%s)" % (values_list[arg_index], self.argName)
+        self.argUsername = "%s \x03(c:4113)(%s)" % (values_list[arg_index], self.argName)
 
         # These are the ones I care about for now. If there are others later, we can add them.
         query_terms = [

@@ -38,12 +38,12 @@ Macro().bless(
                     'name':'enable',
                     # positive integers are pixel values (i.e. 20px)
                     'width':24,
-                    'icon_resource':'replay_suppress'
+                    'icon_resource':'uiicon_replay_suppress'
                 }, {
                     'name':'prefix',
                     'width':24,
                     'justify':'center',
-                    'icon_resource':'replay_prefix'
+                    'icon_resource':'uiicon_replay_prefix'
                 }, {
                     'name':'command',
                     'width':-1

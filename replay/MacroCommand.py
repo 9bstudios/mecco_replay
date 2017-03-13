@@ -41,6 +41,7 @@ class MacroCommand(lumberjack.TreeNode):
         # Create default name value object
         self.columns['name'] = lumberjack.TreeValue()
         self.columns['name'].input_region = 'MacroCommandName'
+        # self.columns['name'].icon_resource = 'uiicon_replay.suppress'
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
