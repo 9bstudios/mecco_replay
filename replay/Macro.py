@@ -209,7 +209,7 @@ class Macro(lumberjack.Lumberjack):
         for input_line in input_file:
             if first_line:
                 first_line = False
-                if input_line != "#LXMacro#\n":
+                if not input_line.startswith("#LXMacro#"):
                     raise Exception("Wrong shebang {sb}".format(sb=input_line))
                 continue
 
@@ -249,7 +249,7 @@ class Macro(lumberjack.Lumberjack):
             for input_line in input_file:
                 if first_line:
                     first_line = False
-                    if input_line != "# python\n":
+                    if not input_line.startswith("# python"):
                         raise Exception("Wrong shebang {sb}".format(sb=input_line))
                     continue
 
@@ -390,4 +390,3 @@ class Macro(lumberjack.Lumberjack):
             self.render_Python(file_path)
         else:
             self.render_json(file_path)
-
