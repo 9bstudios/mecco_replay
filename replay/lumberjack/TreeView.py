@@ -441,7 +441,7 @@ class TreeView( lxifc.TreeView,
         """Returns a rich text string to display in a cell. Rich text can include
         flags for font, color, and/or icons inline with the rest of the text.
 
-        e.g. '\03(c:4113)Gray Text' < prints "Gray Text" in... gray.
+        e.g. '\x03(c:4113)Gray Text' < prints "Gray Text" in... gray.
 
         We handle most of the rich text formatting in the TreeValue object and
         its Font and Color sidecar objects.

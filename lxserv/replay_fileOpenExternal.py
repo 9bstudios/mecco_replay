@@ -20,8 +20,8 @@ class CommandClass(replay.commander.CommanderClass):
         lx.eval('file.open {%s}' % file_path)
 
     def basic_Enable(self, msg):
-        if replay.Macro().file_path:
-            return True
-        return False
+        if lx.eval('replay.record query:?'):
+            return False
+        return True
 
 lx.bless(CommandClass, 'replay.fileOpenExternal')

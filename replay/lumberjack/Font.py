@@ -8,7 +8,7 @@ class Font(object):
     def markup(self):
         """Returns the markup string for use in treeview cells."""
         if self._font:
-            return '\03({}:{})'.format('f', self._font)
+            return '\x03({}:{})'.format('f', self._font)
         return ''
 
     def set_bold(self):

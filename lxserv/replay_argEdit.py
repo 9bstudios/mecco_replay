@@ -248,9 +248,10 @@ class CommandClass(replay.commander.CommanderClass):
             return lookup[argType[0]]
 
     def basic_Enable(self, msg):
-        """If nothing is selected, gray out the UI. (In practice this should never
-        happen since we're using an FCL to generate these based on selection.)"""
-
+        if lx.eval('replay.record query:?'):
+            return False
+        if not replay.Macro().file_path:
+            return False
         return bool(replay.Macro().selected_descendants)
 
 lx.bless(CommandClass, 'replay.argEdit')

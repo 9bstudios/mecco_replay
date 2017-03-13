@@ -24,6 +24,8 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
+        default_path = lx.eval('query platformservice alias ? {scripts:}')
+
         # Get the path from the user, if not given as argument:
         if not input_path:
             input_path = modo.dialogs.customFile(
@@ -31,7 +33,8 @@ class CommandClass(replay.commander.CommanderClass):
                 title = 'Open LXM file',
                 names = macro.import_format_names,
                 unames = macro.import_format_unames,
-                patterns = macro.import_format_patterns
+                patterns = macro.import_format_patterns,
+                path = default_path
             )
             if input_path is None:
                 return
@@ -44,5 +47,12 @@ class CommandClass(replay.commander.CommanderClass):
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
+    # def basic_Enable(self, msg):
+    #     if lx.eval('replay.record query:?'):
+    #         return False
+    #     if not replay.Macro().file_path:
+    #         return False
+    #     return True
 
 lx.bless(CommandClass, 'replay.fileInsert')

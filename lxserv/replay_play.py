@@ -9,5 +9,12 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
         replay.Macro().run()
 
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+        if replay.Macro().is_empty:
+            return False
+        return True
+
 
 lx.bless(CommandClass, 'replay.play')

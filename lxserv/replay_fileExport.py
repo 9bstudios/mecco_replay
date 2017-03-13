@@ -34,13 +34,16 @@ class CommandClass(replay.commander.CommanderClass):
         format_val = self.commander_arg_value(0)
         file_path = self.commander_arg_value(1)
 
+        default_path = lx.eval('query platformservice alias ? {scripts:}')
+
         if file_path is None:
             file_path = modo.dialogs.customFile(
                 dtype = 'fileSave',
                 title = 'Export file',
                 names = macro.export_format_names,
                 unames = macro.export_format_unames,
-                ext = macro.export_format_extensions
+                ext = macro.export_format_extensions,
+                path = default_path
             )
             if file_path is None:
                 return
@@ -49,7 +52,9 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().render(format_val, file_path)
 
     def basic_Enable(self, msg):
-        if replay.Macro().is_empty:
+        if lx.eval('replay.record query:?'):
+            return False
+        if not replay.Macro().file_path:
             return False
         return True
 

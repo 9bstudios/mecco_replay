@@ -332,7 +332,10 @@ class Macro(lumberjack.Lumberjack):
 
         # Set as primary the next command:
         command.selected = False
+        prev_index = command.index
         self.commands[next_command_index].selected = True
+        new_index = next_command_index
+        return (prev_index, new_index)
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
@@ -388,10 +391,3 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.render_json(file_path)
 
-    def insert_comment_before_current_command(self, comment):
-        selecteds = self.selected_children
-        if len(selecteds) == 0:
-            raise Exception("There is no selected command")
-        for sel in selecteds:
-            for line in ("#" + line for line in comment.split('\n')):
-                sel.user_comment_before.append(line)

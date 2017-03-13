@@ -155,11 +155,11 @@ class TreeValue(object):
         fonts, colors, etc.
 
         MODO uses a "rich text" system to encode color and font information:
-        Colors are done with "\03(c:color)", where "color" is a string representing a
+        Colors are done with "\x03(c:color)", where "color" is a string representing a
         decimal integer computed with 0x01000000 | ((r << 16) | (g << 8) | b).
-        Italics and bold are done with "\03(c:font)", where "font" is the string
+        Italics and bold are done with "\x03(c:font)", where "font" is the string
         FONT_DEFAULT, FONT_NORMAL, FONT_BOLD or FONT_ITALIC. Icons have an 'i' flag,
-        followed by a 13px icon resource name, e.g. "\03(i:iconResourceName)".
+        followed by a 13px icon resource name, e.g. "\x03(i:iconResourceName)".
 
         All of this should be handled internally by the value object unless explicitly
         overridden.
@@ -181,7 +181,7 @@ class TreeValue(object):
             # Hack is to always provide a space character if the string is empty.
             display_string = display_string if display_string else " "
 
-            markup = '\03(i:%s)' % self._icon_resource if self._icon_resource else ''
+            markup = '\x03(i:%s)' % self._icon_resource if self._icon_resource else ''
             markup += self._font.markup() if self._font else ''
             markup += self._color.markup() if self._color else ''
             markup += display_string
