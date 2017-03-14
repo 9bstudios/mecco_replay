@@ -22,7 +22,7 @@ class CmdListener(lxifc.CmdSysListener):
 
     @classmethod
     def wrap_quote(cls, value):
-        return '"' + value.replace('"', '\\"') + '"'
+        return '{' + value + '}'
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         pass
