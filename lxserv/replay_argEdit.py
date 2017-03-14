@@ -1,6 +1,7 @@
 # python
 
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -150,7 +151,7 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddString(str(value))
                 except:
-                    raise Exception("Invalid string", value, type(value), datatype)
+                    raise Exception(message("REPLAY_ARG_EDIT", "ERROR1"), value, type(value), datatype)
 
             # Integers
             elif datatype in [
@@ -193,7 +194,7 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
-                    raise Exception("Could not detect query datatype.")
+                    raise Exception(message("REPLAY_ARG_EDIT", "ERROR2"))
 
         return lx.result.OK
 
