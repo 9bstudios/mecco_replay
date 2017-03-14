@@ -1,4 +1,5 @@
 import lx, lxifc, modo, replay
+from replay import message as msg
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -51,19 +52,19 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
-            modo.dialogs.alert(replay.message("LINE_REORDER", "DLG_TITLE1"), replay.message("LINE_REORDER", "DLG_MSG1", mode), dtype='warning')
+            modo.dialogs.alert(msg("LINE_REORDER", "DLG_TITLE1"), msg("LINE_REORDER", "DLG_MSG1", mode), dtype='warning')
             return None
 
         macro = replay.Macro()
 
         # Checking index range
         if (mode == 'index') and (index >= len(macro.children)):
-            modo.dialogs.alert("Empty selection", 'Index "%s" is out of range.' % index, dtype='warning')
+            modo.dialogs.alert(msg("LINE_REORDER", "DLG_TITLE2"), msg("LINE_REORDER", "DLG_MSG2", index), dtype='warning')
             return None
 
         # Checking if selection exists
         if len(macro.selected_children) == 0:
-            modo.dialogs.alert("Empty selection", "There are no selected commands to reorder", dtype='warning')
+            modo.dialogs.alert(msg("LINE_REORDER", "DLG_TITLE3"), msg("LINE_REORDER", "DLG_MSG3"), dtype='warning')
             return None
 
         actionList = MoveActionList()
