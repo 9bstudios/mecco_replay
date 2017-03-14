@@ -3,6 +3,39 @@ import lx, modo, replay
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
+import lxifc, modo, lx
+
+class CmdListener(lxifc.CmdSysListener):
+    def __init__(self):
+        self.svc_listen = lx.service.Listener()
+        self.svc_listen.AddListener(self)
+        self.armed = True
+
+    def cmdsysevent_ExecutePre(self,cmd,type,isSandboxed,isPostCmd):
+        if self.armed:
+            if type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
+                cmd = lx.object.Command(cmd)
+                svc_command = lx.service.Command()
+                self.armed = False
+                lx.eval("replay.lineInsert " + self.wrap_quote(svc_command.ArgsAsStringLen(cmd, True)))
+                self.armed = True
+
+    @classmethod
+    def wrap_quote(cls, value):
+        return '"' + value.replace('"', '\\"') + '"'
+
+    def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
+        pass
+
+    def cmdsysevent_RefireBegin(self):
+        # we don't want a bunch of events when the user is
+        # dragging a minislider or something like that,
+        # so we disarm the listener on RefireBegin...
+        self.armed = False
+
+    def cmdsysevent_RefireEnd(self):
+        # ... and rearm on RefireEnd
+        self.armed = True
 
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
@@ -18,6 +51,7 @@ class RecordCommandClass(replay.commander.CommanderClass):
     # TODO We currently track this manually, so enabling or disabling macro recording
     # in any other way will break this command. We should find a listener.
     _recording = False
+    _cmdListener = None
 
     def commander_arguments(self):
         """Command takes two arguments: `mode` and `query`.
@@ -46,6 +80,10 @@ class RecordCommandClass(replay.commander.CommanderClass):
     @classmethod
     def set_state(cls, state):
         cls._recording = state
+    
+    @classmethod
+    def set_lisnter(cls, listner):
+        cls._cmdListener = listner
 
     def commander_execute(self, msg=None, flags=None):
         mode = self.commander_arg_value(0, 'toggle')
@@ -70,39 +108,13 @@ class RecordCommandClass(replay.commander.CommanderClass):
 
         # Do the work
         # -----------
-
+    
         if state:
-            # In case it's already recording, start over.
-            lx.eval('!!macro.record false')
+            self.set_lisnter(CmdListener())
+        else:
+            self.set_lisnter(None)
 
-            # Start recording.
-            lx.eval('!!macro.record true')
-
-        elif not state:
-            try:
-                # Store the temp file in the root kit directory.
-                temp_file_path = lx.eval('query platformservice alias ? "kit_mecco_replay:tmp.LXM"')
-
-                # Try saving the file.
-                lx.eval('!!macro.saveRecorded {%s}' % temp_file_path)
-
-            except:
-                # The Macro recording was probably empty.
-                raise Exception("Unable to save temp file.")
-
-            try:
-                # Open the saved macro for editing.
-                lx.eval('!!replay.fileInsert {%s}' % temp_file_path)
-
-            except:
-                # The Macro recording was probably empty.
-                raise Exception("Unable to load temp file.")
-
-                import traceback
-                traceback.print_exc()
-
-
-
+ 
     def commander_query(self, arg_index):
         if arg_index  == 1:
             return self._recording
