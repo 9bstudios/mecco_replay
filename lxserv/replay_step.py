@@ -18,6 +18,8 @@ class CommandClass(replay.commander.CommanderClass):
             return False
         if replay.Macro().is_empty:
             return False
+        if not replay.Macro().selected_descendants:
+            return False
         return True
 
 class UndoLineColor(lxifc.Undo):
