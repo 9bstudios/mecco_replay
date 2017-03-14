@@ -1,6 +1,6 @@
 # python
 
-import lx, modo, replay
+import lx, modo, replay, replay.commander
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""

@@ -3,7 +3,6 @@ import lx, lxifc, modo, replay
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
-
 class CommandClass(replay.commander.CommanderClass):
     """Reorders the selected command within the `Macro()` object.
     `mode` argument can move command `up` one space, `down` one space, to the `top`,
@@ -52,7 +51,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
-            modo.dialogs.alert("Empty selection", 'Wrong mode "%s".' % mode, dtype='warning')
+            modo.dialogs.alert(replay.message("LINE_REORDER", "DLG_TITLE1"), replay.message("LINE_REORDER", "DLG_MSG1", mode), dtype='warning')
             return None
 
         macro = replay.Macro()
