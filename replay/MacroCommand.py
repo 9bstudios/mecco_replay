@@ -283,7 +283,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         arg_counter = 0
 
-        while args_string:
+        while args_string and arg_counter < len(self.args):
 
             # Get the next argument's name (if given) and value:
             arg_name, args_string = self.get_next_arg_name(args_string)
