@@ -26,7 +26,7 @@ class CommandClass(replay.commander.CommanderClass):
         idx = -1
         if macro.primary is None:
             # If there's no primary node, insert at zero
-            idx = 0
+            idx = len(macro.children)
         else:
             # If there's a primary node, insert right after it
             idx = macro.primary.index + 1
@@ -34,6 +34,8 @@ class CommandClass(replay.commander.CommanderClass):
         for line in script.split('\n'):
             macro.add_command(command_string = [(line + "\n")], index = idx)
             idx += 1
+            
+        macro.select(idx - 1)
             
         macro.rebuild_view()
 

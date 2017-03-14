@@ -10,9 +10,10 @@ class CmdListener(lxifc.CmdSysListener):
         self.svc_listen = lx.service.Listener()
         self.svc_listen.AddListener(self)
         self.armed = True
+        self.state = False
 
     def cmdsysevent_ExecutePre(self,cmd,type,isSandboxed,isPostCmd):
-        if self.armed:
+        if self.state and self.armed:
             if type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
                 cmd = lx.object.Command(cmd)
                 svc_command = lx.service.Command()
@@ -51,7 +52,7 @@ class RecordCommandClass(replay.commander.CommanderClass):
     # TODO We currently track this manually, so enabling or disabling macro recording
     # in any other way will break this command. We should find a listener.
     _recording = False
-    _cmdListener = None
+    _cmd_listner = None
 
     def commander_arguments(self):
         """Command takes two arguments: `mode` and `query`.
@@ -82,11 +83,18 @@ class RecordCommandClass(replay.commander.CommanderClass):
         cls._recording = state
     
     @classmethod
-    def set_lisnter(cls, listner):
-        cls._cmdListener = listner
+    def set_lisnter(cls):
+        if cls._cmd_listner is None:
+            cls._cmd_listner = CmdListener()
+            
+    @classmethod
+    def set_lisnter_state(cls, value):
+        cls._cmd_listner.state = value
 
     def commander_execute(self, msg=None, flags=None):
         mode = self.commander_arg_value(0, 'toggle')
+        
+        self.set_lisnter()
 
         # Remember for next time
         # -----------
@@ -109,12 +117,9 @@ class RecordCommandClass(replay.commander.CommanderClass):
         # Do the work
         # -----------
     
-        if state:
-            self.set_lisnter(CmdListener())
-        else:
-            self.set_lisnter(None)
+        self.set_lisnter_state(state)
 
- 
+        
     def commander_query(self, arg_index):
         if arg_index  == 1:
             return self._recording

@@ -155,6 +155,10 @@ class Macro(lumberjack.Lumberjack):
 
         notifier = Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+        
+    def select(self, index):
+        self.root.deselect_descendants()
+        self.root.children[index].selected = True
 
     def parse(self, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
