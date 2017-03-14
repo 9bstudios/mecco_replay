@@ -9,7 +9,7 @@ PREFIXES = [
     ('!!', '!! Suppress all dialogs.'),
     ('+',  '+  Show dialogs.'),
     ('++', '++ Show all dialogs.'),
-    ('?',  '?  Show command dialog.')
+    ('q',  '?  Show command dialog.')
 ]
 
 class CommandClass(replay.commander.CommanderClass):
@@ -38,6 +38,9 @@ class CommandClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
         prefix = self.commander_arg_value(0, '')
+
+        # Since ? is reserved for queries in MODO, we use the letter q as a sub.
+        prefix = "?" if prefix == 'q' else prefix
 
         # Add actions needed to undo and redo this command
         actionList = PrefixActionList()
