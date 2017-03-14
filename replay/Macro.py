@@ -205,6 +205,7 @@ class Macro(lumberjack.Lumberjack):
         first_line = True
 
         command_with_comments = []
+        next_line_is_suppressed_command = False
         # Loop over the lines to get all the command strings:
         for input_line in input_file:
             if first_line:
@@ -215,11 +216,20 @@ class Macro(lumberjack.Lumberjack):
 
             if not input_line: continue
 
-            command_with_comments.append(input_line[:-1])
+            if not next_line_is_suppressed_command:
+                if input_line == "# replay suppress:\n":
+                    next_line_is_suppressed_command = True
+                    continue
 
-            # If this line is a comment, just append it to the full command:
-            if input_line[0] == "#":
-				continue
+                command_with_comments.append(input_line[:-1])
+
+                # If this line is a comment, just append it to the full command:
+                if input_line[0] == "#":
+                    continue
+            else:
+                # Command will be commented and that will be used in command parser to set suppress flag
+                command_with_comments.append(input_line[:-1])
+                next_line_is_suppressed_command = False
 
             kwargs['index'] = kwargs.get('index', 0)
 
@@ -245,6 +255,7 @@ class Macro(lumberjack.Lumberjack):
             first_line = True
 
             command_with_comments = []
+            next_line_is_suppressed_command = False
             # Loop over the lines to get all the command strings:
             for input_line in input_file:
                 if first_line:
@@ -255,10 +266,25 @@ class Macro(lumberjack.Lumberjack):
 
                 if not input_line: continue
 
-                # If this line is a comment, just append it to the full command:
-                if input_line[0] == "#":
-                    command_with_comments.append(input_line[:-1])
-	            continue
+                suppress = False
+
+                if not next_line_is_suppressed_command:
+                    if input_line == "# replay suppress:\n":
+                        next_line_is_suppressed_command = True
+                        continue
+
+                    # If this line is a comment, just append it to the full command:
+                    if input_line[0] == "#":
+                        command_with_comments.append(input_line[:-1])
+                        continue
+
+                else:
+                    # Command will be commented and that will be used in command parser to set suppress flag
+                    if input_line[0:2] != "# ":
+                        raise Exception("Bad command")
+                    input_line = input_line[2:]
+                    suppress = True
+                    next_line_is_suppressed_command = False
 
                 # Replace lx.eval with function returning command
                 store_lx_eval = lx.eval
@@ -274,7 +300,7 @@ class Macro(lumberjack.Lumberjack):
                     command_with_comments.append(cmd)
 
                 # Parse the command and store it in the commands list:
-                self.add_command(command_string = command_with_comments, **kwargs)
+                self.add_command(command_string = command_with_comments, suppress = suppress, **kwargs)
                 command_with_comments = []
 
         except:
