@@ -15,7 +15,7 @@ class CommandClass(replay.commander.CommanderClass):
             file_path = macro.file_path
             if file_path is None:
                 file_path = "Untitled"
-            if modo.dialogs.yesNo("Save changes", "Do you want to save changes in \'" + file_path + "'") == 'yes':
+            if modo.dialogs.yesNo("Save Macro", "Save changes to Macro?") == 'yes':
                 # If file path is not assigned ask for new file path
                 if macro.file_path is None:
                     file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \

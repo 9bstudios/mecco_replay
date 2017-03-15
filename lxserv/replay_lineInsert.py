@@ -37,6 +37,7 @@ class LineInsertClass(replay.commander.CommanderClass):
 
         for line in script.split('\n'):
             macro.add_command(command_string = [(line + "\n")], index = idx)
+            macro.unsaved_changes = True
             idx += 1
 
         macro.select(idx - 1)
