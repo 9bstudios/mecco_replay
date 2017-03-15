@@ -16,10 +16,11 @@ class CmdListener(lxifc.CmdSysListener):
         if self.state and self.armed:
             if cmd_type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
                 cmd = lx.object.Command(cmd)
-                svc_command = lx.service.Command()
-                self.armed = False
-                lx.eval("replay.lineInsert " + self.wrap_quote(svc_command.ArgsAsStringLen(cmd, True)))
-                self.armed = True
+                if not cmd.Name().startswith("replay."):
+                    svc_command = lx.service.Command()
+                    self.armed = False
+                    lx.eval("replay.lineInsert " + self.wrap_quote(svc_command.ArgsAsStringLen(cmd, True)))
+                    self.armed = True
 
     @classmethod
     def wrap_quote(cls, value):
