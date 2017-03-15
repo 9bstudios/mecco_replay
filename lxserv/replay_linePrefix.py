@@ -22,6 +22,8 @@ class CommandClass(replay.commander.CommanderClass):
         `'++'`  - Show all dialogs.
         `'?'`   - Show command dialog.
 
+    NOTE: Since commands cannot accept `?` as an argument, use `q` for `?`.
+
     See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
 
     def commander_arguments(self):
