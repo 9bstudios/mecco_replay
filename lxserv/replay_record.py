@@ -15,6 +15,21 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
         self.state = False
 
+    def valid_for_record(self, cmd):
+        if not self.state:
+            return False
+
+        if not self.armed:
+            return False
+
+        if (cmd.Flags() & lx.symbol.fCMD_QUIET):
+            return False
+
+        if cmd.Name().startswith("replay."):
+            return False
+
+        return True
+
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
