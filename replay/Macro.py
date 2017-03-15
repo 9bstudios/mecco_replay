@@ -342,13 +342,31 @@ class Macro(lumberjack.Lumberjack):
 
         # Run every command in the macro:
         for command in self.commands:
-            command.run()
+            if not command.suppress:
+                command.run()
+            
+    def all_suppressed(self):
+        for child in self.children:
+            if not child.suppress:
+                return False
+        
+        return True
 
     def run_next_line(self):
         """Runs the next line in the macro, i. e. the primary one."""
 
         # Select the primary command:
         command = self.primary
+        start_index = command.index
+        
+        while command is not None and command.suppress:
+            command.selected = False
+            index = command.index + 1
+            if index == len(self.commands): index = 0
+            if index == start_index:
+                # All commands are suppresed
+                return None
+            command = self.commands[index]
 
         # If there's a primary selected command, run it:
         if command:
@@ -359,6 +377,10 @@ class Macro(lumberjack.Lumberjack):
         # Get the index for the next command, which will now be the primary one:
         next_command_index = self.commands.index(command) + 1
         if next_command_index == len(self.commands): next_command_index = 0
+        
+        while self.commands[next_command_index].suppress:
+            next_command_index = next_command_index + 1
+            if next_command_index == len(self.commands): next_command_index = 0
 
         # Set as primary the next command:
         command.selected = False
