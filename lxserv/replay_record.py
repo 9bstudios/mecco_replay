@@ -35,7 +35,7 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.valid_for_record(cmd):
             return
 
-        self.__class__.total_depth += 1
+        self.total_depth += 1
 
         if self.total_depth - self.block_depth == 1:
             svc_command = lx.service.Command()
@@ -48,15 +48,15 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.valid_for_record(cmd):
             return
 
-        self.__class__.total_depth -= 1
+        self.total_depth -= 1
 
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
-        self.__class__.block_depth += 1
-        self.__class__.total_depth += 1
+        self.block_depth += 1
+        self.total_depth += 1
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
-        self.__class__.block_depth -= 1
-        self.__class__.total_depth -= 1
+        self.block_depth -= 1
+        self.total_depth -= 1
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
