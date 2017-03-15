@@ -27,7 +27,16 @@ class CmdListener(lxifc.CmdSysListener):
         return '{' + value + '}'
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
-        pass
+        lx.notimpl()
+        
+    def cmdsysevent_BlockBegin(self,block,isSandboxed):
+        lx.out("Block begin")
+        
+    def cmdsysevent_BlockEndedPostMode(self, name, isSandboxed):
+        lx.out("BlockEndedPostMode")
+        
+    def cmdsysevent_BlockEnd(self,block,isSandboxed,wasDiscarded):
+        lx.out("Block end")
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is

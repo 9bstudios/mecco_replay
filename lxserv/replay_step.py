@@ -9,6 +9,10 @@ class CommandClass(replay.commander.CommanderClass):
     one-by-one."""
     def commander_execute(self, msg, flags):
         # Register Undo object performing operation and apply it
+        macro = replay.Macro()
+        if macro.all_suppressed():
+            modo.dialogs.alert("Empty macro", "There are no commands to replay", dtype='warning')
+            return
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             undo_svc.Apply(UndoLineColor())
