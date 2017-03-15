@@ -12,9 +12,9 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
         self.state = False
 
-    def cmdsysevent_ExecutePre(self,cmd,type,isSandboxed,isPostCmd):
+    def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
         if self.state and self.armed:
-            if type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
+            if cmd_type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
                 cmd = lx.object.Command(cmd)
                 svc_command = lx.service.Command()
                 self.armed = False
@@ -81,19 +81,19 @@ class RecordCommandClass(replay.commander.CommanderClass):
     @classmethod
     def set_state(cls, state):
         cls._recording = state
-    
+
     @classmethod
     def set_lisnter(cls):
         if cls._cmd_listner is None:
             cls._cmd_listner = CmdListener()
-            
+
     @classmethod
     def set_lisnter_state(cls, value):
         cls._cmd_listner.state = value
 
     def commander_execute(self, msg=None, flags=None):
         mode = self.commander_arg_value(0, 'toggle')
-        
+
         self.set_lisnter()
 
         # Remember for next time
@@ -116,10 +116,10 @@ class RecordCommandClass(replay.commander.CommanderClass):
 
         # Do the work
         # -----------
-    
+
         self.set_lisnter_state(state)
 
-        
+
     def commander_query(self, arg_index):
         if arg_index  == 1:
             return self._recording
