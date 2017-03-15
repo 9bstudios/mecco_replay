@@ -6,6 +6,9 @@ https://github.com/adamohern/commander for details"""
 import lxifc, modo, lx
 
 class CmdListener(lxifc.CmdSysListener):
+    block_depth = 0
+    total_depth = 0
+
     def __init__(self):
         self.svc_listen = lx.service.Listener()
         self.svc_listen.AddListener(self)
@@ -13,21 +16,32 @@ class CmdListener(lxifc.CmdSysListener):
         self.state = False
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
-        if self.state and self.armed:
-            if cmd_type == lx.symbol.iCMDSYSEVENT_TYPE_ROOT:
-                cmd = lx.object.Command(cmd)
-                if not cmd.Name().startswith("replay."):
-                    svc_command = lx.service.Command()
-                    self.armed = False
-                    lx.eval("replay.lineInsert " + self.wrap_quote(svc_command.ArgsAsStringLen(cmd, True)))
-                    self.armed = True
+        cmd = lx.object.Command(cmd)
+        if not self.valid_for_record(cmd):
+            return
 
-    @classmethod
-    def wrap_quote(cls, value):
-        return '{' + value + '}'
+        self.__class__.total_depth += 1
+
+        if self.total_depth - self.block_depth == 1:
+            svc_command = lx.service.Command()
+            self.armed = False
+            lx.eval("replay.lineInsert {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+            self.armed = True
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
-        pass
+        cmd = lx.object.Command(cmd)
+        if not self.valid_for_record(cmd):
+            return
+
+        self.__class__.total_depth -= 1
+
+    def cmdsysevent_BlockBegin(self, block, isSandboxed):
+        self.__class__.block_depth += 1
+        self.__class__.total_depth += 1
+
+    def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
+        self.__class__.block_depth -= 1
+        self.__class__.total_depth -= 1
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
