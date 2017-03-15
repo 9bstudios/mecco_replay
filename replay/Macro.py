@@ -41,6 +41,9 @@ class Macro(lumberjack.Lumberjack):
     # Keeps track of unsaved changes for use in `replay.fileClose`.
     _unsaved_changes = False
 
+    # If a color has been modified, we'll need to reset (see `replay.argEdit`)
+    _reset_color_on_select = False
+
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
     _TreeNodeClass = MacroCommand
@@ -58,7 +61,16 @@ class Macro(lumberjack.Lumberjack):
             self.__class__._file_path = value
         return locals()
 
-    file_path = property(**file_path())
+    def reset_color_on_select():
+        doc = """If set to True, the next select event will run `select.color {0 0 0}`
+        to clear out any color values left behind by an argument edit (see `replay.argEdit`)"""
+        def fget(self):
+            return self.__class__._reset_color_on_select
+        def fset(self, value):
+            self.__class__._reset_color_on_select = value
+        return locals()
+
+    reset_color_on_select = property(**reset_color_on_select())
 
     def file_format():
         doc = """The file format for the current macro. If None, assume that the macro
@@ -150,10 +162,12 @@ class Macro(lumberjack.Lumberjack):
         # disappears (because of a selection change), MODO will crash. Yay!
         # For those who do not like this behavior, we black out the current
         # color selection whenever we make a change.
-        try:
-            lx.eval('!!select.color {0 0 0}')
-        except:
-            pass
+        if self.reset_color_on_select:
+            try:
+                lx.eval('!!select.color {0 0 0}')
+                self.reset_color_on_select = False
+            except:
+                pass
 
     def select_event(self):
         """Fires whenever a TreeNode `selected` state is changed."""

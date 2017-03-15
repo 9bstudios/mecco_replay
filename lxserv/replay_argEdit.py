@@ -225,6 +225,8 @@ class CommandClass(replay.commander.CommanderClass):
         # If an `argTypeName` is defined in the arg object, use it.
         argTypeName = argType[1]
         if argTypeName:
+            if argTypeName == lx.symbol.sTYPE_COLOR:
+                replay.Macro().reset_color_on_select = True
             return argTypeName
 
         # In many cases, however, we won't have a proper argTypeName :(
