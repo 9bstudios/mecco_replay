@@ -313,6 +313,8 @@ class TreeView( lxifc.TreeView,
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
             self._controller.clear_selection()
 
+        self._controller.select_event_treeview()
+
     def treeview_CellCommand(self, columnIndex):
         """Cells can contain commands similar to Forms, and this is especially
         useful with query commands like booleans. Note that in order for the `treeview_CellCommand`
