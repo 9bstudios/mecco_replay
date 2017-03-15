@@ -62,7 +62,7 @@ class CmdListener(lxifc.CmdSysListener):
         if self.total_depth - self.block_depth == 1:
             svc_command = lx.service.Command()
             self.armed = False
-            lx.eval("replay.lineInsert {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+            lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
             self.armed = True
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
@@ -96,7 +96,7 @@ class CmdListener(lxifc.CmdSysListener):
             svc_command = lx.service.Command()
 
             self.armed = False
-            lx.eval("replay.lineInsert {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+            lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
             self.armed = True
 
 class RecordCommandClass(replay.commander.CommanderClass):
