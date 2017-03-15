@@ -150,12 +150,14 @@ class Macro(lumberjack.Lumberjack):
         # disappears (because of a selection change), MODO will crash. Yay!
         # For those who do not like this behavior, we black out the current
         # color selection whenever we make a change.
-        lx.eval('select.color {0 0 0}')
-
+        try:
+            lx.eval('!!select.color {0 0 0}')
+        except:
+            pass
 
         notifier = Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
-        
+
     def select(self, index):
         self.root.deselect_descendants()
         self.root.children[index].selected = True
@@ -344,12 +346,12 @@ class Macro(lumberjack.Lumberjack):
         for command in self.commands:
             if not command.suppress:
                 command.run()
-            
+
     def all_suppressed(self):
         for child in self.children:
             if not child.suppress:
                 return False
-        
+
         return True
 
     def run_next_line(self):
@@ -358,7 +360,7 @@ class Macro(lumberjack.Lumberjack):
         # Select the primary command:
         command = self.primary
         start_index = command.index
-        
+
         while command is not None and command.suppress:
             command.selected = False
             index = command.index + 1
@@ -377,7 +379,7 @@ class Macro(lumberjack.Lumberjack):
         # Get the index for the next command, which will now be the primary one:
         next_command_index = self.commands.index(command) + 1
         if next_command_index == len(self.commands): next_command_index = 0
-        
+
         while self.commands[next_command_index].suppress:
             next_command_index = next_command_index + 1
             if next_command_index == len(self.commands): next_command_index = 0

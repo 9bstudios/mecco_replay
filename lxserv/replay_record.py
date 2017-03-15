@@ -5,6 +5,16 @@ https://github.com/adamohern/commander for details"""
 
 import lxifc, modo, lx
 
+# The hardest part is going to be dealing with undos.  If the user executes 2 commands,
+# undoes one, and then executes another command, presumably you don't want to record
+# the undone command.  And you can't execute app.undo (or app.redo -- really, any command
+# with the UNDOSPECIAL flag set) from within a macro, so you'll want to skip that as well.
+# There doesn't appear to be an undo listener, so you can't monitor that, unfortunately.
+# And you can't just listen to app.undo commands and step back one, because of the
+# post commands used by the tool system.  That said, if you do use app.undo to detect
+# undos and you detect a post command (by checking its command flags), you can skip
+# the post command.  I think there might be some other special cases, though.
+
 class CmdListener(lxifc.CmdSysListener):
     block_depth = 0
     total_depth = 0
@@ -13,6 +23,8 @@ class CmdListener(lxifc.CmdSysListener):
         self.svc_listen = lx.service.Listener()
         self.svc_listen.AddListener(self)
         self.armed = True
+        self.refiring = False
+        self.refire_last = None
         self.state = False
 
     def valid_for_record(self, cmd):
@@ -22,16 +34,26 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.armed:
             return False
 
+        if self.refiring:
+            self.refire_last = cmd
+            return
+
         if (cmd.Flags() & lx.symbol.fCMD_QUIET):
             return False
 
         if cmd.Name().startswith("replay."):
             return False
 
+        if cmd.Name() in ['app.undo', 'app.redo']:
+            modo.dialogs.alert("Undo during recording", "'Undo' cannot be recorded in a macro at this time. Recording will stop.")
+            lx.eval('replay.record stop')
+            return False
+
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
         cmd = lx.object.Command(cmd)
+
         if not self.valid_for_record(cmd):
             return
 
@@ -62,11 +84,20 @@ class CmdListener(lxifc.CmdSysListener):
         # we don't want a bunch of events when the user is
         # dragging a minislider or something like that,
         # so we disarm the listener on RefireBegin...
-        self.armed = False
+        self.refiring = True
 
     def cmdsysevent_RefireEnd(self):
         # ... and rearm on RefireEnd
-        self.armed = True
+        self.refiring = False
+
+        if self.refire_last is not None:
+            lx.out(self.refire_last.Name())
+            cmd = self.refire_last
+            svc_command = lx.service.Command()
+
+            self.armed = False
+            lx.eval("replay.lineInsert {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+            self.armed = True
 
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
