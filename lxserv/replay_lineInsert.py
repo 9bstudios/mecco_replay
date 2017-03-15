@@ -14,7 +14,8 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'datatype': 'string',
                 'default': '',
                 'values_list': self.list_commands,
-                'values_list_type': 'sPresetText'
+                'values_list_type': 'sPresetText',
+                'flags':['query']
             }
         ]
 
