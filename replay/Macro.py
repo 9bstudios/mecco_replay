@@ -342,7 +342,8 @@ class Macro(lumberjack.Lumberjack):
 
         # Run every command in the macro:
         for command in self.commands:
-            command.run()
+            if not command.suppress:
+                command.run()
             
     def all_suppressed(self):
         for child in self.children:
