@@ -34,7 +34,7 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.armed:
             return False
 
-        if (cmd.Flags() & lx.symbol.fCMD_QUIET):
+        if (cmd.Flags() & lx.symbol.fCMD_UI):
             return False
 
         if cmd.Name().startswith("replay."):
@@ -50,12 +50,12 @@ class CmdListener(lxifc.CmdSysListener):
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
 #        lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
         self.total_depth += 1
-        
+
         cmd = lx.object.Command(cmd)
-        
+
         if not self.valid_for_record(cmd):
             return
-            
+
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
  #       lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
         self.total_depth -= 1
@@ -65,7 +65,7 @@ class CmdListener(lxifc.CmdSysListener):
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
             return
-            
+
         if self.total_depth - self.block_depth == 0: # Result alreade decreased total_depth
             if self.refiring:
                 self.refire_last = cmd
