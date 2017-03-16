@@ -45,4 +45,4 @@ class CommandClass(replay.commander.CommanderClass):
 
 
 
-lx.bless(CommandClass, 'replay.fileOpenRecentFCL')
+lx.bless(CommandClass, 'replay.fileOpenRecentPop')
