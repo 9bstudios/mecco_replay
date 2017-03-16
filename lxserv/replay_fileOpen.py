@@ -51,7 +51,11 @@ class CommandClass(replay.commander.CommanderClass):
         macro.parse(input_path)
         macro.rebuild_view()
 
+        # Add to recently-opened
         lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
+
+        # Stop recording
+        lx.eval('replay.record stop')
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)

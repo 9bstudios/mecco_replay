@@ -13,6 +13,9 @@ class CommandClass(replay.commander.CommanderClass):
         # from a blank macro by closing the current one.
         lx.eval('!!replay.fileClose')
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False

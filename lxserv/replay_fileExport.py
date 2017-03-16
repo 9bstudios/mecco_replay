@@ -50,11 +50,12 @@ class CommandClass(replay.commander.CommanderClass):
             self.__class__._path = file_path
             format_val = lx.eval('dialog.fileSaveFormat ?')
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         replay.Macro().render(format_val, file_path)
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         if replay.Macro().is_empty:
             return False
         return True

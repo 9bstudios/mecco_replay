@@ -49,7 +49,11 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro.render(file_format, file_path)
 
+        # Add to recently-opened
         lx.eval('replay.fileOpenAddRecent {%s}' % file_path)
+
+        # Stop recording
+        lx.eval('replay.record stop')
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):

@@ -26,6 +26,8 @@ class CommandClass(replay.commander.CommanderClass):
         macro.file_path = None
         macro.file_format = None
         macro.unsaved_changes = False
+        # Stop recording
+        lx.eval('replay.record stop')
         # Clear current macro
         macro.clear()
         # Rebuild treeview
@@ -35,8 +37,6 @@ class CommandClass(replay.commander.CommanderClass):
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         return True
 
 lx.bless(CommandClass, 'replay.fileClose')

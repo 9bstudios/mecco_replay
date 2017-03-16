@@ -46,6 +46,9 @@ class CommandClass(replay.commander.CommanderClass):
 
         replay.Macro().unsaved_changes = True
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
