@@ -10,6 +10,10 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
 
         macro = replay.Macro()
+
+        # Hack to fix crash bug.
+        macro.select_event_treeview()
+
         # If content is not empty ask user for save
         if macro.unsaved_changes and not macro.is_empty:
             file_path = macro.file_path
