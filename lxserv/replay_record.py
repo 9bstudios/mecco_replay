@@ -48,7 +48,7 @@ class CmdListener(lxifc.CmdSysListener):
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
-        lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
+#        lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
         self.total_depth += 1
         
         cmd = lx.object.Command(cmd)
@@ -56,18 +56,17 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.valid_for_record(cmd):
             return
             
-    def ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
-        lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
+    def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
+ #       lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
+        self.total_depth -= 1
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
-        lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
+#        lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
-            self.total_depth -= 1
             return
             
-        if self.total_depth - self.block_depth == 1:
-            
+        if self.total_depth - self.block_depth == 0: # Result alreade decreased total_depth
             if self.refiring:
                 self.refire_last = cmd
             else:
@@ -76,15 +75,13 @@ class CmdListener(lxifc.CmdSysListener):
                 lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
                 self.armed = True
 
-        self.total_depth -= 1
-
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
         self.block_depth += 1
-#        self.total_depth += 1
+        self.total_depth += 1
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
         self.block_depth -= 1
-#        self.total_depth -= 1
+        self.total_depth -= 1
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
