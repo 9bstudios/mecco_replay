@@ -252,7 +252,10 @@ class CommandClass(replay.commander.CommanderClass):
                 
         if len(types) == 1:
             # If all argument types are identical return it
-            return list(types)[0]
+            argTypeName = list(types)[0]
+            if argTypeName == lx.symbol.sTYPE_COLOR:
+                replay.Macro().reset_color_on_select = True
+            return argTypeName
         else:
             # If args doesn't have type or have many use string
             lx.symbol.sTYPE_STRING
