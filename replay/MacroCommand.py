@@ -1,6 +1,7 @@
 # python
 
 import lx
+import lxifc
 import re
 import json
 import lumberjack
@@ -52,6 +53,11 @@ class MacroCommand(lumberjack.TreeNode):
             self.parse_string(kwargs.get('command_string'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
+            
+    def attributesObject(self):
+        svc_ = lx.service.Command()
+        x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
+        return lx.object.Attributes(cmd)
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."

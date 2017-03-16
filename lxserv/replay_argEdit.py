@@ -44,6 +44,16 @@ class CommandClass(replay.commander.CommanderClass):
                 if arg.argName == argName:
                     arg_nodes.add(arg)
         return arg_nodes
+        
+    def commands_by_argName(self, argName):
+        """Returns a list of argument nodes in the current selection with a given
+        `argName` property. Probably not as fast as it should be."""
+        commands = list()
+        for node in replay.Macro().selected_commands:
+            for arg in node.args:
+                if arg.argName == argName:
+                    commands.append((node, arg.index))
+        return commands
 
     def can_float(self, argName):
         """Returns `True` if all argument is of unspecified type and values can
@@ -209,46 +219,43 @@ class CommandClass(replay.commander.CommanderClass):
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
-
-        # First, figure out if we have exactly one argType to work with. If we have
-        # zero or more than one, we have to use a string.
-        argTypes = set()
-        for arg in self.args_by_argName(argName):
-            argTypes.add((arg.argType, arg.argTypeName))
-
-        if not argTypes: return lx.symbol.sTYPE_STRING
-        if len(argTypes) > 1: return lx.symbol.sTYPE_STRING
-
-        # Now that we've established that we only have one argType, act like it.
-        argType = list(argTypes)[0]
-
-        # If an `argTypeName` is defined in the arg object, use it.
-        argTypeName = argType[1]
-        if argTypeName:
-            if argTypeName == lx.symbol.sTYPE_COLOR:
-                replay.Macro().reset_color_on_select = True
-            return argTypeName
-
-        # In many cases, however, we won't have a proper argTypeName :(
+        
+        types = set()
+        
+        # Loop over all coomand args with name argName
+        for command, argIndex in self.commands_by_argName(argName):
+            arg = command.args[argIndex]
+            # Get type coming from meta
+            argTypeName = arg.argTypeName
+            
+            # If argument meta doesn't contain type try to get from command attributes
+            if not argTypeName:
+                attrs = command.attributesObject()
+                argTypeName = attrs.TypeName(argIndex)
+                
+                # If nothing is found get from attr.Type. If 0 stgring will be used
+                if not argTypeName:
+                    lookup = [
+                        lx.symbol.sTYPE_STRING, # generic object
+                        lx.symbol.sTYPE_INTEGER,
+                        lx.symbol.sTYPE_FLOAT,
+                        lx.symbol.sTYPE_STRING
+                    ]
+                    argTypeName = lookup[attrs.Type(argIndex)]
+                    
+            if argTypeName:
+                types.add(argTypeName)  
+            
+            # If we have more than one type no need to continue. Return 'string'
+            if len(types) > 1:
+                break;
+                
+        if len(types) == 1:
+            # If all argument types are identical return it
+            return list(types)[0]
         else:
-
-            # If we don't have an argTypeName, check if it can be a float.
-            if self.can_float(argName):
-                return lx.symbol.sTYPE_FLOAT
-
-            # If not, fall back on the `arg.argType` property:
-            #   0: generic
-            #   1: integer
-            #   2: float
-            #   3: string
-
-            lookup = [
-                lx.symbol.sTYPE_STRING, # generic object
-                lx.symbol.sTYPE_INTEGER,
-                lx.symbol.sTYPE_FLOAT,
-                lx.symbol.sTYPE_STRING
-            ]
-            return lookup[argType[0]]
+            # If args doesn't have type or have many use string
+            lx.symbol.sTYPE_STRING
 
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)

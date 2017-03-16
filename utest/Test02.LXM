@@ -1,0 +1,5 @@
+#LXMacro#
+select.typeFrom item
+select.all
+item.channel locator$visible on
+select.drop item
