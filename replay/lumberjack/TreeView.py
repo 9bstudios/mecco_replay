@@ -2,10 +2,14 @@
 
 import lxifc, lx
 
+DROPSOURCE_COMMAND = "replay_command"
+DROP_SERVER = "replay_dropserver"
+DROPSERVERUNIQUEKEY = 118319
+
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
-                lxifc.Attributes ):
+                lxifc.Attributes):
 
     """TreeView interface for the MODO API. Boilerplate pulled from:
     http://modo.sdk.thefoundry.co.uk/wiki/Python_Treeview_Example
@@ -424,14 +428,62 @@ class TreeView( lxifc.TreeView,
 
         That's it, really.
         """
-        lx.notimpl()
+        if columnIndex != 0:
+            return ""
+        if self.m_currentNode == self._root:
+            return DROPSOURCE_COMMAND
+        else:
+            return ""
 
     def treeview_GetDragDropSourceObject(self, columnIndex, type):
-        lx.notimpl()
+        if columnIndex != 0:
+            return None
+
+        if type != DROPSOURCE_COMMAND:
+            return None
+
+        # Create a string value object.
+        cmd_svc = lx.service.Command ()
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_INTEGER)
+    
+        # Create a value array so we can access it.
+        va = lx.object.ValueArray ()
+        va.set(vaQuery)
+
+        # Add unique key
+        va.AddInt(DROPSERVERUNIQUEKEY)
+
+        # Add selected children indices
+        for child in self._root.selected_children:
+            va.AddInt(child.index)
+    
+        return va
 
     def treeview_GetDragDropDestinationObject(self, columnIndex, location):
-        lx.notimpl()
+        if columnIndex != 0:
+            return None
 
+        if location != 0 and location != 2:
+            return None
+
+        # Create a string value object.
+        cmd_svc = lx.service.Command ()
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_INTEGER)
+    
+        # Create a value array so we can access it.
+        va = lx.object.ValueArray ()
+        va.set(vaQuery)
+
+        # Add unique key
+        va.AddInt(DROPSERVERUNIQUEKEY)
+        
+        # Add target index
+        if location == 2:
+            va.AddInt(self.m_currentIndex)
+        else:
+            va.AddInt(self.m_currentIndex - 1)
+
+        return va
     # --------------------------------------------------------------------------------------------------
     # Attributes
     # --------------------------------------------------------------------------------------------------
@@ -478,3 +530,4 @@ class TreeView( lxifc.TreeView,
         # If node.columns[] doesn't contain a key for some reason,
         # we need to fail gracefully lest we crash MODO.
         lx.notimpl()
+
