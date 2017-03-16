@@ -16,8 +16,6 @@ import lxifc, modo, lx
 # the post command.  I think there might be some other special cases, though.
 
 class CmdListener(lxifc.CmdSysListener):
-    block_depth = 0
-    total_depth = 0
 
     def __init__(self):
         self.svc_listen = lx.service.Listener()
@@ -26,6 +24,8 @@ class CmdListener(lxifc.CmdSysListener):
         self.refiring = False
         self.refire_last = None
         self.state = False
+        self.block_depth = 0
+        self.total_depth = 1 # We are starting listner from command so we will listen one ExecutePost without ExecutePre
 
     def valid_for_record(self, cmd):
         if not self.state:
@@ -33,10 +33,6 @@ class CmdListener(lxifc.CmdSysListener):
 
         if not self.armed:
             return False
-
-        if self.refiring:
-            self.refire_last = cmd
-            return
 
         if (cmd.Flags() & lx.symbol.fCMD_QUIET):
             return False
@@ -52,46 +48,56 @@ class CmdListener(lxifc.CmdSysListener):
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
+        lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
+        self.total_depth += 1
+        
         cmd = lx.object.Command(cmd)
-
+        
         if not self.valid_for_record(cmd):
             return
-
-        self.total_depth += 1
-
-        if self.total_depth - self.block_depth == 1:
-            svc_command = lx.service.Command()
-            self.armed = False
-            lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
-            self.armed = True
+            
+    def ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
+        lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
+        lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
+            self.total_depth -= 1
             return
+            
+        if self.total_depth - self.block_depth == 1:
+            
+            if self.refiring:
+                self.refire_last = cmd
+            else:
+                svc_command = lx.service.Command()
+                self.armed = False
+                lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+                self.armed = True
 
         self.total_depth -= 1
 
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
         self.block_depth += 1
-        self.total_depth += 1
+#        self.total_depth += 1
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
         self.block_depth -= 1
-        self.total_depth -= 1
+#        self.total_depth -= 1
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
         # dragging a minislider or something like that,
         # so we disarm the listener on RefireBegin...
         self.refiring = True
+        self.refire_last = None
 
     def cmdsysevent_RefireEnd(self):
         # ... and rearm on RefireEnd
         self.refiring = False
 
         if self.refire_last is not None:
-            lx.out(self.refire_last.Name())
             cmd = self.refire_last
             svc_command = lx.service.Command()
 
