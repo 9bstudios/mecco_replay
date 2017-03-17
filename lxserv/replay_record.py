@@ -25,7 +25,7 @@ class CmdListener(lxifc.CmdSysListener):
         self.refire_last = None
         self.state = False
         self.block_depth = 0
-        self.total_depth = 1 # We are starting listner from command so we will listen one ExecutePost without ExecutePre
+        self.total_depth = 0
 
     def valid_for_record(self, cmd):
         if not self.state:
@@ -34,10 +34,12 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.armed:
             return False
 
-        if (cmd.Flags() & lx.symbol.fCMD_UI):
+        if (cmd.Flags() & lx.symbol.fCMD_EXEC_GETARGS_FORCESUB_OFF):
+            # lx.out("-" * self.total_depth, cmd.Name(), "Force sub off. Ignore.")
             return False
 
         if cmd.Name().startswith("replay."):
+            # lx.out("-" * self.total_depth, cmd.Name(), "replay command. Ignore.")
             return False
 
         if cmd.Name() in ['app.undo', 'app.redo']:
@@ -48,25 +50,31 @@ class CmdListener(lxifc.CmdSysListener):
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
-#        lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
+        # lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
+        cmd = lx.object.Command(cmd)
+        if not self.valid_for_record(cmd):
+            return
+
+        # Must happen AFTER we validate.
         self.total_depth += 1
 
-        cmd = lx.object.Command(cmd)
-
-        if not self.valid_for_record(cmd):
-            return
+        # lx.out("-" * self.total_depth, cmd.Name())
 
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
- #       lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
-        self.total_depth -= 1
+        # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
 
-    def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
-#        lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
             return
 
-        if self.total_depth - self.block_depth == 0: # Result alreade decreased total_depth
+        # lx.out("-" * self.total_depth, "/%s" % cmd.Name())
+
+        # Must happen AFTER we validate.
+        self.total_depth -= 1
+
+        # Only record base-level commands
+        if self.total_depth - self.block_depth == 0:
+
             if self.refiring:
                 self.refire_last = cmd
             else:
@@ -75,11 +83,17 @@ class CmdListener(lxifc.CmdSysListener):
                 lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
                 self.armed = True
 
+    def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
+        # lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
+        pass
+
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
+        # lx.out("## Block Begin")
         self.block_depth += 1
         self.total_depth += 1
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
+        # lx.out("## Block End")
         self.block_depth -= 1
         self.total_depth -= 1
 
