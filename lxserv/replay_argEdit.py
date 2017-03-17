@@ -1,5 +1,6 @@
 # python
 
+import math
 import lx, modo, replay
 from replay import message as message
 
@@ -44,7 +45,7 @@ class CommandClass(replay.commander.CommanderClass):
                 if arg.argName == argName:
                     arg_nodes.add(arg)
         return arg_nodes
-        
+
     def commands_by_argName(self, argName):
         """Returns a list of argument nodes in the current selection with a given
         `argName` property. Probably not as fast as it should be."""
@@ -54,24 +55,6 @@ class CommandClass(replay.commander.CommanderClass):
                 if arg.argName == argName:
                     commands.append((node, arg.index))
         return commands
-
-    def can_float(self, argName):
-        """Returns `True` if all argument is of unspecified type and values can
-        be converted to `Float`.
-
-        Some command arguments in MODO have undefined (generic) `argType` parameters.
-        In these cases, a string is the fail-safe. But many of these generic values
-        are actually numeric, and the string editor in MODO is not ideal for editing
-        numbers. Workaround: if the value has an `argType` of 0 and Python can
-        successfully convert it to a `float` value, do it."""
-        for arg in self.args_by_argName(argName):
-            if arg.argType != 0:
-                return False
-            try:
-                float(arg.value)
-            except:
-                return False
-        return True
 
     def commander_execute(self, msg, flags):
         """Fires whenever the value is updated in the form. Stores changes in the
@@ -106,41 +89,23 @@ class CommandClass(replay.commander.CommanderClass):
 
         argName = self.commander_args()['argName']
 
+        datatype = self.basic_ArgType(1)
+
         argValues = set()
         for arg in self.args_by_argName(argName):
-
-            # Try to establish datatype by name
-            datatype = arg.argTypeName
-
-            # If not, fall back on the `arg.argType` property:
-            if not datatype:
-                datatype = [
-                    lx.symbol.sTYPE_STRING,     # generic object (as string)
-                    lx.symbol.sTYPE_INTEGER,    # integer
-                    lx.symbol.sTYPE_FLOAT,      # float
-                    lx.symbol.sTYPE_STRING      # string
-                ][arg.argType]
-
-            argValues.add((arg.value, datatype))
+            argValues.add((arg.value))
 
         # If there are no values to return, don't bother.
         if not argValues:
             return lx.result.OK
 
-        # Some arg values will be stored as strings when in fact they should
-        # really be numbers. (Since not all MODO command args specify a datatype.)
-        # We assume that if the datatype is undeclared and the string can be
-        # converted to a float, we should do it.
-        if self.can_float(argName):
-            values_list = [(float(v), lx.symbol.sTYPE_FLOAT) for (v, d) in argValues]
-        else:
-            values_list = list(argValues)
+        values_list = list(argValues)
 
         # RETURN VALUES
         # -------------
 
         # Need to add the proper datatype based on result from commander_query
-        for value, datatype in values_list:
+        for value in values_list:
 
             # Sometimes we get passed empty values. Ignore those.
             if value is None:
@@ -173,7 +138,6 @@ class CommandClass(replay.commander.CommanderClass):
             # Floats
             elif datatype in [
                     lx.symbol.sTYPE_ACCELERATION,
-                    lx.symbol.sTYPE_ANGLE,
                     lx.symbol.sTYPE_AXIS,
                     lx.symbol.sTYPE_COLOR1,
                     lx.symbol.sTYPE_FLOAT,
@@ -186,6 +150,10 @@ class CommandClass(replay.commander.CommanderClass):
                     lx.symbol.sTYPE_UVCOORD
                     ]:
                 va.AddFloat(float(value))
+
+            # Angles need to be converted to radians
+            elif datatype in [lx.symbol.sTYPE_ANGLE]:
+                va.AddFloat(math.radians(float(value)))
 
             # Vectors (i.e. strings that need parsing)
             elif datatype in [
@@ -219,21 +187,21 @@ class CommandClass(replay.commander.CommanderClass):
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
-        
+
         types = set()
-        
-        # Loop over all coomand args with name argName
+
+        # Loop over all command args with name argName
         for command, argIndex in self.commands_by_argName(argName):
             arg = command.args[argIndex]
             # Get type coming from meta
             argTypeName = arg.argTypeName
-            
+
             # If argument meta doesn't contain type try to get from command attributes
             if not argTypeName:
                 attrs = command.attributesObject()
                 argTypeName = attrs.TypeName(argIndex)
-                
-                # If nothing is found get from attr.Type. If 0 stgring will be used
+
+                # If nothing is found get from attrs.Type
                 if not argTypeName:
                     lookup = [
                         lx.symbol.sTYPE_STRING, # generic object
@@ -242,19 +210,22 @@ class CommandClass(replay.commander.CommanderClass):
                         lx.symbol.sTYPE_STRING
                     ]
                     argTypeName = lookup[attrs.Type(argIndex)]
-                    
+
             if argTypeName:
-                types.add(argTypeName)  
-            
+                types.add(argTypeName)
+
             # If we have more than one type no need to continue. Return 'string'
             if len(types) > 1:
                 break;
-                
+
         if len(types) == 1:
             # If all argument types are identical return it
             argTypeName = list(types)[0]
+            # Nasty bug: if we edit a color, we must reset the color
+            # else crash.
             if argTypeName == lx.symbol.sTYPE_COLOR:
                 replay.Macro().reset_color_on_select = True
+
             return argTypeName
         else:
             # If args doesn't have type or have many use string
