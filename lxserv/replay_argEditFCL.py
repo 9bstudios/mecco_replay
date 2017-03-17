@@ -34,8 +34,10 @@ class CommandClass(replay.commander.CommanderClass):
 
         args = []
         for node in nodes:
+            command_obj = node.commandObject()
             for arg in node.args:
-                args.append(arg.argName)
+                if command_obj.ArgFlags(arg.index) & lx.symbol.fCMDARG_HIDDEN == 0:
+                    args.append(arg.argName)
 
         commands_list = []
         for arg in self.remove_duplicates(args):
