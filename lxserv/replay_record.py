@@ -22,52 +22,66 @@ class CmdListener(lxifc.CmdSysListener):
         self.svc_listen.AddListener(self)
         self.armed = True
         self.refiring = False
-        self.refire_last = None
+
+        self.refire_order = []
+        self.refire_last = {}
+
         self.state = False
         self.block_depth = 0
         self.total_depth = 0
+        self.tool_doApply = False
 
-    def valid_for_record(self, cmd):
+        self.debug_path = []
+
+    def valid_for_record(self, cmd, isResult = False):
         if not self.state:
             return False
 
         if not self.armed:
             return False
 
-        if (cmd.Flags() & lx.symbol.fCMD_EXEC_GETARGS_FORCESUB_OFF):
-            # lx.out("-" * self.total_depth, cmd.Name(), "Force sub off. Ignore.")
+        if (cmd.Flags() & lx.symbol.fCMD_QUIET):
+            self.debug_path_print(cmd.Name() + " - Quiet command. Ignore.")
             return False
 
         if cmd.Name().startswith("replay."):
-            # lx.out("-" * self.total_depth, cmd.Name(), "replay command. Ignore.")
+            self.debug_path_print(cmd.Name() + " - Replay command. Ignore.")
+            return False
+
+        if cmd.Name() in ['tool.attr','tool.noChange']:
+            self.debug_path_print(cmd.Name() + " - Black list. Ignore.")
             return False
 
         if cmd.Name() in ['app.undo', 'app.redo']:
-            modo.dialogs.alert("Undo during recording", "'Undo' cannot be recorded in a macro at this time. Recording will stop.")
+            modo.dialogs.alert("Undo during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
             lx.eval('replay.record stop')
+            return False
+
+        if cmd.Name() in ['select.paint', 'select.lasso']:
+            if isResult:
+                modo.dialogs.alert("Interactive during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
+                lx.eval('replay.record stop')
             return False
 
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
         # lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
+
         cmd = lx.object.Command(cmd)
         if not self.valid_for_record(cmd):
             return
 
         # Must happen AFTER we validate.
         self.total_depth += 1
-
-        # lx.out("-" * self.total_depth, cmd.Name())
+        self.debug_path.append(cmd.Name())
 
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
         # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
 
         cmd = lx.object.Command(cmd)
-        if not self.valid_for_record(cmd):
+        if not self.valid_for_record(cmd, True):
             return
-
-        # lx.out("-" * self.total_depth, "/%s" % cmd.Name())
 
         # Must happen AFTER we validate.
         self.total_depth -= 1
@@ -76,45 +90,70 @@ class CmdListener(lxifc.CmdSysListener):
         if self.total_depth - self.block_depth == 0:
 
             if self.refiring:
-                self.refire_last = cmd
+                self.debug_path_print("Refiring.")
+                if cmd.Name() not in self.refire_order:
+                    self.refire_order.append(cmd.Name())
+                self.refire_last[cmd.Name()] = cmd
+
             else:
-                svc_command = lx.service.Command()
-                self.armed = False
-                lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
-                self.armed = True
+                self.debug_path_print("Adding to macro.")
+                self.replay_lineInsert(cmd)
+
+        else:
+            self.debug_path_print("- Wrong depth (%s), ignore." % (self.total_depth - self.block_depth))
+
+        del self.debug_path[-1]
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         # lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
-        pass
+        cmd = lx.object.Command(cmd)
+        # if cmd.Name() == 'tool.doApply':
+        #     lx.eval('replay.lineInsertQuiet {tool.doApply}')
 
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
-        # lx.out("## Block Begin")
+        self.debug_path_print("Block Begin")
         self.block_depth += 1
         self.total_depth += 1
+        self.debug_path.append("Block")
+        pass
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
-        # lx.out("## Block End")
         self.block_depth -= 1
         self.total_depth -= 1
+        del self.debug_path[-1]
+        self.debug_path_print("Block End")
+        pass
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
         # dragging a minislider or something like that,
         # so we disarm the listener on RefireBegin...
+        self.debug_path_print("Refire Begin vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
         self.refiring = True
-        self.refire_last = None
+        self.refire_order = []
+        self.refire_last = {}
 
     def cmdsysevent_RefireEnd(self):
         # ... and rearm on RefireEnd
+        self.debug_path_print("Refire End ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         self.refiring = False
 
-        if self.refire_last is not None:
-            cmd = self.refire_last
-            svc_command = lx.service.Command()
+        for cmd_name in self.refire_order:
+            if cmd_name == 'tool.doApply':
+                continue
+            lx.out("Adding", cmd_name)
+            self.replay_lineInsert(self.refire_last[cmd_name])
+        if 'tool.doApply' in self.refire_order:
+            self.replay_lineInsert(self.refire_last['tool.doApply'])
 
-            self.armed = False
-            lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
-            self.armed = True
+    def replay_lineInsert(self, cmd):
+        svc_command = lx.service.Command()
+        self.armed = False
+        lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+        self.armed = True
+
+    def debug_path_print(self, msg):
+        lx.out(" > ".join(self.debug_path), msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
