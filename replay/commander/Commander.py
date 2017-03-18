@@ -293,7 +293,7 @@ class CommanderClass(lxu.command.BasicCommand):
             hints.Label(label)
 
             # If the popup type is sPresetText, apply the appropriate class.
-            if args[index].get(VALUES_LIST_TYPE) == sPresetText:
+            if self.valueListType(index) == sPresetText:
                 hints.Class("sPresetText")
 
     def arg_UIValueHints(self, index):
@@ -342,13 +342,13 @@ class CommanderClass(lxu.command.BasicCommand):
             # Form Command List. We'll need to return a different class
             # depending on the 'values_list_type'.
 
-            if args[index].get(VALUES_LIST_TYPE) == POPUP:
+            if self.valueListType(index) == POPUP:
                 return PopupClass(values)
 
-            elif args[index].get(VALUES_LIST_TYPE) == sPresetText:
+            elif self.valueListType(index) == sPresetText:
                 return PopupClass(values)
 
-            elif args[index].get(VALUES_LIST_TYPE) == FCL:
+            elif self.valueListType(index) == FCL:
                 return FormCommandListClass(values)
 
     def cmd_DialogInit(self):
@@ -400,6 +400,14 @@ class CommanderClass(lxu.command.BasicCommand):
             self.commander_execute(msg, flags)
         except:
             lx.out(traceback.format_exc())
+            
+    def valueListType(self, index):
+        args = self.commander_arguments()
+        type = args[index].get(VALUES_LIST_TYPE)
+        if hasattr(type, '__call__'):
+            return type()
+        else:
+            return type
 
     def cmd_Query(self, index, vaQuery):
         """Returns a value when a queriable argument is queried. It's a bit weird
@@ -424,7 +432,7 @@ class CommanderClass(lxu.command.BasicCommand):
             return lx.result.OK
 
         # If it's a Form Command List (FCL), bail
-        is_fcl = args[index].get(VALUES_LIST_TYPE) == FCL
+        is_fcl = self.valueListType(index) == FCL
         if is_fcl:
             return lx.result.OK
 
