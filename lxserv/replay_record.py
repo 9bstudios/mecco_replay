@@ -23,6 +23,9 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
         self.refiring = False
 
+        # Sometimes multiple commands are in refire mode at the same time.
+        # We need to remember both the order in which they were initially fired
+        # and the most recent version of the refired command.
         self.refire_order = []
         self.refire_last = {}
 
@@ -31,120 +34,147 @@ class CmdListener(lxifc.CmdSysListener):
         self.total_depth = 0
         self.tool_doApply = False
 
+        # A list of sub-commands and blocks for debug printing.
         self.debug_path = []
 
     def valid_for_record(self, cmd, isResult = False):
+
+        # Recording is disabled by user.
         if not self.state:
             return False
 
+        # Recording is disarmed for internal reasons.
         if not self.armed:
             return False
 
+        # Never record "quiet" commands.
         if (cmd.Flags() & lx.symbol.fCMD_QUIET):
             self.debug_path_print(cmd.Name() + " - Quiet command. Ignore.")
             return False
 
+        # Never record replay commands.
         if cmd.Name().startswith("replay."):
             self.debug_path_print(cmd.Name() + " - Replay command. Ignore.")
             return False
 
+        # Certain commands can be safely ignored. These can be added here.
+        # Note that any ignored command's sub-commands _will_ be recorded.
         if cmd.Name() in ['tool.attr','tool.noChange']:
             self.debug_path_print(cmd.Name() + " - Black list. Ignore.")
             return False
 
+        # We cannot record undo/redo. There is no reliable method of doing so.
+        # Instead, we simply stop recording.
         if cmd.Name() in ['app.undo', 'app.redo']:
             modo.dialogs.alert("Undo during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
             lx.eval('replay.record stop')
             return False
 
+        # We cannot record interactive selections (i.e. clicking in the viewport to select).
+        # Instead, we simply warn the user and stop recording.
+        # NOTE: This can cause crashes. Be careful.
         if cmd.Name() in ['select.paint', 'select.lasso']:
             if isResult:
                 modo.dialogs.alert("Interactive during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
                 lx.eval('replay.record stop')
             return False
 
+        # If we pass all of the above tests, we're good to record.
         return True
 
     def cmdsysevent_ExecutePre(self,cmd,cmd_type,isSandboxed,isPostCmd):
         # lx.out("ExecutePre", lx.object.Command(cmd).Name(), cmd_type,isSandboxed,isPostCmd)
 
         cmd = lx.object.Command(cmd)
-        if not self.valid_for_record(cmd):
-            return
-
-        # Must happen AFTER we validate.
-        self.total_depth += 1
-        self.debug_path.append(cmd.Name())
+        if self.valid_for_record(cmd):
+            self.total_depth += 1
+            self.debug_path.append(cmd.Name())
 
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
         # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
 
         cmd = lx.object.Command(cmd)
-        if not self.valid_for_record(cmd, True):
-            return
+        if self.valid_for_record(cmd, True):
+            self.total_depth -= 1
 
-        # Must happen AFTER we validate.
-        self.total_depth -= 1
+            # Only record base-level commands
+            if self.total_depth - self.block_depth == 0:
 
-        # Only record base-level commands
-        if self.total_depth - self.block_depth == 0:
+                # We don't record things during refire,
+                # but we do need to keep track of them.
+                if self.refiring:
+                    self.debug_path_print("Refiring.")
 
-            if self.refiring:
-                self.debug_path_print("Refiring.")
-                if cmd.Name() not in self.refire_order:
-                    self.refire_order.append(cmd.Name())
-                self.refire_last[cmd.Name()] = cmd
+                    # Keep track of the order of operations.
+                    if cmd.Name() not in self.refire_order:
+                        self.refire_order.append(cmd.Name())
 
+                    # Store latest iteration of refired command.
+                    self.refire_last[cmd.Name()] = cmd
+
+                else:
+
+                    # All good. Add to macro.
+                    self.debug_path_print("Adding to macro.")
+                    self.replay_lineInsert(cmd)
+
+            # Command is a sub-command. Ignore it.
             else:
-                self.debug_path_print("Adding to macro.")
-                self.replay_lineInsert(cmd)
+                self.debug_path_print("- Wrong depth (%s), ignore." % (self.total_depth - self.block_depth))
 
-        else:
-            self.debug_path_print("- Wrong depth (%s), ignore." % (self.total_depth - self.block_depth))
-
-        del self.debug_path[-1]
+            # We're done here. Pop back a level in our debug printout.
+            del self.debug_path[-1]
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         # lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
-        cmd = lx.object.Command(cmd)
-        # if cmd.Name() == 'tool.doApply':
-        #     lx.eval('replay.lineInsertQuiet {tool.doApply}')
+        pass
 
     def cmdsysevent_BlockBegin(self, block, isSandboxed):
+        # NOTE: Blocks are not the same as sub-commands. Block are arbitrary groupings
+        # of commands, while sub-commands are any command that takes plice while another
+        # is still running. Not all sub-commands are grouped into blocks, and not all
+        # blocks are comprised of sub-commands.
+
         self.debug_path_print("Block Begin")
         self.block_depth += 1
         self.total_depth += 1
         self.debug_path.append("Block")
-        pass
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
         self.block_depth -= 1
         self.total_depth -= 1
         del self.debug_path[-1]
         self.debug_path_print("Block End")
-        pass
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
         # dragging a minislider or something like that,
         # so we disarm the listener on RefireBegin...
-        self.debug_path_print("Refire Begin vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv")
+        self.debug_path_print("Refire Begin")
         self.refiring = True
+
+        # Reset our refire tracking vars.
         self.refire_order = []
         self.refire_last = {}
 
     def cmdsysevent_RefireEnd(self):
         # ... and rearm on RefireEnd
-        self.debug_path_print("Refire End ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        self.debug_path_print("Refire End")
         self.refiring = False
 
-        for cmd_name in self.refire_order:
-            if cmd_name == 'tool.doApply':
-                continue
-            lx.out("Adding", cmd_name)
-            self.replay_lineInsert(self.refire_last[cmd_name])
+        # Sometimes `tool.doApply` is added at the wrong time. It should always
+        # be added last. As a special case, we manually make sure it's last in
+        # the list.
         if 'tool.doApply' in self.refire_order:
-            self.replay_lineInsert(self.refire_last['tool.doApply'])
+            self.refire_order.remove('tool.doApply')
+            self.refire_order.append('tool.doApply')
+
+        # Now that refire is over, we can add our commands to the macro in the
+        # order in which they were first fired.
+        for cmd_name in self.refire_order:
+            self.debug_print("Adding refired: " + cmd_name)
+            self.replay_lineInsert(self.refire_last[cmd_name])
+
 
     def replay_lineInsert(self, cmd):
         svc_command = lx.service.Command()
@@ -153,7 +183,10 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
 
     def debug_path_print(self, msg):
-        lx.out(" > ".join(self.debug_path), msg)
+        self.debug_print(" > ".join(self.debug_path) + " " + msg)
+
+    def debug_print(self, msg):
+        lx.out(msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
