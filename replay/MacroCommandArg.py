@@ -225,11 +225,5 @@ class MacroCommandArg(lumberjack.TreeNode):
     def convert_string_to_value(self, arg_value):
         if arg_value is None:
             return None
-        elif self.argType == 1 and isinstance(arg_value, basestring):
-            return True if arg_value.lower() in ['true', 'on', 'yes'] else False
-        elif self.argType == 1 and isinstance(arg_value, (bool, int)):
-            return int(arg_value)
-        elif self.argType == 2:
-            return float(arg_value)
-        else:
-            return str(arg_value)
+        
+        return str(arg_value)
