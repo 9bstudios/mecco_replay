@@ -1,0 +1,2 @@
+#LXMacro#
+view3d.shadingStyle ?(wire|advgl)

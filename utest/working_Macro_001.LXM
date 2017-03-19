@@ -1,0 +1,10 @@
+#LXMacro#
+script.run hash:macro.scriptservice:19601433555:macro
+select.typeFrom typelist:polygon;edge;vertex;item;pivot;center;ptag enable:True
+tool.set preset:TransformMove mode:True
+tool.noChange
+tool.attr tool:xfrm.transform attr:TY value:0.5
+tool.doApply
+tool.set preset:*.bevel mode:True
+tool.apply
+tool.set preset:poly.bevel mode:False

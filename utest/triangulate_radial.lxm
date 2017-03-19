@@ -1,0 +1,14 @@
+#LXMacro#
+tool.set *.bevel on
+#Command Block Begin:  ToolAdjustment
+   tool.setAttr poly.bevel inset 0.0
+   tool.setAttr poly.bevel shift 0.0
+#Command Block End:  ToolAdjustment
+#Command Block Begin:  ToolAdjustment
+   tool.setAttr poly.bevel inset 0.854
+   tool.setAttr poly.bevel shift 0.0
+#Command Block End:  ToolAdjustment
+tool.doApply
+select.convert vertex
+vert.join true
+select.typeFrom polygon;edge;vertex;item;pivot;center;ptag true

@@ -1,0 +1,16 @@
+#LXMacro#
+select.connect
+hide.unsel
+select.editSet hold_polygons add {}
+select.convert edge
+select.editSet hold_edges add
+select.convert polygon
+poly.freeze twoPoints false 2 false false true false 5.0 false Morph
+select.typeFrom edge;vertex;polygon;item;pivot;center;ptag true
+select.useSet hold_edges select
+select.invert
+delete
+select.deleteSet hold_edges
+select.typeFrom polygon;edge;vertex;item;pivot;center;ptag true
+unhide
+select.deleteSet hold_polygons

@@ -1,0 +1,4 @@
+#LXMacro#
+script.run hash:macro.scriptservice:19601433555:macro
+tool.set preset:TransformMoveItem mode:True
+tool.noChange

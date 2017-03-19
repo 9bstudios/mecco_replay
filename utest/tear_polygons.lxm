@@ -1,0 +1,8 @@
+#LXMacro#
+select.editSet _TEMP add
+cut
+paste
+select.useSet _TEMP select
+select.deleteSet _TEMP
+tool.set TransformMove on
+tool.noChange

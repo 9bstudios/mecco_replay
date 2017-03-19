@@ -1,0 +1,7 @@
+#LXMacro#
+cut
+#Command Block Begin:  Add Item
+   item.create mesh
+   layer.move 6 1 0
+#Command Block End:  Add Item
+paste
