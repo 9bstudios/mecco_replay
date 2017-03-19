@@ -64,8 +64,8 @@ class CommandClass(replay.commander.CommanderClass):
         argName = self.commander_args()['argName']
         argValue = self.commander_args()['value']
 
-        for arg in self.args_by_argName(argName):
-            arg.value = argValue
+        for command, argIndex in self.commands_by_argName(argName):
+            arg = command.args[argIndex]
 
         # Notify the TreeView to update itself.
         replay.Macro().refresh_view()
@@ -73,6 +73,17 @@ class CommandClass(replay.commander.CommanderClass):
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+        
+    def store_in_arg_value(self, commmand, argIndex, argValue):
+         attrs = command.attributesObject()
+         argTypeName = attrs.TypeName(argIndex)
+        if argTypeName == lx.symbol.sTYPE_INTEGER:
+            hints = attrs.Hints(argIndex)
+            for idx, name in hints:
+                if idx == int(argValue):
+                    return name
+        
+        return argValue
         
     def arg_values_list(self):
         datatype, hints, default = self.basic_ArgTypeImpl(1)
