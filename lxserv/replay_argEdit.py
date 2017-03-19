@@ -66,6 +66,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         for command, argIndex in self.commands_by_argName(argName):
             arg = command.args[argIndex]
+            arg.value = self.store_in_arg_value(commmand, argIndex, argValue)
 
         # Notify the TreeView to update itself.
         replay.Macro().refresh_view()
