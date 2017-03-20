@@ -78,7 +78,7 @@ class CommandClass(replay.commander.CommanderClass):
             notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
         except Exception as e:
             lx.out(e)
-                
+
     def store_in_arg_value(self, command, argIndex, argValue):
         attrs = command.attributesObject()
         argTypeName = attrs.TypeName(argIndex)
@@ -87,16 +87,16 @@ class CommandClass(replay.commander.CommanderClass):
             for idx, name in hints:
                 if idx == int(argValue):
                     return name
-        
+
         return argValue
-        
+
     def arg_values_list(self):
         datatype, hints, default = self.basic_ArgTypeImpl(1)
         if hints is None:
             return None
-        
+
         return [name for idx, name in hints]
-        
+
     def arg_values_list_type(self):
         datatype, hints, default = self.basic_ArgTypeImpl(1)
         if hints is None:
@@ -140,10 +140,10 @@ class CommandClass(replay.commander.CommanderClass):
             # Sometimes we get passed empty values. Ignore those.
             if value is None:
                 value = default
-                
+
             if value is None:
                 continue
-                
+
             # Sadly, I am not aware of any way of handling datatypes except
             # by manually testing for them and doing the appropriate action.
             # MODO doesn't make this easy.
@@ -172,7 +172,7 @@ class CommandClass(replay.commander.CommanderClass):
                     lx.symbol.sTYPE_INTEGER,
                     lx.symbol.sTYPE_BOOLEAN
                     ]:
-                va.AddInt(int(value))
+                va.AddInt(int(value if value else 0))
 
             # Floats
             elif datatype in [
@@ -182,7 +182,7 @@ class CommandClass(replay.commander.CommanderClass):
                     lx.symbol.sTYPE_FLOAT,
                     lx.symbol.sTYPE_FORCE,
                     lx.symbol.sTYPE_LIGHT,
-                    lx.symbol.sTYPE_DISTANCE,                    
+                    lx.symbol.sTYPE_DISTANCE,
                     lx.symbol.sTYPE_MASS,
                     lx.symbol.sTYPE_PERCENT,
                     lx.symbol.sTYPE_SPEED,
@@ -201,7 +201,8 @@ class CommandClass(replay.commander.CommanderClass):
                     lx.symbol.sTYPE_COLOR,
                     lx.symbol.sTYPE_DISTANCE3,
                     lx.symbol.sTYPE_FLOAT3,
-                    lx.symbol.sTYPE_PERCENT3
+                    lx.symbol.sTYPE_PERCENT3,
+                    '&item'
                     ]:
                 emptyValue = va.AddEmptyValue()
                 emptyValue.SetString(str(value))
@@ -212,6 +213,7 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
+                    lx.out(argName, datatype, values_list)
                     raise Exception(message("MECCO_REPLAY", "QUERY_DATATYPE_DETECT_ERROR"))
 
         return lx.result.OK
@@ -224,7 +226,7 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_ArgType(self, argIndex):
         type, hints, default = self.basic_ArgTypeImpl(argIndex)
         return type
-    
+
     def basic_ArgTypeImpl(self, argIndex):
         """Returns sTYPE_INTEGER, sTYPE_FLOAT, or sTYPE_STRING depending on the
         datatype stored in the `MacroCommandArg` object. You'd think this would
@@ -238,7 +240,7 @@ class CommandClass(replay.commander.CommanderClass):
         for command, argIndex in self.commands_by_argName(argName):
             arg = command.args[argIndex]
             # Get type coming from meta
-            
+
             hints = None
             default = None
 
@@ -246,7 +248,7 @@ class CommandClass(replay.commander.CommanderClass):
             attrs = command.attributesObject()
             argTypeName = attrs.TypeName(argIndex)
             default = attrs.GetString(argIndex)
-            
+
             if argTypeName == lx.symbol.sTYPE_INTEGER:
                 hints = attrs.Hints(argIndex)
                 if len(hints) == 0:
