@@ -61,21 +61,25 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
         """Fires whenever the value is updated in the form. Stores changes in the
         proper place."""
-        argName = self.commander_args()['argName']
-        argValue = self.commander_args()['value']
+        try:
+            argName = self.commander_args()['argName']
+            argValue = self.commander_args()['value']
 
-        for command, argIndex in self.commands_by_argName(argName):
-            arg = command.args[argIndex]
-            arg.value = self.store_in_arg_value(commmand, argIndex, argValue)
+            for command, argIndex in self.commands_by_argName(argName):
+                arg = command.args[argIndex]
+                lx.out(self.store_in_arg_value(command, argIndex, argValue))
+                arg.value = self.store_in_arg_value(command, argIndex, argValue)
 
-        # Notify the TreeView to update itself.
-        replay.Macro().refresh_view()
-        replay.Macro().unsaved_changes = True
+            # Notify the TreeView to update itself.
+            replay.Macro().refresh_view()
+            replay.Macro().unsaved_changes = True
 
-        notifier = replay.Notifier()
-        notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
-        
-    def store_in_arg_value(self, commmand, argIndex, argValue):
+            notifier = replay.Notifier()
+            notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+        except Exception as e:
+            lx.out(e)
+                
+    def store_in_arg_value(self, command, argIndex, argValue):
         attrs = command.attributesObject()
         argTypeName = attrs.TypeName(argIndex)
         if argTypeName == lx.symbol.sTYPE_INTEGER:

@@ -1,4 +1,5 @@
 #LXMacro#
+poly.subdivide smooth 0.0
 select.typeFrom item
 select.all
 item.channel locator$visible on
