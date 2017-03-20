@@ -1,4 +1,5 @@
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -19,10 +20,10 @@ class CommandClass(replay.commander.CommanderClass):
             file_path = macro.file_path
             if file_path is None:
                 file_path = "Untitled"
-            if modo.dialogs.yesNo("Save Macro", "Save changes to Macro?") == 'yes':
+            if modo.dialogs.yesNo(message("MECCO_REPLAY", "ASK_FOR_SAVE_DIALOG_TITLE"), message("MECCO_REPLAY", "ASK_FOR_SAVE_DIALOG_MSG")) == 'yes':
                 # If file path is not assigned ask for new file path
                 if macro.file_path is None:
-                    file_path = modo.dialogs.customFile(dtype = 'fileSave', title = 'Save LXM file', \
+                    file_path = modo.dialogs.customFile(dtype = 'fileSave', title = message("MECCO_REPLAY", "SAVE_DIALOG_TITLE"), \
                                                  names = ('LXM',), unames = ('LXM file'), ext=('LXM',))
                 macro.render_LXM(file_path)
 

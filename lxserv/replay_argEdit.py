@@ -159,7 +159,7 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddString(str(value))
                 except:
-                    raise Exception(message("REPLAY_ARG_EDIT", "ERROR1"), value, type(value), datatype)
+                    raise Exception(message("MECCO_REPLAY", "INVALID_STRING"), value, type(value), datatype)
 
             elif (datatype == lx.symbol.sTYPE_INTEGER) and hints:
                 for idx, name in hints:
@@ -212,7 +212,7 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
-                    raise Exception(message("REPLAY_ARG_EDIT", "ERROR2"))
+                    raise Exception(message("MECCO_REPLAY", "QUERY_DATATYPE_DETECT_ERROR"))
 
         return lx.result.OK
 
@@ -224,7 +224,7 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_ArgType(self, argIndex):
         type, hints, default = self.basic_ArgTypeImpl(argIndex)
         return type
-        
+    
     def basic_ArgTypeImpl(self, argIndex):
         """Returns sTYPE_INTEGER, sTYPE_FLOAT, or sTYPE_STRING depending on the
         datatype stored in the `MacroCommandArg` object. You'd think this would
