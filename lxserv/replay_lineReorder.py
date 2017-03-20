@@ -52,19 +52,19 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
-            modo.dialogs.alert(message("REPLAY_LINE_REORDER", "DLG_TITLE1"), message("REPLAY_LINE_REORDER", "DLG_MSG1", mode), dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "INVALID_MODE"), message("MECCO_REPLAY", "INVALID_MODE_MSG", mode), dtype='warning')
             return None
 
         macro = replay.Macro()
 
         # Checking index range
         if (mode == 'index') and (index >= len(macro.children)):
-            modo.dialogs.alert(message("REPLAY_LINE_REORDER", "DLG_TITLE2"), message("REPLAY_LINE_REORDER", "DLG_MSG2", index), dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "OUT_OF_RANGE"), message("MECCO_REPLAY", "OUT_OF_RANGE_MSG", index), dtype='warning')
             return None
 
         # Checking if selection exists
         if len(macro.selected_children) == 0:
-            modo.dialogs.alert(message("REPLAY_LINE_REORDER", "DLG_TITLE3"), message("REPLAY_LINE_REORDER", "DLG_MSG3"), dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "NO_SELECTED_COMMAND"), message("MECCO_REPLAY", "NO_SELECTED_COMMAND_MSG"), dtype='warning')
             return None
 
         actionList = MoveActionList()

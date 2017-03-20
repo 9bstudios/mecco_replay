@@ -1,4 +1,5 @@
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -66,7 +67,7 @@ class CmdListener(lxifc.CmdSysListener):
         # We cannot record undo/redo. There is no reliable method of doing so.
         # Instead, we simply stop recording.
         if cmd.Name() in ['app.undo', 'app.redo']:
-            modo.dialogs.alert("Undo during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
+            modo.dialogs.alert(message("MECCO_REPLAY", "UNDO_DURING_RECORDING", index), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
             lx.eval('replay.record stop')
             return False
 
@@ -75,7 +76,7 @@ class CmdListener(lxifc.CmdSysListener):
         # NOTE: This can cause crashes. Be careful.
         if cmd.Name() in ['select.paint', 'select.lasso']:
             if isResult:
-                modo.dialogs.alert("Interactive during recording", "'%s' cannot be recorded in a macro at this time. Recording will stop." % cmd.Name())
+                modo.dialogs.alert(message("MECCO_REPLAY", "INTERACTIVE_DURING_RECORDING", index), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
                 lx.eval('replay.record stop')
             return False
 

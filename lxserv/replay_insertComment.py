@@ -23,7 +23,7 @@ class CommandClass(replay.commander.CommanderClass):
         # Check if selection exists
         selecteds = macro.selected_children
         if len(selecteds) == 0:
-            modo.dialogs.alert(message("MECCO_REPLAY", "NO_SELECTED_COMMAND"), dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "NO_SELECTED_COMMAND_MSG"), dtype='warning')
             return
 
         # Collect list of selected command indices

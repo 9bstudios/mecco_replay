@@ -1,4 +1,5 @@
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -18,7 +19,7 @@ class CommandClass(replay.commander.CommanderClass):
             # Get the path from the user, if not given as argument:
             file_path = modo.dialogs.customFile(
                 dtype = 'fileOpen',
-                title = 'Script for key mapping',
+                title = message("MECCO_REPLAY", "KEY_MAPPING_SCRIPT"),
                 names = macro.import_format_names,
                 unames = macro.import_format_unames,
                 patterns = macro.import_format_patterns,

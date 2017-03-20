@@ -1,4 +1,5 @@
 import lx, lxifc, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -11,7 +12,7 @@ class CommandClass(replay.commander.CommanderClass):
         # Register Undo object performing operation and apply it
         macro = replay.Macro()
         if macro.all_suppressed():
-            modo.dialogs.alert("Empty macro", "There are no commands to replay", dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "EMPTY_MACRO"), message("MECCO_REPLAY", "EMPTY_MACRO_MSG"), dtype='warning')
             return
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
