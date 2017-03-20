@@ -146,6 +146,15 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return locals()
 
     user_comment_before = property(**user_comment_before())
+    
+    def render_LXM(self):
+        """Construct MODO command string from stored internal parts. Also adds comments"""
+        res = list(self.comment_before)
+        if self.suppress:
+            res.append("# replay suppress:")
+
+        res.append(("# " if self.suppress else "") + self.render_LXM_without_comment())
+        return res
 
 #    def run(self):
 #        """Runs the command."""
