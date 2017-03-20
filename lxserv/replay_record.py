@@ -138,7 +138,6 @@ class CmdListener(lxifc.CmdSysListener):
         # blocks are comprised of sub-commands.
         
         if self.block_depth == 0:
-            lx.out("Recording in block begin")
             # RecordingCache should be clear at this point. Just in any case clear it again
             replay.RecordingCache().clear()
             self.record_in_block = True
@@ -155,7 +154,6 @@ class CmdListener(lxifc.CmdSysListener):
         self.debug_path_print("Block End")
         
         if self.block_depth == 0:
-            lx.out("Recording in block end")
             self.record_in_block = False
             lx.eval("replay.lastBlockInsert")
             replay.RecordingCache().clear()

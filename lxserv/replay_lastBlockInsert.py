@@ -19,6 +19,9 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
             idx = macro.primary.index + 1
         
         cache = replay.RecordingCache()
+        
+        if len(cache.commands) == 0:
+            return
     
         macro.add_block(block = cache.commands, name = "<unnamed>", index = idx)
         macro.unsaved_changes = True
