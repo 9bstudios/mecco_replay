@@ -31,12 +31,12 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # `enable` field is empty for arguments
         self.columns['enable'] = lumberjack.TreeValue()
-        self.columns['command'].input_region = None
+        self.columns['enable'].input_region = None
         self.columns['enable'].display_value = ''
 
         # `prefix` field is empty for arguments
         self.columns['prefix'] = lumberjack.TreeValue()
-        self.columns['command'].input_region = None
+        self.columns['prefix'].input_region = None
         self.columns['prefix'].display_value = ''
 
         # `name` field contains the argument name as a `value`,

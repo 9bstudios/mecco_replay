@@ -34,6 +34,7 @@ class CmdListener(lxifc.CmdSysListener):
         self.block_depth = 0
         self.total_depth = 0
         self.tool_doApply = False
+        self.record_in_block = False
 
         # A list of sub-commands and blocks for debug printing.
         self.debug_path = []
@@ -67,7 +68,7 @@ class CmdListener(lxifc.CmdSysListener):
         # We cannot record undo/redo. There is no reliable method of doing so.
         # Instead, we simply stop recording.
         if cmd.Name() in ['app.undo', 'app.redo']:
-            modo.dialogs.alert(message("MECCO_REPLAY", "UNDO_DURING_RECORDING", index), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
+            modo.dialogs.alert(message("MECCO_REPLAY", "UNDO_DURING_RECORDING"), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
             lx.eval('replay.record stop')
             return False
 
@@ -76,7 +77,7 @@ class CmdListener(lxifc.CmdSysListener):
         # NOTE: This can cause crashes. Be careful.
         if cmd.Name() in ['select.paint', 'select.lasso']:
             if isResult:
-                modo.dialogs.alert(message("MECCO_REPLAY", "INTERACTIVE_DURING_RECORDING", index), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
+                modo.dialogs.alert(message("MECCO_REPLAY", "INTERACTIVE_DURING_RECORDING"), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
                 lx.eval('replay.record stop')
             return False
 
@@ -89,7 +90,7 @@ class CmdListener(lxifc.CmdSysListener):
         cmd = lx.object.Command(cmd)
         if self.valid_for_record(cmd):
             self.total_depth += 1
-            self.debug_path.append(cmd.Name())
+         #   self.debug_path.append(cmd.Name())
 
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
         # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
@@ -117,14 +118,14 @@ class CmdListener(lxifc.CmdSysListener):
 
                     # All good. Add to macro.
                     self.debug_path_print("Adding to macro.")
-                    self.replay_lineInsert(cmd)
+                    self.sendCommand(cmd)
 
             # Command is a sub-command. Ignore it.
             else:
                 self.debug_path_print("- Wrong depth (%s), ignore." % (self.total_depth - self.block_depth))
 
             # We're done here. Pop back a level in our debug printout.
-            del self.debug_path[-1]
+      #      del self.debug_path[-1]
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         # lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
@@ -135,17 +136,29 @@ class CmdListener(lxifc.CmdSysListener):
         # of commands, while sub-commands are any command that takes plice while another
         # is still running. Not all sub-commands are grouped into blocks, and not all
         # blocks are comprised of sub-commands.
+        
+        if self.block_depth == 0:
+            lx.out("Recording in block begin")
+            # RecordingCache should be clear at this point. Just in any case clear it again
+            replay.RecordingCache().clear()
+            self.record_in_block = True
 
         self.debug_path_print("Block Begin")
         self.block_depth += 1
         self.total_depth += 1
-        self.debug_path.append("Block")
+      #  self.debug_path.append("Block")
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
         self.block_depth -= 1
         self.total_depth -= 1
-        del self.debug_path[-1]
+    #    del self.debug_path[-1]
         self.debug_path_print("Block End")
+        
+        if self.block_depth == 0:
+            lx.out("Recording in block end")
+            self.record_in_block = False
+            lx.eval("replay.lastBlockInsert")
+            replay.RecordingCache().clear()
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
@@ -174,8 +187,13 @@ class CmdListener(lxifc.CmdSysListener):
         # order in which they were first fired.
         for cmd_name in self.refire_order:
             self.debug_print("Adding refired: " + cmd_name)
-            self.replay_lineInsert(self.refire_last[cmd_name])
+            self.sendCommand(self.refire_last[cmd_name])
 
+    def sendCommand(self, cmd):
+        if self.record_in_block:
+            replay.RecordingCache().add_command(cmd)
+        else:
+            self.replay_lineInsert(cmd)
 
     def replay_lineInsert(self, cmd):
         svc_command = lx.service.Command()
@@ -184,6 +202,7 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
 
     def debug_path_print(self, msg):
+        return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
