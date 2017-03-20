@@ -65,8 +65,8 @@ class Macro(lumberjack.Lumberjack):
         def fset(self, value):
             self.__class__._file_path = value
         return locals()
-        
-    file_path = property(**file_path())        
+
+    file_path = property(**file_path())
 
     def reset_color_on_select():
         doc = """If set to True, the next select event will run `select.color {0 0 0}`
@@ -115,9 +115,10 @@ class Macro(lumberjack.Lumberjack):
         including both selected nodes and nodes that have selected descendants."""
         def fget(self):
             nodes = set()
-            for node in self.root.children:
-                if bool(node.selected_descendants) or node.selected:
-                    nodes.add(node)
+            for node in self.root.selected_descendants:
+                if isinstance(node, MacroCommand):
+                    if bool(node.selected_descendants) or node.selected:
+                        nodes.add(node)
             return list(nodes)
         return locals()
 
@@ -161,7 +162,7 @@ class Macro(lumberjack.Lumberjack):
 
     def add_command(self, **kwargs):
         return self.add_child(**kwargs)
-        
+
     def add_block(self, **kwargs):
         return self.add_child(**kwargs)
 
