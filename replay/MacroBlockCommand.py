@@ -55,7 +55,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
     def add_commands(self, **kwargs):
         idx = 0
         for cmd in kwargs.get('block'):
-            self.children.append(MacroCommand(command_string = [cmd + "\n"], index = idx))
+            self.children.append(MacroCommand(parent=self, command_string = [cmd + "\n"], index = idx))
             idx = idx + 1
 
     def block_name():
