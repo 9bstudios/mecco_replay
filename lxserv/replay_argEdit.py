@@ -76,8 +76,8 @@ class CommandClass(replay.commander.CommanderClass):
         notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
         
     def store_in_arg_value(self, commmand, argIndex, argValue):
-         attrs = command.attributesObject()
-         argTypeName = attrs.TypeName(argIndex)
+        attrs = command.attributesObject()
+        argTypeName = attrs.TypeName(argIndex)
         if argTypeName == lx.symbol.sTYPE_INTEGER:
             hints = attrs.Hints(argIndex)
             for idx, name in hints:
