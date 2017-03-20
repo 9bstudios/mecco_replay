@@ -65,6 +65,8 @@ class Macro(lumberjack.Lumberjack):
         def fset(self, value):
             self.__class__._file_path = value
         return locals()
+        
+    file_path = property(**file_path())        
 
     def reset_color_on_select():
         doc = """If set to True, the next select event will run `select.color {0 0 0}`
