@@ -1,10 +1,5 @@
 #LXMacro#
-replay.lineInsertQuiet "macro.record true"
-select.paint
-replay.record stop
 tool.set TransformMoveItem on
-tool.noChange
-tool.doApply
 #Command Block Begin:  ToolAdjustment
    tool.setAttr xfrm.transform TX -1.21
    tool.setAttr xfrm.transform TY 0.47
