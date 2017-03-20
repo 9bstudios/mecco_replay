@@ -90,7 +90,7 @@ class CmdListener(lxifc.CmdSysListener):
         cmd = lx.object.Command(cmd)
         if self.valid_for_record(cmd):
             self.total_depth += 1
-         #   self.debug_path.append(cmd.Name())
+            self.debug_path.append(cmd.Name())
 
     def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
         # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
@@ -125,7 +125,7 @@ class CmdListener(lxifc.CmdSysListener):
                 self.debug_path_print("- Wrong depth (%s), ignore." % (self.total_depth - self.block_depth))
 
             # We're done here. Pop back a level in our debug printout.
-      #      del self.debug_path[-1]
+            del self.debug_path[-1]
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         # lx.out("ExecutePost", lx.object.Command(cmd).Name(), isSandboxed,isPostCmd)
@@ -136,27 +136,34 @@ class CmdListener(lxifc.CmdSysListener):
         # of commands, while sub-commands are any command that takes plice while another
         # is still running. Not all sub-commands are grouped into blocks, and not all
         # blocks are comprised of sub-commands.
-        
+
         if self.block_depth == 0:
             # RecordingCache should be clear at this point. Just in any case clear it again
             replay.RecordingCache().clear()
             self.record_in_block = True
+            self.debug_path_print("Begin Recorded Block")
+        else:
+            self.debug_path_print("Begin Ignored Block")
 
-        self.debug_path_print("Block Begin")
         self.block_depth += 1
         self.total_depth += 1
-      #  self.debug_path.append("Block")
+
+        self.debug_path.append("Block")
 
     def cmdsysevent_BlockEnd(self, block, isSandboxed, wasDiscarded):
         self.block_depth -= 1
         self.total_depth -= 1
-    #    del self.debug_path[-1]
-        self.debug_path_print("Block End")
-        
+
+        del self.debug_path[-1]
+
         if self.block_depth == 0:
+            self.debug_path_print("End Recorded Block")
             self.record_in_block = False
-            lx.eval("replay.lastBlockInsert")
-            replay.RecordingCache().clear()
+            if replay.RecordingCache().commands:
+                lx.eval("replay.lastBlockInsert")
+                replay.RecordingCache().clear()
+        else:
+            self.debug_path_print("End Ignored Block")
 
     def cmdsysevent_RefireBegin(self):
         # we don't want a bunch of events when the user is
@@ -205,6 +212,7 @@ class CmdListener(lxifc.CmdSysListener):
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
+        return
         lx.out(msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):

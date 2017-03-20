@@ -17,12 +17,12 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
         else:
             # If there's a primary node, insert right after it
             idx = macro.primary.index + 1
-        
+
         cache = replay.RecordingCache()
-        
+
         if len(cache.commands) == 0:
             return
-    
+
         macro.add_block(block = cache.commands, name = "<unnamed>", index = idx)
         macro.unsaved_changes = True
         idx += 1
@@ -33,7 +33,7 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
-        
+
     def cmd_Flags(self):
         """Set command flags. This method can be overridden if special flags
         are needed."""
