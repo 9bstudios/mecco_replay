@@ -47,40 +47,30 @@ class MacroBlockCommand(lumberjack.TreeNode):
         if kwargs.get('suppress') != None:
             self.suppress = kwargs.get('suppress')
 
-        # If a command string (it's actually a list of strings) has been passed in, parse it:
-   # TODO DELETE
-   #     if bool(kwargs.get('command_string')) and \
-   #         all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
-   #         self.parse_string(kwargs.get('command_string'))
-   #     elif bool(kwargs.get('command_json')):
-   #         self.parse_json(kwargs.get('command_json'))
+        if kwargs.get('name') != None:
+            self.block_name = "Block: " + kwargs.get('name')
+            
+        self.add_commands(**kwargs)
+        
+    def add_commands(self, **kwargs):
+        idx = 0
+        for cmd in kwargs.get('block'):
+            self.children.append(MacroCommand(command_string = [cmd + "\n"], index = idx))
+            idx = idx + 1
 
-  #  def command():
-  #      doc = "The base MODO command, e.g. `item.name`."
-  #      def fget(self):
-  #          command = self.columns.get('command')
-  #          if command:
-  #              return command.value
-  #          else:
-  #              return None
-  #      def fset(self, value):
-  #          self.columns['command'].value = value
-  #          self.retreive_args()
-  #          self.columns['name'].value = self.command_meta()['username']
-  #      return locals()
+    def block_name():
+        def fget(self):
+            name = self.columns.get('name')
+            if name:
+                return name.value
+            else:
+                return None
+        def fset(self, value):
+            self.columns['name'].value = value
 
-  #  command = property(**command())
+        return locals()
 
-  #  def args():
-  #      doc = """The `MacroCommand` node's arguments, which should all be
-  #      of class `MacroCommandArg`."""
-  #      def fget(self):
-  #          return self.children
-  #      def fset(self, value):
-  #          self.children = value
-  #      return locals()
-
-  #  args = property(**args())
+    block_name = property(**block_name())
 
     def suppress():
         doc = "Boolean. Suppresses (comments) the command by appending a `#` before it."

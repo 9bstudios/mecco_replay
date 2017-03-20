@@ -5,6 +5,7 @@ import lumberjack
 
 from Macro import *
 from MacroCommand import *
+from MacroBlockCommand import *
 from MacroCommandArg import *
 from Notifier import *
 from Message import *

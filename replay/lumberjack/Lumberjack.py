@@ -184,9 +184,9 @@ class Lumberjack(object):
     _primary = None
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
-    # your own class and then tell your Lumberjack Object to use it by changing
-    # the TreeNodeClass property.
-    _TreeNodeClass = TreeNode
+    # your own class and then tell your Lumberjack Object to use it by overwriting this method
+    def create_child_node(self, **kwargs):
+        return TreeNode(**kwargs)
 
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
@@ -295,7 +295,7 @@ class Lumberjack(object):
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        Lumberjack._root = Lumberjack._TreeNodeClass(
+        Lumberjack._root = TreeNode(
             column_definitions = column_definitions.get('list', []),
             controller = cls()
         )
@@ -407,21 +407,6 @@ class Lumberjack(object):
 
     primary = property(**primary())
 
-    def TreeNodeClass():
-        doc = """The `TreeNode()`` subclass to use when populating the tree.
-
-        By default, Lumberjack populates itself with vanilla `TreeNode` objects.
-        Should you need to extend `TreeNode` to include application-specific functionality,
-        you can inherit `TreeNode` into your own class, and supply your class to Lumberjack
-        using the `TreeNodeClass` property."""
-        def fget(self):
-            return self._TreeNodeClass
-        def fset(self, value):
-            self._TreeNodeClass = value
-        return locals()
-
-    TreeNodeClass = property(**TreeNodeClass())
-
     def column_definitions():
         doc = """List of columns and their widths for the treeview in the
         format `('name', width)`, where width can be a positive integer in pixels
@@ -473,7 +458,7 @@ class Lumberjack(object):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
-        newNode = self._TreeNodeClass(**kwargs)
+        newNode = self.create_child_node(**kwargs)
         if 'index' not in kwargs:
             kwargs['parent'].children.append(newNode)
         else:

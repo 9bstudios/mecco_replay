@@ -191,7 +191,8 @@ class CmdListener(lxifc.CmdSysListener):
 
     def sendCommand(self, cmd):
         if self.record_in_block:
-            replay.RecordingCache().add_command(cmd)
+            svc_command = lx.service.Command()
+            replay.RecordingCache().add_command(svc_command.ArgsAsStringLen(cmd, True))
         else:
             self.replay_lineInsert(cmd)
 

@@ -4,6 +4,7 @@ import lx, re, os
 import json
 import lumberjack
 from MacroCommand import MacroCommand
+from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 
 class Macro(lumberjack.Lumberjack):
@@ -45,8 +46,12 @@ class Macro(lumberjack.Lumberjack):
     _reset_color_on_select = False
 
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
-    # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
-    _TreeNodeClass = MacroCommand
+    # To use this class in Lumberjack, we overwrite the create_child method to create our `TreeNode` subclasses.
+    def create_child_node(self, **kwargs):
+        if 'block' in kwargs:
+            return MacroBlockCommand(**kwargs)
+        else:
+            return MacroCommand(**kwargs)
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -153,6 +158,9 @@ class Macro(lumberjack.Lumberjack):
     is_empty = property(**is_empty())
 
     def add_command(self, **kwargs):
+        return self.add_child(**kwargs)
+        
+    def add_block(self, **kwargs):
         return self.add_child(**kwargs)
 
     def select_event_treeview(self):
