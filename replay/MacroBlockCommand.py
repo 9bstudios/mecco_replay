@@ -156,11 +156,8 @@ class MacroBlockCommand(lumberjack.TreeNode):
         res.append(("# " if self.suppress else "") + self.render_LXM_without_comment())
         return res
 
-#    def run(self):
-#        """Runs the command."""
-#
-#        # Build the MODO command string:
-#        command = self.render_LXM_without_comment()
+    def run(self):
+        """Runs the command."""
 
-        # Run the command:
-#        lx.eval(command)
+        for command in self.children:
+            command.run()
