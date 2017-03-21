@@ -45,7 +45,7 @@ class MacroCommand(lumberjack.TreeNode):
         # self.columns['name'].icon_resource = 'uiicon_replay.suppress'
 
         if kwargs.get('suppress') != None:
-            self.suppress = kwargs.get('suppress')
+            self.direct_suppress = kwargs.get('suppress')
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command_string')) and \
@@ -109,46 +109,71 @@ class MacroCommand(lumberjack.TreeNode):
         return locals()
 
     args = property(**args())
-
-    def suppress():
-        doc = "Boolean. Suppresses (comments) the command by appending a `#` before it."
-        def fget(self):
-            return self._suppress
-        def fset(self, is_suppressed):
-            # Set the internal _suppress value. This value is used when we do things
-            # like render to LXM, etc.
-            self._suppress = is_suppressed
-
-            # Set the `enable` column display. This is purely visual.
-
-            if not is_suppressed:
+    
+    def can_change_suppress(self):
+        if hasattr(self.parent, 'suppress'):
+            return not self.parent.suppress
+        else:
+            return True
+    
+    def update_suppress_for_node_and_descendants(self):
+        if hasattr(self, 'suppress'):
+            if not self.suppress:
                 # If not suppressed, display a checkmark and store True
                 self.columns['enable'].value = True
                 self.columns['enable'].display_value = ''
                 # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
                 self.columns['name'].color.special_by_name('default')
                 self.columns['prefix'].color.special_by_name('default')
-            elif is_suppressed:
+            elif self.suppress:
                 # If it is suppressed, display nothing and store False
                 self.columns['enable'].value = False
                 self.columns['enable'].display_value = '#'
                 # self.columns['enable'].icon_resource = None
                 self.columns['name'].color.special_by_name('gray')
                 self.columns['prefix'].color.special_by_name('gray')
+        
+        for child in self.children:
+            if hasattr(child, 'suppress'):
+                child.update_suppress_for_node_and_descendants()
 
+    def direct_suppress():
+        doc = "Boolean. True if command suppressed directly not by suppressing block."
+        def fget(self):
+            return self._suppress
+            
+        def fset(self, is_suppressed):
+            # Set the internal _suppress value. This value is used when we do things
+            # like render to LXM, etc.
+            self._suppress = is_suppressed
+
+            # Set the `enable` column display. This is purely visual.
+            self.update_suppress_for_node_and_descendants()
+
+        return locals()
+        
+    direct_suppress = property(**direct_suppress())
+
+    def suppress():
+        doc = "Boolean. Suppresses (comments) the command by appending a `#` before it."
+        def fget(self):
+            if hasattr(self.parent, 'suppress'):
+                return self._suppress or self.parent.suppress
+            return self._suppress
+            
         return locals()
 
     suppress = property(**suppress())
 
     def parse_meta(self, line):
-	meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
-	if meta is not None:
+        meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+        if meta is not None:
             return (meta.group(1), meta.group(2))
-	else:
+        else:
             return None
 
     def render_meta(self, name, val):
-	return "# replay {n}:{v}".format(n=name, v=val)
+        return "# replay {n}:{v}".format(n=name, v=val)
 
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings
@@ -197,7 +222,7 @@ class MacroCommand(lumberjack.TreeNode):
         full_command = re.search(r'(# )?([!?+]*)(\S+)', command_string[-1])
 
         # Get the suppress flag
-        if full_command.group(1): self.suppress = True
+        if full_command.group(1): self.direct_suppress = True
 
         # Get the prefix, if any:
         if full_command.group(2): self.prefix = full_command.group(2)
@@ -216,7 +241,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Retrive command, prefix and comment
         self.command = command_json["name"]
-        self.suppress = command_json["suppress"]
+        self.direct_suppress = command_json["suppress"]
         self.prefix = command_json["prefix"]
         self.comment_before = command_json["comment"]
         #return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
@@ -376,10 +401,10 @@ class MacroCommand(lumberjack.TreeNode):
     def render_LXM(self):
         """Construct MODO command string from stored internal parts. Also adds comments"""
         res = list(self.comment_before)
-        if self.suppress:
+        if self.direct_suppress:
             res.append("# replay suppress:")
 
-        res.append(("# " if self.suppress else "") + self.render_LXM_without_comment())
+        res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
 
     def render_LXM_without_comment(self):
@@ -402,9 +427,9 @@ class MacroCommand(lumberjack.TreeNode):
         """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
 
         res = list(self.comment_before)
-        if self.suppress:
+        if self.direct_suppress:
             res.append("# replay suppress:")
-        res.append(("# " if self.suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
+        res.append(("# " if self.direct_suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
         return res
 
     def render_json(self):
@@ -424,7 +449,7 @@ class MacroCommand(lumberjack.TreeNode):
             arg_dict['argExample'] = arg.argExample
             args_list.append(arg_dict)
 
-        return {"command" : {"name" : self.command, "prefix" : self.prefix, "suppress": self.suppress, "comment" : self.comment_before, "args": args_list}}
+        return {"command" : {"name" : self.command, "prefix" : self.prefix, "suppress": self.direct_suppress, "comment" : self.comment_before, "args": args_list}}
 
     def run(self):
         """Runs the command."""
