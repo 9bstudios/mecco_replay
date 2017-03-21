@@ -453,6 +453,9 @@ class MacroCommand(lumberjack.TreeNode):
 
     def run(self):
         """Runs the command."""
+        
+        if self.suppress:
+            return
 
         # Build the MODO command string:
         command = self.render_LXM_without_comment()

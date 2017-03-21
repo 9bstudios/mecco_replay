@@ -49,6 +49,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
 
         if kwargs.get('name') != None:
             self.block_name = "Block: " + kwargs.get('name')
+            self.original_name = kwargs.get('name')
             
         self.add_commands(**kwargs)
         
@@ -71,6 +72,16 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return locals()
 
     block_name = property(**block_name())
+    
+    def original_name():
+        def fget(self):
+            return self._original_name
+        def fset(self, value):
+            self._original_name = value
+
+        return locals()
+
+    original_name = property(**original_name())
     
     def can_change_suppress(self):
         if hasattr(self.parent, 'suppress'):
@@ -177,12 +188,21 @@ class MacroBlockCommand(lumberjack.TreeNode):
         res = list(self.comment_before)
         if self.direct_suppress:
             res.append("# replay suppress:")
+        res.append("#Command Block Begin: %s" % self.original_name)
 
-        res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
+        for command in self.children:
+            lines = command.render_LXM()
+            for line in lines:
+                res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
+        
+        res.append("#Command Block End: %s" % self.original_name)
         return res
 
     def run(self):
         """Runs the command."""
+        
+        if self.suppress:
+            return
 
         for command in self.children:
             command.run()
