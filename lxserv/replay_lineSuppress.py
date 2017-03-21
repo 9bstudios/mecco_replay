@@ -9,15 +9,15 @@ class CommandClass(replay.commander.CommanderClass):
     `commands` list. Can be queried to return the current state of the selected command."""
 
     def commander_execute(self, msg, flags):
-        # Collect selected indices
-        indices = list()
+        # Collect selected paths
+        paths = list()
         for line in replay.Macro().selected_descendants:
-            indices.append(line.index)
+            paths.append(line.path)
 
         # Register Undo object performing operation and apply it
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoLineSuppress(indices))
+            undo_svc.Apply(UndoLineSuppress(paths))
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
@@ -25,16 +25,15 @@ class CommandClass(replay.commander.CommanderClass):
         return bool(replay.Macro().selected_descendants)
 
 class UndoLineSuppress(lxifc.Undo):
-    def __init__(self, indices):
-        self.m_indices = indices
+    def __init__(self, paths):
+        self.m_paths = paths
 
     def toggle(self):
-        """Toggle suppress for each item in indices"""
+        """Toggle suppress for each item in paths"""
         macro = replay.Macro()
 
         # Toggle suppress flag of selected nodes
-        for index in self.m_indices:
-            macro.children[index].suppress = False if macro.children[index].suppress else True
+        for path in self.m_paths:
 
         # Rebuild view
         macro.rebuild_view()

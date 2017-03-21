@@ -448,3 +448,17 @@ class TreeNode(object):
             found.extend(child.find_in_descendants)
 
         return found
+        
+    def path():
+        """ Return path to node. Path is a list of indices that can be used to find node """
+        
+            
+        def fget(self):
+            if self.parent is None:
+                return []
+            else:
+                return self.parent.path + [self.index]
+            
+        return locals()
+        
+    path = property(**path())

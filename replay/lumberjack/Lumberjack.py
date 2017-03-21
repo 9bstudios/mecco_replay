@@ -498,4 +498,25 @@ class Lumberjack(object):
         `rebuild()`` method."""
 
         self.treeview.notify_NewAttributes()
+        
+    class BadPath(Exception):
+        pass
+        
+    @staticmethod
+    def node_for_path_recursive(node, path):
+        # if leaf node
+        if len(node.children) == 0 and len(path) != 0:
+            raise Lumberjack.BadPath()
+            
+        if len(path) == 0:
+            return node
+        else:
+            return Lumberjack.node_for_path_recursive(node.children[path[0]], path[1:])
+            
+        
+    def node_for_path(self, path):
+        try:
+            return Lumberjack.node_for_path_recursive(self.root, path)
+        except Lumberjack.BadPath:
+            raise Exception("Invalid path %s" % str(path)) 
 
