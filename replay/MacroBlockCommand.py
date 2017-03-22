@@ -51,6 +51,9 @@ class MacroBlockCommand(lumberjack.TreeNode):
             self.block_name = "Block: " + kwargs.get('name')
             self.original_name = kwargs.get('name')
             
+        if bool(kwargs.get('comment')):
+            self.comment_before = kwargs.get('comment')
+            
         self.add_commands(**kwargs)
         
     def add_commands(self, **kwargs):
@@ -138,15 +141,12 @@ class MacroBlockCommand(lumberjack.TreeNode):
 
     suppress = property(**suppress())
 
-   # def parse_meta(self, line):
-#	meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
-#	if meta is not None:
-#            return (meta.group(1), meta.group(2))
-#	else:
-#            return None
-
-#    def render_meta(self, name, val):
-#	return "# replay {n}:{v}".format(n=name, v=val)
+    def parse_meta(self, line):
+        meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+        if meta is not None:
+            return (meta.group(1), meta.group(2))
+        else:
+            return None
 
     def render_meta(self, name, val):
         return "# replay {n}:{v}".format(n=name, v=val)

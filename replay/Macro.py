@@ -275,7 +275,7 @@ class Macro(lumberjack.Lumberjack):
             if block_name is not None:
                 block_stack.append(block_name)
                 kwargs['path'] = path
-                self.add_block(name = block_name, block = [], **kwargs)
+                self.add_block(name = block_name, block = [], comment=command_with_comments, **kwargs)
                 path.append(0)
                 
                 command_with_comments = []
