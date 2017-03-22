@@ -99,7 +99,7 @@ class CmdListener(lxifc.CmdSysListener):
         res = [cmd.Name()]
 
         for idx in xrange(0, attrs.Count()):
-            if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_QUERY == 0:
+            if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_REQFORVARIABLE != 0:
                 res.append(attrs.GetString(idx)) 
 
         return tuple(res)
