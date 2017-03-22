@@ -258,6 +258,8 @@ class Macro(lumberjack.Lumberjack):
         first_line = True
         
         block_stack = list()
+        
+        block_suppress_count = 0
 
         command_with_comments = []
         next_line_is_suppressed_command = False
@@ -273,9 +275,12 @@ class Macro(lumberjack.Lumberjack):
             
             block_name = self.is_block_start(input_line)
             if block_name is not None:
-                block_stack.append(block_name)
+                block_stack.append((block_name, next_line_is_suppressed_command))
                 kwargs['path'] = path
-                self.add_block(name = block_name, block = [], comment=command_with_comments, **kwargs)
+                self.add_block(name = block_name, block = [], comment=command_with_comments, suppress=next_line_is_suppressed_command, **kwargs)
+                if next_line_is_suppressed_command:
+                    block_suppress_count += 1
+                next_line_is_suppressed_command = False
                 path.append(0)
                 
                 command_with_comments = []
@@ -283,14 +288,17 @@ class Macro(lumberjack.Lumberjack):
                 
             block_name = self.is_block_end(input_line)
             if block_name is not None:
-                if len(block_stack) == 0 or block_stack[-1] != block_name:
+                if len(block_stack) == 0 or block_stack[-1][0] != block_name:
                     raise Exception("Unexpected end of block")
+                if block_stack[-1][1]:
+                    block_suppress_count -= 1
                 del block_stack[-1]
                 del path[-1]
                 path[-1] += 1
                 
                 continue
                 
+            input_line = input_line[4*len(block_stack) + 2*block_suppress_count:]
 
             if not next_line_is_suppressed_command:
                 if input_line == "# replay suppress:\n":

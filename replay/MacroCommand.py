@@ -221,6 +221,9 @@ class MacroCommand(lumberjack.TreeNode):
         # Get the prefix and the command:
         full_command = re.search(r'(# )?([!?+]*)(\S+)', command_string[-1])
 
+        if full_command is None:
+            raise Exception("Wrong command")
+            
         # Get the suppress flag
         if full_command.group(1): self.direct_suppress = True
 
