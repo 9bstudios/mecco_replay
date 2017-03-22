@@ -48,13 +48,15 @@ class MacroBlockCommand(lumberjack.TreeNode):
             self.direct_suppress = kwargs.get('suppress')
 
         if kwargs.get('name') != None:
-            self.block_name = "Block: " + kwargs.get('name')
             self.original_name = kwargs.get('name')
             
         if bool(kwargs.get('comment')):
             self.comment_before = kwargs.get('comment')
             
-        self.add_commands(**kwargs)
+        if kwargs.get('block_json'):
+            self.parse_json(kwargs.get('block_json'), **kwargs)
+        else:
+            self.add_commands(**kwargs)
         
     def add_commands(self, **kwargs):
         idx = 0
@@ -81,6 +83,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
             return self._original_name
         def fset(self, value):
             self._original_name = value
+            self.block_name = "Block: " + value
 
         return locals()
 
@@ -224,7 +227,27 @@ class MacroBlockCommand(lumberjack.TreeNode):
             commands.append(command)
 
         return {"command block" : {"name" : self.original_name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
-
+        
+    def parse_json(self, json_struct, **kwargs):
+        attributes = json_struct['command block']
+        self.original_name = attributes['name']
+        self.direct_suppress = attributes['suppress']
+        self.comment_before = attributes['comment']
+        
+        kwargs.pop('block', None)
+        kwargs.pop('command_json', None)
+        kwargs.pop('block_json', None)
+        
+        index = 0
+        for command in attributes['commands']:
+            kwargs['index'] = index
+            kwargs['parent'] = self
+            if 'command' in command:
+                self._controller.add_child(command_json = command, **kwargs)
+            else:
+                self._controller.add_child(block = [], block_json = command, **kwargs)
+            index += 1
+            
     def run(self):
         """Runs the command."""
         
