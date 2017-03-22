@@ -247,6 +247,10 @@ class Macro(lumberjack.Lumberjack):
 
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
+        
+        path = [kwargs.get('index', 0)]
+        if 'index' in kwargs:
+            del kwargs['index']
 
         # Open the .lxm input file and save the path:
         input_file = open(input_path, 'r')
@@ -270,8 +274,9 @@ class Macro(lumberjack.Lumberjack):
             block_name = self.is_block_start(input_line)
             if block_name is not None:
                 block_stack.append(block_name)
-                kwargs['index'] = kwargs.get('index', 0)
+                kwargs['path'] = path
                 self.add_block(name = block_name, block = [], **kwargs)
+                path.append(0)
                 
                 command_with_comments = []
                 continue
@@ -281,6 +286,9 @@ class Macro(lumberjack.Lumberjack):
                 if len(block_stack) == 0 or block_stack[-1] != block_name:
                     raise Exception("Unexpected end of block")
                 del block_stack[-1]
+                del path[-1]
+                path[-1] += 1
+                
                 continue
 
             if not next_line_is_suppressed_command:
@@ -298,14 +306,14 @@ class Macro(lumberjack.Lumberjack):
                 command_with_comments.append(input_line[:-1])
                 next_line_is_suppressed_command = False
 
-            kwargs['index'] = kwargs.get('index', 0)
+            kwargs['path'] = path
 
             # Parse the command and store it in the commands list:
             self.add_command(command_string = command_with_comments, **kwargs)
             command_with_comments = []
 
             # We need to increment the index with each loop, lest we insert nodes in reverse order
-            kwargs['index'] += 1
+            path[-1] += 1
 
         # Close the .lxm input file:
         input_file.close()

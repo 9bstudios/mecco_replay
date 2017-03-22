@@ -456,6 +456,10 @@ class Lumberjack(object):
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
+        if 'path' in kwargs:
+            kwargs['parent'] = self.node_for_path(kwargs['path'][:-1])
+            kwargs['index'] = kwargs['path'][-1]
+            
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
         newNode = self.create_child_node(**kwargs)
