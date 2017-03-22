@@ -148,6 +148,9 @@ class MacroBlockCommand(lumberjack.TreeNode):
 #    def render_meta(self, name, val):
 #	return "# replay {n}:{v}".format(n=name, v=val)
 
+    def render_meta(self, name, val):
+        return "# replay {n}:{v}".format(n=name, v=val)
+
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings
         will automatically be broken into lines of 80 characters or less. Appropriate
