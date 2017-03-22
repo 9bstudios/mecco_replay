@@ -91,11 +91,23 @@ class CmdListener(lxifc.CmdSysListener):
         if self.valid_for_record(cmd):
             self.total_depth += 1
             self.debug_path.append(cmd.Name())
+            
+    def callId(self, cmd):
+        cmd = lx.object.Command(cmd)
+        attrs = lx.object.Attributes(cmd)
 
-    def cmdsysevent_ExecuteResult(self, cmd, type, isSandboxed, isPostCmd, wasSuccessful):
+        res = [cmd.Name()]
+
+        for idx in xrange(0, attrs.Count()):
+            if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_QUERY == 0:
+                res.append(attrs.GetString(idx)) 
+
+        return tuple(res)
+
+    def cmdsysevent_ExecuteResult(self, command, type, isSandboxed, isPostCmd, wasSuccessful):
         # lx.out("ExecuteResult", lx.object.Command(cmd).Name(), type, isSandboxed, isPostCmd, wasSuccessful)
 
-        cmd = lx.object.Command(cmd)
+        cmd = lx.object.Command(command)
         if self.valid_for_record(cmd, True):
             self.total_depth -= 1
 
@@ -108,11 +120,12 @@ class CmdListener(lxifc.CmdSysListener):
                     self.debug_path_print("Refiring.")
 
                     # Keep track of the order of operations.
-                    if cmd.Name() not in self.refire_order:
-                        self.refire_order.append(cmd.Name())
+                    id = self.callId(command)
+                    if id not in self.refire_order:
+                        self.refire_order.append(id)
 
                     # Store latest iteration of refired command.
-                    self.refire_last[cmd.Name()] = cmd
+                    self.refire_last[id] = cmd
 
                 else:
 
@@ -184,15 +197,18 @@ class CmdListener(lxifc.CmdSysListener):
         # Sometimes `tool.doApply` is added at the wrong time. It should always
         # be added last. As a special case, we manually make sure it's last in
         # the list.
-        if 'tool.doApply' in self.refire_order:
-            self.refire_order.remove('tool.doApply')
-            self.refire_order.append('tool.doApply')
+        svc_ = lx.service.Command()
+        x, y, applyCmd = svc_.SpawnFromString('tool.doApply')
+        applyId = self.callId(applyCmd)
+        if applyId in self.refire_order:
+            self.refire_order.remove(applyId)
+            self.refire_order.append(applyId)
 
         # Now that refire is over, we can add our commands to the macro in the
         # order in which they were first fired.
-        for cmd_name in self.refire_order:
-            self.debug_print("Adding refired: " + cmd_name)
-            self.sendCommand(self.refire_last[cmd_name])
+        for cmd_id in self.refire_order:
+            self.debug_print("Adding refired: " + cmd_id)
+            self.sendCommand(self.refire_last[cmd_id])
 
     def sendCommand(self, cmd):
         if self.record_in_block:
