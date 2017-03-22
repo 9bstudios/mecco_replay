@@ -228,6 +228,22 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.parse_LXM(input_path, **kwargs)
         return format_name
+        
+    def is_block_start(self, input_line):
+        block = re.search(r'#Command Block Begin: (\S+)\s*', input_line)
+
+        if block is None:
+            return None
+          
+        return block.group(1)
+        
+    def is_block_end(self, input_line):
+        block = re.search(r'#Command Block End: (\S+)\s*', input_line)
+
+        if block is None:
+            return None
+          
+        return block.group(1)
 
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
@@ -236,6 +252,8 @@ class Macro(lumberjack.Lumberjack):
         input_file = open(input_path, 'r')
 
         first_line = True
+        
+        block_stack = list()
 
         command_with_comments = []
         next_line_is_suppressed_command = False
@@ -248,6 +266,22 @@ class Macro(lumberjack.Lumberjack):
                 continue
 
             if not input_line: continue
+            
+            block_name = self.is_block_start(input_line)
+            if block_name is not None:
+                block_stack.append(block_name)
+                kwargs['index'] = kwargs.get('index', 0)
+                self.add_block(name = block_name, block = [], **kwargs)
+                
+                command_with_comments = []
+                continue
+                
+            block_name = self.is_block_end(input_line)
+            if block_name is not None:
+                if len(block_stack) == 0 or block_stack[-1] != block_name:
+                    raise Exception("Unexpected end of block")
+                del block_stack[-1]
+                continue
 
             if not next_line_is_suppressed_command:
                 if input_line == "# replay suppress:\n":
