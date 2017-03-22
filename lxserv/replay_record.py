@@ -207,7 +207,7 @@ class CmdListener(lxifc.CmdSysListener):
         # Now that refire is over, we can add our commands to the macro in the
         # order in which they were first fired.
         for cmd_id in self.refire_order:
-            self.debug_print("Adding refired: " + cmd_id)
+            self.debug_print("Adding refired: " + str(cmd_id))
             self.sendCommand(self.refire_last[cmd_id])
 
     def sendCommand(self, cmd):
