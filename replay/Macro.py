@@ -322,13 +322,17 @@ class Macro(lumberjack.Lumberjack):
         """Parse a Python file and store its commands in the `commands` property.
         If the python code contains anything other than `lx.eval` and `lx.command`
         calls, parse will raise an error."""
+        
+        path = [kwargs.get('index', 0)]
+        if 'index' in kwargs:
+            del kwargs['index']
 
         # Open the .py input file:
         input_file = open(input_path, 'r')
 
         try:
             first_line = True
-
+            block_stack = list()
             command_with_comments = []
             next_line_is_suppressed_command = False
             # Loop over the lines to get all the command strings:
@@ -340,6 +344,26 @@ class Macro(lumberjack.Lumberjack):
                     continue
 
                 if not input_line: continue
+                
+                block_name = self.is_block_start(input_line)
+                if block_name is not None:
+                    block_stack.append(block_name)
+                    kwargs['path'] = path
+                    self.add_block(name = block_name, block = [], comment=command_with_comments, **kwargs)
+                    path.append(0)
+                    
+                    command_with_comments = []
+                    continue
+                    
+                block_name = self.is_block_end(input_line)
+                if block_name is not None:
+                    if len(block_stack) == 0 or block_stack[-1] != block_name:
+                        raise Exception("Unexpected end of block")
+                    del block_stack[-1]
+                    del path[-1]
+                    path[-1] += 1
+                    
+                    continue
 
                 suppress = False
 
@@ -374,9 +398,11 @@ class Macro(lumberjack.Lumberjack):
                 if cmd is not None:
                     command_with_comments.append(cmd)
 
+                kwargs['path'] = path
                 # Parse the command and store it in the commands list:
                 self.add_command(command_string = command_with_comments, suppress = suppress, **kwargs)
                 command_with_comments = []
+                path[-1] += 1
 
         except:
             # Close the .lxm input file:
