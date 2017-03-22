@@ -290,6 +290,7 @@ class Macro(lumberjack.Lumberjack):
                 path[-1] += 1
                 
                 continue
+                
 
             if not next_line_is_suppressed_command:
                 if input_line == "# replay suppress:\n":
