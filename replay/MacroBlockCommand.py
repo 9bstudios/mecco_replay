@@ -202,7 +202,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return res
         
     def render_Python(self):
-        """Construct MODO command strings wrapped in lx.eval() from for each nested command."""
+        """Construct MODO command strings wrapped in lx.eval() for each nested command."""
         res = list(self.comment_before)
         if self.direct_suppress:
             res.append("# replay suppress:")
@@ -215,6 +215,15 @@ class MacroBlockCommand(lumberjack.TreeNode):
         
         res.append("#Command Block End: %s" % self.original_name)
         return res
+        
+    def render_json(self):
+        """Construct MODO command string in json format for each nested command."""
+        commands = list()
+        for command in self.children:
+            command = command.render_json()
+            commands.append(command)
+
+        return {"command block" : {"name" : self.original_name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
 
     def run(self):
         """Runs the command."""
