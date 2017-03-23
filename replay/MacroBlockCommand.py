@@ -194,14 +194,14 @@ class MacroBlockCommand(lumberjack.TreeNode):
         res = list(self.comment_before)
         if self.direct_suppress:
             res.append("# replay suppress:")
-        res.append("#Command Block Begin: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.original_name)
 
         for command in self.children:
             lines = command.render_LXM()
             for line in lines:
                 res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
         
-        res.append("#Command Block End: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
         return res
         
     def render_Python(self):
