@@ -64,10 +64,13 @@ class TreeNode(object):
         # String for use in input remapping. Must correspond with one of the region
         # strings provided in the Lumberjack blessing_parameters() method.
         self._input_region = kwargs.get('input_region', None)
+        
+        self._meta = dict()
+        self.row_color = RowColor().name
 
         # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
-        self._meta = kwargs.get('meta', {})
-
+        self._meta = dict(kwargs.get('meta', []))
+        
         # List of column names for the node tree. Common to all nodes.
         # Set during `Lumberjack().bless()`
         #
@@ -85,8 +88,6 @@ class TreeNode(object):
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
             self._columns[column['name']] = TreeValue()
-
-        self.row_color = RowColor().name
 
     # PROPERTIES
     # ----------

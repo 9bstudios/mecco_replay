@@ -48,9 +48,8 @@ class MacroCommand(lumberjack.TreeNode):
             self.direct_suppress = kwargs.get('suppress')
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
-        if bool(kwargs.get('command_string')) and \
-            all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
-            self.parse_string(kwargs.get('command_string'))
+        if bool(kwargs.get('command')):
+            self.parse_string(kwargs.get('command'), kwargs.get('comment'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
             
@@ -210,31 +209,33 @@ class MacroCommand(lumberjack.TreeNode):
 
     user_comment_before = property(**user_comment_before())
 
-    def parse_string(self, command_string):
+    def parse_string(self, command, comment, suppress):
         """Parse a normal MODO command string into its constituent parts, and
         stores those in the `command` and `args` properties for the object."""
 
         # Get the comments before the command, if any:
-        if len(command_string) > 1:
-            self.comment_before = command_string[:-1]
+        if comment is not None:
+            self.user_comment_before = comment
+        else:
+            self.user_comment_before = []
 
         # Get the prefix and the command:
-        full_command = re.search(r'(# )?([!?+]*)(\S+)', command_string[-1])
+        full_command = re.search(r'([!?+]*)(\S+)', command)
 
         if full_command is None:
             raise Exception("Wrong command")
             
         # Get the suppress flag
-        if full_command.group(1): self.direct_suppress = True
+        self.direct_suppress = suppress
 
         # Get the prefix, if any:
-        if full_command.group(2): self.prefix = full_command.group(2)
+        if full_command.group(1): self.prefix = full_command.group(1)
 
         # Get the command:
-        self.command = full_command.group(3)
+        self.command = full_command.group(2)
 
         # Parse the arguments for this command:
-        self.parse_args(command_string[-1][len(full_command.group(0)):])
+        self.parse_args(command[len(full_command.group(0)):])
 
     def parse_json(self, command_json):
         """Parse a MODO command in json struct into its constituent parts, and

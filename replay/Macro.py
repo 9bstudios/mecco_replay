@@ -6,6 +6,8 @@ import lumberjack
 from MacroCommand import MacroCommand
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
+from LXMParser import LXMParser
+from LXMParser import LXMBuilder
 
 class Macro(lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
@@ -48,10 +50,10 @@ class Macro(lumberjack.Lumberjack):
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
     # To use this class in Lumberjack, we overwrite the create_child method to create our `TreeNode` subclasses.
     def create_child_node(self, **kwargs):
-        if 'block' in kwargs:
-            return MacroBlockCommand(**kwargs)
-        else:
+        if kwargs.get('type', "command") == "command":
             return MacroCommand(**kwargs)
+        else:
+            return MacroBlockCommand(**kwargs)
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -161,10 +163,10 @@ class Macro(lumberjack.Lumberjack):
     is_empty = property(**is_empty())
 
     def add_command(self, **kwargs):
-        return self.add_child(**kwargs)
+        return self.add_child(type='command', **kwargs)
 
     def add_block(self, **kwargs):
-        return self.add_child(**kwargs)
+        return self.add_child(type='block', **kwargs)
 
     def select_event_treeview(self):
         """Fires whenever the TreeView detects a user selection event."""
@@ -222,7 +224,7 @@ class Macro(lumberjack.Lumberjack):
                 break
 
         if format_name == "py":
-            self.parse_Python(input_path, **kwargs)
+            self.parse_LXM(input_path, **kwargs)
         elif format_name == 'json':
             self.parse_json(input_path, **kwargs)
         else:
@@ -248,182 +250,55 @@ class Macro(lumberjack.Lumberjack):
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
         
-        path = [kwargs.get('index', 0)]
-        if 'index' in kwargs:
-            del kwargs['index']
-
-        # Open the .lxm input file and save the path:
-        input_file = open(input_path, 'r')
-
-        first_line = True
+        class MacroTreeBuilder(LXMBuilder):
+            def __init__(self, macro, **kwargs):
+                self.macro = macro
+                self.path = [kwargs.get('index', 0)]
+                kwargs.pop('index', None)
+                self.kwargs = kwargs
+                self.comments = []
+                self.meta = []
         
-        block_stack = list()
-        
-        block_suppress_count = 0
-
-        command_with_comments = []
-        next_line_is_suppressed_command = False
-        # Loop over the lines to get all the command strings:
-        for input_line in input_file:
-            if first_line:
-                first_line = False
-                if not input_line.startswith("#LXMacro#"):
-                    raise Exception("Wrong shebang {sb}".format(sb=input_line))
-                continue
-
-            if not input_line: continue
-            
-            block_name = self.is_block_start(input_line)
-            if block_name is not None:
-                block_stack.append((block_name, next_line_is_suppressed_command))
-                kwargs['path'] = path
-                self.add_block(name = block_name, block = [], comment=command_with_comments, suppress=next_line_is_suppressed_command, **kwargs)
-                if next_line_is_suppressed_command:
-                    block_suppress_count += 1
-                next_line_is_suppressed_command = False
-                path.append(0)
-                
-                command_with_comments = []
-                continue
-                
-            block_name = self.is_block_end(input_line)
-            if block_name is not None:
-                if len(block_stack) == 0 or block_stack[-1][0] != block_name:
-                    raise Exception("Unexpected end of block")
-                if block_stack[-1][1]:
-                    block_suppress_count -= 1
-                del block_stack[-1]
-                del path[-1]
-                path[-1] += 1
-                
-                continue
-                
-            input_line = input_line[4*len(block_stack) + 2*block_suppress_count:]
-
-            if not next_line_is_suppressed_command:
-                if input_line == "# replay suppress:\n":
-                    next_line_is_suppressed_command = True
-                    continue
-
-                command_with_comments.append(input_line[:-1])
-
-                # If this line is a comment, just append it to the full command:
-                if input_line[0] == "#":
-                    continue
-            else:
-                # Command will be commented and that will be used in command parser to set suppress flag
-                command_with_comments.append(input_line[:-1])
-                next_line_is_suppressed_command = False
-
-            kwargs['path'] = path
-
-            # Parse the command and store it in the commands list:
-            self.add_command(command_string = command_with_comments, **kwargs)
-            command_with_comments = []
-
-            # We need to increment the index with each loop, lest we insert nodes in reverse order
-            path[-1] += 1
-
-        # Close the .lxm input file:
-        input_file.close()
-
-    def parse_Python(self, input_path, **kwargs):
-        """Parse a Python file and store its commands in the `commands` property.
-        If the python code contains anything other than `lx.eval` and `lx.command`
-        calls, parse will raise an error."""
-        
-        path = [kwargs.get('index', 0)]
-        if 'index' in kwargs:
-            del kwargs['index']
-
-        # Open the .py input file:
-        input_file = open(input_path, 'r')
-
-        try:
-            first_line = True
-            block_stack = list()
-            command_with_comments = []
-            next_line_is_suppressed_command = False
-            # Loop over the lines to get all the command strings:
-            for input_line in input_file:
-                if first_line:
-                    first_line = False
-                    if not input_line.startswith("# python"):
-                        raise Exception("Wrong shebang {sb}".format(sb=input_line))
-                    continue
-
-                if not input_line: continue
-                
-                block_name = self.is_block_start(input_line)
-                if block_name is not None:
-                    block_stack.append(block_name)
-                    kwargs['path'] = path
-                    self.add_block(name = block_name, block = [], comment=command_with_comments, **kwargs)
-                    path.append(0)
-                    
-                    command_with_comments = []
-                    continue
-                    
-                block_name = self.is_block_end(input_line)
-                if block_name is not None:
-                    if len(block_stack) == 0 or block_stack[-1] != block_name:
-                        raise Exception("Unexpected end of block")
-                    del block_stack[-1]
-                    del path[-1]
-                    path[-1] += 1
-                    
-                    continue
-
-                suppress = False
-
-                if not next_line_is_suppressed_command:
-                    if input_line == "# replay suppress:\n":
-                        next_line_is_suppressed_command = True
-                        continue
-
-                    # If this line is a comment, just append it to the full command:
-                    if input_line[0] == "#":
-                        command_with_comments.append(input_line[:-1])
-                        continue
-
+            def buildType(self, type):
+                if type == "LXM":
+                    self.macro.file_format = "lxm"
                 else:
-                    # Command will be commented and that will be used in command parser to set suppress flag
-                    if input_line[0:2] != "# ":
-                        raise Exception("Bad command")
-                    input_line = input_line[2:]
-                    suppress = True
-                    next_line_is_suppressed_command = False
+                    self.macro.file_format = "py"
 
-                # Replace lx.eval with function returning command
-                store_lx_eval = lx.eval
-                def return_cmd(cmd):
-                    return cmd
-                lx.eval = return_cmd
+            def buildCommand(self, line, suppress):
+                self.kwargs['path'] = self.path
+                self.macro.add_command(command=line, comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+                self.path[-1] += 1
+                
+                self.comments = []
+                self.meta = []
+                
+            def buildBlockStart(self, block, suppress):
+                self.kwargs['path'] = self.path
+                self.macro.add_block(name = block[-1][0], comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+                self.path.append(0)
+                
+                self.comments = []
+                self.meta = []
 
-                cmd = eval(input_line)
+            def buildBlockEnd(self, block):
+                del self.path[-1]
+                self.path[-1] += 1
+                
+                self.comments = []
+                self.meta = []
 
-                # Restore lx.eval
-                lx.eval = store_lx_eval
-                if cmd is not None:
-                    command_with_comments.append(cmd)
+            def buildMeta(self, name, value):
+                self.meta.append((name, value))
 
-                kwargs['path'] = path
-                # Parse the command and store it in the commands list:
-                self.add_command(command_string = command_with_comments, suppress = suppress, **kwargs)
-                command_with_comments = []
-                path[-1] += 1
-
-        except:
-            # Close the .lxm input file:
-            input_file.close()
-
-            # Restore lx.eval
-            lx.eval = store_lx_eval
-            raise Exception('Failed to parse file "%s".' % input_path)
-
-        # Close the .lxm input file:
-        input_file.close()
-
+            def buildComment(self, comment):
+                self.comments.append(comment)
+                
+        parser = LXMParser()
+        builder = MacroTreeBuilder(self)
+        parser.parse(input_path, builder)
+            
+        
     def parse_json(self, input_path, **kwargs):
         """Parse a json file and store its commands in the `commands` property."""
 

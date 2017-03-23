@@ -50,18 +50,19 @@ class MacroBlockCommand(lumberjack.TreeNode):
         if kwargs.get('name') != None:
             self.original_name = kwargs.get('name')
             
+        self.user_comment_before = []
         if bool(kwargs.get('comment')):
-            self.comment_before = kwargs.get('comment')
+            self.user_comment_before = kwargs.get('comment')
             
         if kwargs.get('block_json'):
             self.parse_json(kwargs.get('block_json'), **kwargs)
-        else:
+        elif kwargs.get('block'):
             self.add_commands(**kwargs)
         
     def add_commands(self, **kwargs):
         idx = 0
         for cmd in kwargs.get('block'):
-            self.children.append(MacroCommand(parent=self, command_string = [cmd + "\n"], index = idx))
+            self.children.append(MacroCommand(parent=self, command = cmd, index = idx))
             idx = idx + 1
 
     def block_name():
