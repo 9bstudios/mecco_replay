@@ -233,11 +233,11 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
 
     def debug_path_print(self, msg):
-        return
+        # return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
-        return
+        # return
         lx.out(msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):
@@ -274,6 +274,11 @@ class RecordCommandClass(replay.commander.CommanderClass):
                 'flags': ['query', 'optional']
             }
         ]
+
+    def cmd_Flags(self):
+        """Set command flags. This method can be overridden if special flags
+        are needed."""
+        return lx.symbol.fCMD_UI | lx.symbol.fCMD_QUIET
 
     def commander_notifiers(self):
         # We need to update our values whenever the replay notifier fires for
