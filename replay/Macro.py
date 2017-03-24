@@ -201,6 +201,7 @@ class Macro(lumberjack.Lumberjack):
         # Store file path and extension
         self.file_path = input_path
         self.file_format = format_name
+        self.select(0)
 
     def parse_and_insert(self, input_path):
         if self.primary is None:
@@ -346,6 +347,9 @@ class Macro(lumberjack.Lumberjack):
         """Runs the next line in the macro, i. e. the primary one."""
 
         # Select the primary command:
+        if self.primary is None:
+            self.select(0)
+            
         command = self.primary
         start_path = command.path
 
