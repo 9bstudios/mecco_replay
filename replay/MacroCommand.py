@@ -424,7 +424,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         def wrap_quote(value):
             if re.search(r"\W", value):
-                return "\"{0}\"".format(value).replace('{', '\\{').replace('}', '\\}')
+                return "\"{0}\"".format(value)
             else:
                 return value
 
