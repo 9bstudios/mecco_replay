@@ -22,7 +22,7 @@ class DropServer(lxifc.Drop):
         source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
         dest_path = json.loads(vaDest.GetString(1))
 
-        lumberjack = Lumberjack()        
+        lumberjack = Lumberjack.final_class()        
         source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
         dest_node = lumberjack.node_for_path(dest_path)
         
@@ -56,7 +56,7 @@ class DropServer(lxifc.Drop):
         source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
         dest_path = json.loads(vaDest.GetString(1))
 
-        lumberjack = Lumberjack()
+        lumberjack = Lumberjack.final_class()
 
         # Collect all selected children
         source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
@@ -64,8 +64,8 @@ class DropServer(lxifc.Drop):
         # Move children
         for source in source_nodes:
             source.path = dest_path
-#            source.parent.children.remove(self)
-#            dest_node.parent.children.insert(dest_path[-1], source)
+            
+        lumberjack.on_drag_drop(source_nodes)
 
         lumberjack.rebuild_view()
        
@@ -192,6 +192,7 @@ class Lumberjack(object):
     _nice_name = ""
     _viewport_type = ""
     _primary = None
+    final_class = None
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
     # your own class and then tell your Lumberjack Object to use it by overwriting this method
@@ -208,6 +209,9 @@ class Lumberjack(object):
         The TreeNode object is the data moel, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
+        pass
+        
+    def on_drag_drop(self, source_nodes):
         pass
 
     @classmethod
@@ -298,6 +302,8 @@ class Lumberjack(object):
                                 ]
                                 ```
         """
+        
+        Lumberjack.final_class = cls
 
         # Can only be blessed once per session.
         if Lumberjack._blessed:

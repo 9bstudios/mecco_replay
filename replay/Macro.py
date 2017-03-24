@@ -434,3 +434,8 @@ class Macro(lumberjack.Lumberjack):
             self.render_Python(file_path)
         else:
             self.render_json(file_path)
+            
+    def on_drag_drop(self, source_nodes):
+        # After drag and drop update suppress state
+        for node in source_nodes:
+            node.update_suppress_for_node_and_descendants()
