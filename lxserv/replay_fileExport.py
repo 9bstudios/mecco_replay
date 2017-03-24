@@ -32,6 +32,9 @@ class CommandClass(replay.commander.CommanderClass):
         `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
         `replay.fileSave` this command can save in multiple formats."""
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         macro = replay.Macro()
 
         format_val = self.commander_arg_value(0)
@@ -50,9 +53,6 @@ class CommandClass(replay.commander.CommanderClass):
                 return
             self.__class__._path = file_path
             format_val = lx.eval('dialog.fileSaveFormat ?')
-
-        # Stop recording
-        lx.eval('replay.record stop')
 
         replay.Macro().render(format_val, file_path)
 

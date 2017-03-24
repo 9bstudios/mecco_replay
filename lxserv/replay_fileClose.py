@@ -9,6 +9,8 @@ class CommandClass(replay.commander.CommanderClass):
 
     """Close the current `Macro()` and, if necessary, prompt user to save changes."""
     def commander_execute(self, msg, flags):
+        # Stop recording
+        lx.eval('replay.record stop')
 
         macro = replay.Macro()
 
@@ -31,8 +33,7 @@ class CommandClass(replay.commander.CommanderClass):
         macro.file_path = None
         macro.file_format = None
         macro.unsaved_changes = False
-        # Stop recording
-        lx.eval('replay.record stop')
+
         # Clear current macro
         macro.clear()
         # Rebuild treeview

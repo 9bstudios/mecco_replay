@@ -29,6 +29,9 @@ class CommandClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 
@@ -55,15 +58,10 @@ class CommandClass(replay.commander.CommanderClass):
         # Add to recently-opened
         lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
 
-        # Stop recording
-        lx.eval('replay.record stop')
-
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         return True
 
 lx.bless(CommandClass, 'replay.fileOpen')

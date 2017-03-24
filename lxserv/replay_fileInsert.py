@@ -22,6 +22,9 @@ class CommandClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 
@@ -46,9 +49,6 @@ class CommandClass(replay.commander.CommanderClass):
         macro.rebuild_view()
 
         replay.Macro().unsaved_changes = True
-
-        # Stop recording
-        lx.eval('replay.record stop')
 
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)

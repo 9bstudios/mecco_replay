@@ -8,6 +8,9 @@ https://github.com/adamohern/commander for details"""
 class CommandClass(replay.commander.CommanderClass):
     """Maps the currently-open Macro to a key."""
     def commander_execute(self, msg, flags):
+        # Stop recording
+        lx.eval('replay.record stop')
+
         macro = replay.Macro()
 
         if macro.file_path:
