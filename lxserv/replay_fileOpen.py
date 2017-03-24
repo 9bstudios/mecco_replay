@@ -32,6 +32,9 @@ class CommandClass(replay.commander.CommanderClass):
         # Stop recording
         lx.eval('replay.record stop')
 
+        # Open the replay palette
+        lx.eval('layout.createOrClose ReplayPalette {ReplayPalette} true {Replay Palette} width:400 height:600 persistent:true style:palette')
+    
         # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 

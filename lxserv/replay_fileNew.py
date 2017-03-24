@@ -12,6 +12,9 @@ class CommandClass(replay.commander.CommanderClass):
         # Stop recording
         lx.eval('replay.record stop')
 
+        # Open the replay palette
+        lx.eval('layout.createOrClose ReplayPalette {ReplayPalette} true {Replay Palette} width:400 height:600 persistent:true style:palette')
+
         # There's really  no concept of a "blank" document. We just start
         # from a blank macro by closing the current one.
         lx.eval('replay.fileClose')
