@@ -191,6 +191,7 @@ class LXMParser(object):
             self.builder.buildCommand(line, self.in_suppress)
         else:
             store_lx_eval = None
+            cmd = None
             try:
                 store_lx_eval = lx.eval
 
@@ -200,11 +201,13 @@ class LXMParser(object):
                 lx.eval = return_cmd
 
                 cmd = eval(line)
-                self.builder.buildCommand(cmd, self.in_suppress)
             except:
                 raise LXMError(line=self.line_index, message="Wrong python command")
             finally:
                 lx.eval = store_lx_eval
+            
+            if cmd is not None:
+                self.builder.buildCommand(cmd, self.in_suppress)
 
     def commentsToSkip(self):
         return self.expecting_comment_level + (1 if self.in_suppress else 0)
