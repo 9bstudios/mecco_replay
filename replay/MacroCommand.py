@@ -63,6 +63,16 @@ class MacroCommand(lumberjack.TreeNode):
         x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
         return lx.object.Command(cmd)
         
+    def newCommandObject(self):
+        svc_ = lx.service.Command()
+        cmd = svc_.Spawn(0, self.render_LXM_without_comment())
+        return lx.object.Command(cmd)
+        
+    def newAttributesObject(self):
+        svc_ = lx.service.Command()
+        cmd = svc_.Spawn(0, self.render_LXM_without_comment())
+        return lx.object.Attributes(cmd)
+        
     def draggable(self):
         return True
         

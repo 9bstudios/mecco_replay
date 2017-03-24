@@ -67,7 +67,6 @@ class CommandClass(replay.commander.CommanderClass):
 
             for command, argIndex in self.commands_by_argName(argName):
                 arg = command.args[argIndex]
-                lx.out(self.store_in_arg_value(command, argIndex, argValue))
                 arg.value = self.store_in_arg_value(command, argIndex, argValue)
 
             # Notify the TreeView to update itself.
@@ -243,26 +242,51 @@ class CommandClass(replay.commander.CommanderClass):
 
             hints = None
             default = None
+            attrs = None
+            argTypeName = None
 
             # Get from command attributes
-            attrs = command.attributesObject()
-            argTypeName = attrs.TypeName(argIndex)
-            default = attrs.GetString(argIndex)
+            try:
+                attrs = command.attributesObject()
+                default = attrs.GetString(argIndex)
+                argTypeName = attrs.TypeName(argIndex)
 
-            if argTypeName == lx.symbol.sTYPE_INTEGER:
-                hints = attrs.Hints(argIndex)
-                if len(hints) == 0:
-                    hints = None
-
-            # If nothing is found get from attrs.Type
-            if not argTypeName:
-                lookup = [
-                    lx.symbol.sTYPE_STRING, # generic object
-                    lx.symbol.sTYPE_INTEGER,
-                    lx.symbol.sTYPE_FLOAT,
-                    lx.symbol.sTYPE_STRING
-                ]
-                argTypeName = lookup[attrs.Type(argIndex)]
+                if argTypeName == lx.symbol.sTYPE_INTEGER:
+                    hints = attrs.Hints(argIndex)
+                    if len(hints) == 0:
+                        hints = None
+                        
+                # If nothing is found get from attrs.Type
+                if not argTypeName:
+                    lookup = [
+                        lx.symbol.sTYPE_STRING, # generic object
+                        lx.symbol.sTYPE_INTEGER,
+                        lx.symbol.sTYPE_FLOAT,
+                        lx.symbol.sTYPE_STRING
+                    ]
+                    argTypeName = lookup[attrs.Type(argIndex)]
+            except:
+                try:
+                    attrs = command.newAttributesObject()
+                    default = command.args[argIndex].value
+                    argTypeName = attrs.TypeName(argIndex)
+                    if argTypeName == lx.symbol.sTYPE_INTEGER:
+                        hints = attrs.Hints(argIndex)
+                        if len(hints) == 0:
+                            hints = None
+                            
+                    # If nothing is found get from attrs.Type
+                    if not argTypeName:
+                        lookup = [
+                            lx.symbol.sTYPE_STRING, # generic object
+                            lx.symbol.sTYPE_INTEGER,
+                            lx.symbol.sTYPE_FLOAT,
+                            lx.symbol.sTYPE_STRING
+                        ]
+                        argTypeName = lookup[attrs.Type(argIndex)]
+                except:
+                    default = command.args[argIndex].value
+                    argTypeName = lx.symbol.sTYPE_STRING
 
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))
