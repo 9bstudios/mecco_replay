@@ -1,6 +1,7 @@
 # python
 
 import lx, lxifc, traceback
+import json
 from TreeNode import TreeNode
 from TreeView import TreeView
 from TreeView import DROPSERVERUNIQUEKEY
@@ -17,6 +18,16 @@ class DropServer(lxifc.Drop):
         # Create a value array for dest
         vaDest = lx.object.ValueArray()
         vaDest.set(dest)
+        
+        source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
+        dest_path = json.loads(vaDest.GetString(1))
+
+        lumberjack = Lumberjack()        
+        source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
+        dest_node = lumberjack.node_for_path(dest_path)
+        
+        if not dest_node.parent.canAcceptDrop(source_nodes):
+            return
         
         # Check unique key
         if not self.check_key(vaSource) or not self.check_key(vaDest):
@@ -42,28 +53,19 @@ class DropServer(lxifc.Drop):
         if not self.check_key(vaSource) or not self.check_key(vaDest):
             return
 
-        source_indices = [vaSource.GetInt(idx) for idx in xrange(1, vaSource.Count())]
-
-        dest_index = vaDest.GetInt(1) 
+        source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
+        dest_path = json.loads(vaDest.GetString(1))
 
         lumberjack = Lumberjack()
 
-        # Checking dest_index range
-        if dest_index >= len(lumberjack.children):
-            return
-
-        for index in source_indices:
-            if index >= len(lumberjack.children):
-                return
-
         # Collect all selected children
-        children = list()
-        for index in source_indices:
-            children.append(lumberjack.children[index])
+        source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
 
         # Move children
-        for child in children:
-            child.index = dest_index
+        for source in source_nodes:
+            source.path = dest_path
+#            source.parent.children.remove(self)
+#            dest_node.parent.children.insert(dest_path[-1], source)
 
         lumberjack.rebuild_view()
        
@@ -72,7 +74,7 @@ class DropServer(lxifc.Drop):
 
     @classmethod
     def check_key(cls, va):
-        if va.Count() > 1 and va.GetInt(0) == DROPSERVERUNIQUEKEY:
+        if va.Count() > 1 and va.GetString(0) == DROPSERVERUNIQUEKEY:
             return True
         return False
        
@@ -173,6 +175,14 @@ class Lumberjack(object):
 
     class _DropServer(DropServer):
         pass
+        
+    class _RootNode(TreeNode):
+        def __init__(self, **kwargs):
+            super(self.__class__, self).__init__(**kwargs)
+        
+        def canAcceptDrop(self, source_nodes):
+            return True
+            
 
     _root = None
     _tree_view = None
@@ -295,7 +305,7 @@ class Lumberjack(object):
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        Lumberjack._root = TreeNode(
+        Lumberjack._root = Lumberjack._RootNode(
             column_definitions = column_definitions.get('list', []),
             controller = cls()
         )
