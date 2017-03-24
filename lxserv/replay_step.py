@@ -16,7 +16,12 @@ class CommandClass(replay.commander.CommanderClass):
             return
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoLineColor())
+            step = UndoStep()
+            try:
+                step.undo_Forward()
+            except:
+                return
+            undo_svc.Record(step)
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
@@ -25,7 +30,7 @@ class CommandClass(replay.commander.CommanderClass):
             return False
         return all(node.canEval() for node in replay.Macro().selected_descendants)
 
-class UndoLineColor(lxifc.Undo):
+class UndoStep(lxifc.Undo):
     def __init__(self):
         # Indices to save for undo operation
         self.m_prev_path = []
