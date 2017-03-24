@@ -439,3 +439,4 @@ class Macro(lumberjack.Lumberjack):
         # After drag and drop update suppress state
         for node in source_nodes:
             node.update_suppress_for_node_and_descendants()
+            

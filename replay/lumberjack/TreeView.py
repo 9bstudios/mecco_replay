@@ -481,9 +481,9 @@ class TreeView( lxifc.TreeView,
         
         # Add target index
         if location == 2:
-            idx = self.m_currentIndex
+            idx = self.m_currentIndex + 1
         else:
-            idx = self.m_currentIndex - 1
+            idx = self.m_currentIndex
             
         va.AddString(json.dumps(self.m_currentNode.children[idx].path))
 

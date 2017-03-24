@@ -470,10 +470,14 @@ class TreeNode(object):
         def fset(self, value):
             assert(len(value) != 0), "Cannot move root node"
             lumberjack = self._controller
-            self.parent.children.remove(self)
+            
+            # saving parent and target because self.parent.children.remove(self) may invalidate indices
             new_parent = lumberjack.node_for_path(value[:-1])
-            self.parent = new_parent            
-            new_parent.children.insert(value[-1], self)
+            target_node = new_parent.children[value[-1]]
+            
+            self.parent.children.remove(self)
+            self.parent = new_parent  
+            new_parent.children.insert(target_node.index, self)
             
         return locals()
         
