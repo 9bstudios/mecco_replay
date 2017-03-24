@@ -25,13 +25,13 @@ class CommandClass(replay.commander.CommanderClass):
             return False
         if not replay.Macro().selected_descendants:
             return False
-        return True
+        return all(node.canEval() for node in replay.Macro().selected_descendants)
 
 class UndoLineColor(lxifc.Undo):
     def __init__(self):
         # Indices to save for undo operation
-        self.m_prev_index = -1
-        self.m_next_index = -1
+        self.m_prev_path = []
+        self.m_next_path = []
 
     def undo_Forward(self):
         macro = replay.Macro()
@@ -39,13 +39,13 @@ class UndoLineColor(lxifc.Undo):
 
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
             # Execute primary command and store indices for undo
-            self.m_prev_index, self.m_next_index = macro.run_next_line()
+            self.m_prev_path, self.m_next_path = macro.run_next_line()
         else:
             # This means undo_Forward is executing second time and user doing redo
             # operations. In this case since redo of executed operation will do actual
             # job we only need to move primary node one step down.
-            macro.children[self.m_next_index].selected = True
-            macro.children[self.m_prev_index].selected = False
+            macro.node_for_path(self.m_next_path).selected = True
+            macro.node_for_path(self.m_prev_path).selected = False
         macro.refresh_view()
 
         notifier = replay.Notifier()
@@ -55,8 +55,8 @@ class UndoLineColor(lxifc.Undo):
         macro = replay.Macro()
         # Undo of executed operation will revert the modifications
         # so we only need to move primary node one step up
-        macro.children[self.m_prev_index].selected = True
-        macro.children[self.m_next_index].selected = False
+        macro.node_for_path(self.m_prev_path).selected = True
+        macro.node_for_path(self.m_next_path).selected = False
 
         macro.refresh_view()
         notifier = replay.Notifier()

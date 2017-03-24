@@ -62,6 +62,9 @@ class MacroBlockCommand(lumberjack.TreeNode):
     def draggable(self):
         return True
         
+    def canEval(self):
+        return not self.suppress
+        
     def canAcceptDrop(self, source_nodes):
         # Block can accept only commands if we are not allowing nested blocks
         return all(isinstance(node, MacroCommand) for node in source_nodes)

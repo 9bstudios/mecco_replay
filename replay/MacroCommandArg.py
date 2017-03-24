@@ -135,6 +135,9 @@ class MacroCommandArg(lumberjack.TreeNode):
         return locals()
 
     argExample = property(**argExample())
+    
+    def canEval(self):
+        return False
 
     def retreive_arg_meta(self):
         """Retrieve a list of arguments and datatypes from MODO's commandservice.

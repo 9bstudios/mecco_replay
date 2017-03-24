@@ -347,37 +347,39 @@ class Macro(lumberjack.Lumberjack):
 
         # Select the primary command:
         command = self.primary
-        start_index = command.index
+        start_path = command.path
 
         while command is not None and command.suppress:
             command.selected = False
-            index = command.index + 1
-            if index == len(self.commands): index = 0
-            if index == start_index:
+            path = command.path
+            path[-1] += 1
+            if path[-1] == len(command.parent.children): path[-1] = 0
+            if path == start_path:
                 # All commands are suppresed
                 return None
-            command = self.commands[index]
+            command = self.node_for_path(path)
 
         # If there's a primary selected command, run it:
         if command:
             command.run()
         else:
-			return
+			return None
 
         # Get the index for the next command, which will now be the primary one:
-        next_command_index = self.commands.index(command) + 1
-        if next_command_index == len(self.commands): next_command_index = 0
+        next_command_path = command.path
+        next_command_path[-1] += 1
+        if next_command_path[-1] == len(command.parent.children): next_command_path[-1] = 0
 
-        while self.commands[next_command_index].suppress:
-            next_command_index = next_command_index + 1
-            if next_command_index == len(self.commands): next_command_index = 0
+        while self.node_for_path(next_command_path).suppress:
+            next_command_path[-1] += 1
+            if next_command_path[-1] == len(command.parent.children): next_command_path[-1] = 0
 
         # Set as primary the next command:
         command.selected = False
-        prev_index = command.index
-        self.commands[next_command_index].selected = True
-        new_index = next_command_index
-        return (prev_index, new_index)
+        prev_path = command.path
+        self.node_for_path(next_command_path).selected = True
+        new_path = next_command_path
+        return (prev_path, new_path)
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""

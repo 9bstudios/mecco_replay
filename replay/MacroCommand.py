@@ -65,6 +65,9 @@ class MacroCommand(lumberjack.TreeNode):
         
     def draggable(self):
         return True
+        
+    def canEval(self):
+        return not self.suppress
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
