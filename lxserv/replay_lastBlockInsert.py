@@ -23,7 +23,12 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
         if len(cache.commands) == 0:
             return
 
-        macro.add_block(block = cache.commands, name = "<unnamed>", index = idx)
+        if len(cache.commands) == 1:
+            macro.add_command(command = cache.commands[0], index = idx)
+
+        if len(cache.commands) > 1:
+            macro.add_block(block = cache.commands, name = "", index = idx)
+            
         macro.unsaved_changes = True
         idx += 1
 

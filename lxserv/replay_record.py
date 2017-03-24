@@ -91,7 +91,7 @@ class CmdListener(lxifc.CmdSysListener):
         if self.valid_for_record(cmd):
             self.total_depth += 1
             self.debug_path.append(cmd.Name())
-            
+
     def callId(self, cmd):
         cmd = lx.object.Command(cmd)
         attrs = lx.object.Attributes(cmd)
@@ -100,7 +100,7 @@ class CmdListener(lxifc.CmdSysListener):
 
         for idx in xrange(0, attrs.Count()):
             if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_VARIABLE == 0:
-                res.append(attrs.GetString(idx)) 
+                res.append(attrs.GetString(idx))
 
         return tuple(res)
 
@@ -171,10 +171,9 @@ class CmdListener(lxifc.CmdSysListener):
 
         if self.block_depth == 0:
             self.debug_path_print("End Recorded Block")
-            self.record_in_block = False
-            if replay.RecordingCache().commands:
-                lx.eval("replay.lastBlockInsert")
-                replay.RecordingCache().clear()
+            # If refiring, wait to end block until we get to cmdsysevent_RefireEnd()
+            if not self.refiring:
+                self.closeBlock()
         else:
             self.debug_path_print("End Ignored Block")
 
@@ -209,6 +208,16 @@ class CmdListener(lxifc.CmdSysListener):
         for cmd_id in self.refire_order:
             self.debug_print("Adding refired: " + str(cmd_id))
             self.sendCommand(self.refire_last[cmd_id])
+
+        # In case we're inside a block (see `BlockEnd` above), end it.
+        if self.record_in_block:
+            self.closeBlock()
+
+    def closeBlock(self):
+        self.record_in_block = False
+        if replay.RecordingCache().commands:
+            lx.eval("replay.lastBlockInsert")
+            replay.RecordingCache().clear()
 
     def sendCommand(self, cmd):
         if self.record_in_block:
