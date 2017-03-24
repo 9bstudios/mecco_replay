@@ -1,10 +1,11 @@
 # python
 
 import lxifc, lx
+import json
 
 DROPSOURCE_COMMAND = "replay_command"
 DROP_SERVER = "replay_dropserver"
-DROPSERVERUNIQUEKEY = 118319
+DROPSERVERUNIQUEKEY = "118319"
 
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
@@ -430,7 +431,7 @@ class TreeView( lxifc.TreeView,
         """
         if columnIndex != 0:
             return ""
-        if self.m_currentNode == self._root:
+        if all(node.draggable() for node in self._root.selected_descendants):
             return DROPSOURCE_COMMAND
         else:
             return ""
@@ -444,18 +445,19 @@ class TreeView( lxifc.TreeView,
 
         # Create a string value object.
         cmd_svc = lx.service.Command ()
-        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_INTEGER)
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
     
         # Create a value array so we can access it.
         va = lx.object.ValueArray ()
         va.set(vaQuery)
 
         # Add unique key
-        va.AddInt(DROPSERVERUNIQUEKEY)
+        va.AddString(DROPSERVERUNIQUEKEY)
 
         # Add selected children indices
-        for child in self._root.selected_children:
-            va.AddInt(child.index)
+        for child in self._root.selected_descendants:
+            assert(child.draggable())
+            va.AddString(json.dumps(child.path))
     
         return va
 
@@ -468,20 +470,22 @@ class TreeView( lxifc.TreeView,
 
         # Create a string value object.
         cmd_svc = lx.service.Command ()
-        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_INTEGER)
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
     
         # Create a value array so we can access it.
         va = lx.object.ValueArray ()
         va.set(vaQuery)
 
         # Add unique key
-        va.AddInt(DROPSERVERUNIQUEKEY)
+        va.AddString(DROPSERVERUNIQUEKEY)
         
         # Add target index
         if location == 2:
-            va.AddInt(self.m_currentIndex)
+            idx = self.m_currentIndex
         else:
-            va.AddInt(self.m_currentIndex - 1)
+            idx = self.m_currentIndex - 1
+            
+        va.AddString(json.dumps(self.m_currentNode.children[idx].path))
 
         return va
     # --------------------------------------------------------------------------------------------------

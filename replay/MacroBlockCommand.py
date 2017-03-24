@@ -58,6 +58,13 @@ class MacroBlockCommand(lumberjack.TreeNode):
             self.parse_json(kwargs.get('block_json'), **kwargs)
         elif kwargs.get('block'):
             self.add_commands(**kwargs)
+            
+    def draggable(self):
+        return True
+        
+    def canAcceptDrop(self, source_nodes):
+        # Block can accept only commands if we are not allowing nested blocks
+        return all(isinstance(node, MacroCommand) for node in source_nodes)
         
     def add_commands(self, **kwargs):
         idx = 0

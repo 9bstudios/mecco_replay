@@ -62,6 +62,9 @@ class MacroCommand(lumberjack.TreeNode):
         svc_ = lx.service.Command()
         x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
         return lx.object.Command(cmd)
+        
+    def draggable(self):
+        return True
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."

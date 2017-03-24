@@ -84,6 +84,7 @@ class TreeNode(object):
         # Controller is added during blessing. Should never change thereafter.
         if 'controller' in kwargs:
             self.__class__._controller = kwargs.get('controller')
+            TreeNode._controller = kwargs.get('controller')
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
@@ -355,6 +356,12 @@ class TreeNode(object):
 
     # METHODS
     # ----------
+    
+    def draggable(self):
+        return False
+        
+    def canAcceptDrop(self, source_nodes):
+        return False
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
@@ -459,6 +466,14 @@ class TreeNode(object):
                 return []
             else:
                 return self.parent.path + [self.index]
+                
+        def fset(self, value):
+            assert(len(value) != 0), "Cannot move root node"
+            lumberjack = self._controller
+            self.parent.children.remove(self)
+            new_parent = lumberjack.node_for_path(value[:-1])
+            self.parent = new_parent            
+            new_parent.children.insert(value[-1], self)
             
         return locals()
         
