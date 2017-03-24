@@ -189,8 +189,8 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return locals()
 
     user_comment_before = property(**user_comment_before())
-    
-    def render_LXM(self):
+
+    def render_LXM_Python(self, renderName):
         """Construct MODO command string from stored internal parts. Also adds comments"""
         res = list(self.comment_before)
         if self.direct_suppress:
@@ -198,27 +198,20 @@ class MacroBlockCommand(lumberjack.TreeNode):
         res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.original_name)
 
         for command in self.children:
-            lines = command.render_LXM()
+            render = getattr(command, renderName)
+            assert(render != None)
+            lines = render()
             for line in lines:
                 res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
         
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
-        return res
+        return res        
+    
+    def render_LXM(self):
+        return self.render_LXM_Python('render_LXM')
         
     def render_Python(self):
-        """Construct MODO command strings wrapped in lx.eval() for each nested command."""
-        res = list(self.comment_before)
-        if self.direct_suppress:
-            res.append("# replay suppress:")
-        res.append("#Command Block Begin: %s" % self.original_name)
-
-        for command in self.children:
-            lines = command.render_Python()
-            for line in lines:
-                res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
-        
-        res.append("#Command Block End: %s" % self.original_name)
-        return res
+        return self.render_LXM_Python('render_Python')
         
     def render_json(self):
         """Construct MODO command string in json format for each nested command."""
