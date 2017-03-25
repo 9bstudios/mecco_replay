@@ -27,7 +27,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
         self.columns['command'] = lumberjack.TreeValue()
         self.columns['command'].display_value = ''
         self.columns['command'].input_region = None
-        
+
         # Create default enable value object and set formatting
         self.columns['enable'] = lumberjack.TreeValue()
         # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
@@ -47,28 +47,27 @@ class MacroBlockCommand(lumberjack.TreeNode):
         if kwargs.get('suppress') != None:
             self.direct_suppress = kwargs.get('suppress')
 
-        if kwargs.get('name') != None:
-            self.original_name = kwargs.get('name')
-            
+        self.original_name = kwargs.get('name', "")
+
         self.user_comment_before = []
         if bool(kwargs.get('comment')):
             self.user_comment_before = kwargs.get('comment')
-            
+
         if kwargs.get('block_json'):
             self.parse_json(kwargs.get('block_json'), **kwargs)
         elif kwargs.get('block'):
             self.add_commands(**kwargs)
-            
+
     def draggable(self):
         return True
-        
+
     def canEval(self):
         return not self.suppress
-        
+
     def canAcceptDrop(self, source_nodes):
         # Block can accept only commands if we are not allowing nested blocks
         return all(isinstance(node, MacroCommand) for node in source_nodes)
-        
+
     def add_commands(self, **kwargs):
         idx = 0
         for cmd in kwargs.get('block'):
@@ -88,7 +87,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return locals()
 
     block_name = property(**block_name())
-    
+
     def original_name():
         def fget(self):
             return self._original_name
@@ -99,13 +98,13 @@ class MacroBlockCommand(lumberjack.TreeNode):
         return locals()
 
     original_name = property(**original_name())
-    
+
     def can_change_suppress(self):
         if hasattr(self.parent, 'suppress'):
             return not self.parent.suppress
         else:
             return True
-    
+
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):
             if not self.suppress:
@@ -122,7 +121,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
                 # self.columns['enable'].icon_resource = None
                 self.columns['name'].color.special_by_name('gray')
                 self.columns['prefix'].color.special_by_name('gray')
-        
+
         for child in self.children:
             if hasattr(child, 'suppress'):
                 child.update_suppress_for_node_and_descendants()
@@ -131,7 +130,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
         doc = "Boolean. True if command suppressed directly not by suppressing block."
         def fget(self):
             return self._suppress
-            
+
         def fset(self, is_suppressed):
             # Set the internal _suppress value. This value is used when we do things
             # like render to LXM, etc.
@@ -141,7 +140,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
             self.update_suppress_for_node_and_descendants()
 
         return locals()
-        
+
     direct_suppress = property(**direct_suppress())
 
     def suppress():
@@ -150,7 +149,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
             if hasattr(self.parent, 'suppress'):
                 return self._suppress or self.parent.suppress
             return self._suppress
-            
+
         return locals()
 
     suppress = property(**suppress())
@@ -213,16 +212,16 @@ class MacroBlockCommand(lumberjack.TreeNode):
             lines = render()
             for line in lines:
                 res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
-        
+
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
-        return res        
-    
+        return res
+
     def render_LXM(self):
         return self.render_LXM_Python('render_LXM')
-        
+
     def render_Python(self):
         return self.render_LXM_Python('render_Python')
-        
+
     def render_json(self):
         """Construct MODO command string in json format for each nested command."""
         commands = list()
@@ -231,17 +230,17 @@ class MacroBlockCommand(lumberjack.TreeNode):
             commands.append(command)
 
         return {"command block" : {"name" : self.original_name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
-        
+
     def parse_json(self, json_struct, **kwargs):
         attributes = json_struct['command block']
         self.original_name = attributes['name']
         self.direct_suppress = attributes['suppress']
         self.comment_before = attributes['comment']
-        
+
         kwargs.pop('block', None)
         kwargs.pop('command_json', None)
         kwargs.pop('block_json', None)
-        
+
         index = 0
         for command in attributes['commands']:
             kwargs['index'] = index
@@ -251,10 +250,10 @@ class MacroBlockCommand(lumberjack.TreeNode):
             else:
                 self._controller.add_child(block = [], block_json = command, **kwargs)
             index += 1
-            
+
     def run(self):
         """Runs the command."""
-        
+
         if self.suppress:
             return
 
