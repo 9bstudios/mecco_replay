@@ -239,11 +239,11 @@ class CmdListener(lxifc.CmdSysListener):
         self.armed = True
 
     def debug_path_print(self, msg):
-        # return
+        return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
-        # return
+        return
         lx.out(msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):
