@@ -2,6 +2,7 @@
 
 import lx, re, os
 import json
+import copy
 import lumberjack
 from MacroCommand import MacroCommand
 from MacroBlockCommand import MacroBlockCommand
@@ -163,10 +164,10 @@ class Macro(lumberjack.Lumberjack):
     is_empty = property(**is_empty())
 
     def add_command(self, **kwargs):
-        return self.add_child(type='command', **kwargs)
+        return kwargs.get('receiver', self).add_child(type='command', **kwargs)
 
     def add_block(self, **kwargs):
-        return self.add_child(type='block', **kwargs)
+        return kwargs.get('receiver', self).add_child(type='block', **kwargs)
 
     def select_event_treeview(self):
         """Fires whenever the TreeView detects a user selection event."""
@@ -191,25 +192,53 @@ class Macro(lumberjack.Lumberjack):
         self.root.deselect_descendants()
         self.root.children[index].selected = True
 
-    def parse(self, input_path):
+    def parse(self, mode, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
-        self.root.deselect_descendants()
-        self.root.delete_descendants()
 
-        format_name = self._parse_and_insert(input_path)
+        class TmpCommandCache:
+            def __init__(self):
+                self.child_args = []
+                
+            def add_child(self, **kwargs):
+                tmp = dict(kwargs)
+                # Need to remove receiver before deepcopy
+                tmp.pop('receiver', None)
+                self.child_args.append(copy.deepcopy(tmp))
+                
+            def children_create_args(self):
+                for args in self.child_args:
+                    yield args
+                
+        cache = TmpCommandCache()
+
+        if mode == 'open':
+            format_name = self._parse_and_insert(input_path, receiver=cache)
+        elif mode == 'insert':
+            format_name = self.parse_and_insert(input_path, receiver=cache)
+        else:
+            raise Exception("Wrong mode")
+        
+        if mode == 'open':
+            self.root.deselect_descendants()
+            self.root.delete_descendants()
+        
+        for kwargs in cache.children_create_args():
+            self.add_child(**kwargs)
 
         # Store file path and extension
-        self.file_path = input_path
-        self.file_format = format_name
-        self.select(0)
+        if mode == 'open':
+            self.file_path = input_path
+            self.file_format = format_name
+            if len(self.children) != 0:
+                self.select(0)
 
-    def parse_and_insert(self, input_path):
+    def parse_and_insert(self, input_path, **kwargs):
         if self.primary is None:
             # If there's no primary node, insert at zero
-            self._parse_and_insert(input_path, index=0)
+            self._parse_and_insert(input_path, index=0, **kwargs)
         else:
             # If there's a primary node, insert right after it
-            self._parse_and_insert(input_path, index=self.primary.index+1)
+            self._parse_and_insert(input_path, index=self.primary.index+1, **kwargs)
 
     def _parse_and_insert(self, input_path, **kwargs):
         """Parse a macro file and store its commands in the `commands` property."""
@@ -231,22 +260,6 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.parse_LXM(input_path, **kwargs)
         return format_name
-        
-    def is_block_start(self, input_line):
-        block = re.search(r'#Command Block Begin: (\S+)\s*', input_line)
-
-        if block is None:
-            return None
-          
-        return block.group(1)
-        
-    def is_block_end(self, input_line):
-        block = re.search(r'#Command Block End: (\S+)\s*', input_line)
-
-        if block is None:
-            return None
-          
-        return block.group(1)
 
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
@@ -296,7 +309,7 @@ class Macro(lumberjack.Lumberjack):
                 self.comments.append(comment)
                 
         parser = LXMParser()
-        builder = MacroTreeBuilder(self)
+        builder = MacroTreeBuilder(self, **kwargs)
         parser.parse(input_path, builder)
             
         

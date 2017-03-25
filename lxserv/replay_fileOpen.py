@@ -55,14 +55,17 @@ class CommandClass(replay.commander.CommanderClass):
             self.__class__._path = input_path
 
         # Parse the file in replay.Macro() and rebuild the view:
-        macro.parse(input_path)
-        macro.rebuild_view()
-
-        # Add to recently-opened
-        lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
-
-        notifier = replay.Notifier()
-        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+        try:
+            macro.parse('open', input_path)
+            # If successfully parsed add to recently-opened
+            lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
+        except Exception as err:
+            modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
+            
+        finally:
+            macro.rebuild_view()
+            notifier = replay.Notifier()
+            notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def basic_Enable(self, msg):
         return True
