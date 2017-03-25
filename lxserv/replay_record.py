@@ -1,4 +1,4 @@
-import lx, lxifc, modo, replay
+import lx, lxifc, modo, replay, re
 from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
@@ -256,16 +256,51 @@ def replay_record_kill(dialog_title, dialog_msg):
 def replay_lastBlockInsert():
     lx.eval("replay.lastBlockInsert")
     replay.RecordingCache().clear()
+    
+def wrap_quote(value):
+    if re.search(r"\W", value):
+        return "\"{0}\"".format(value)
+    else:
+        return value
+    
+def commandString(cmd):
+    svc = lx.service.Command()
+    attrs = lx.object.Attributes(cmd)
+    res = svc.ExecFlagsAsPrefixString(cmd.PostExecBehaviorFlags()) + cmd.Name()
+    def_found = False
+    for idx in range(0, attrs.Count()):
+        if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_VALUE_SET == 0:
+            def_found = True
+            continue
+        if def_found:
+            res += " " + attrs.Name(idx) + ":"
+        else:
+            res += " "
+        type = attrs.Type(idx)
+        if type == lx.symbol.i_TYPE_FLOAT:
+            res += repr(attrs.GetFlt(idx))
+        elif type == lx.symbol.i_TYPE_INTEGER:
+            val = attrs.GetInt(idx)
+            if attrs.TypeName(idx) == lx.symbol.sTYPE_BOOLEAN:
+                val = "true" if val != 0 else 'false'
+            else:
+                for ival, name in attrs.Hints(idx):
+                    if ival == val:
+                        val = name
+                        break
+            res += wrap_quote(str(val))
+        else:
+            # type == lx.symbol.i_TYPE_STRING: and more
+            res += wrap_quote(attrs.GetString(idx))
+    return res
 
 def replay_lineInsert(cmd):
-    svc_command = lx.service.Command()
-
     try:
         button_name = " {%s}" % cmd.ButtonName()
     except:
         button_name = ""
 
-    command_string = svc_command.ArgsAsStringLen(cmd, True).replace("?", "\q")
+    command_string = commandString(cmd).replace("?", "\q")
 
     lx.eval("replay.lineInsertQuiet {%s}%s" % (command_string, button_name))
 
