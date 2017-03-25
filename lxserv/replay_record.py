@@ -259,11 +259,15 @@ def replay_lastBlockInsert():
 
 def replay_lineInsert(cmd):
     svc_command = lx.service.Command()
+
     try:
         button_name = " {%s}" % cmd.ButtonName()
     except:
         button_name = ""
-    lx.eval("replay.lineInsertQuiet {%s}%s" % (svc_command.ArgsAsStringLen(cmd, True), button_name))
+
+    command_string = svc_command.ArgsAsStringLen(cmd, True).replace("?", "\q")
+
+    lx.eval("replay.lineInsertQuiet {%s}%s" % (command_string, button_name))
 
 
 class MyOnIdleVisitor (lxifc.Visitor):

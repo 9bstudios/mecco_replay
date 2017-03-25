@@ -28,7 +28,7 @@ class LineInsertClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
         # Get script
-        script = self.commander_arg_value(0)
+        script = self.commander_arg_value(0).replace("\q","?")
         ButtonName = self.commander_arg_value(1)
 
         macro = replay.Macro()
