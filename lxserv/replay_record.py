@@ -1,10 +1,8 @@
-import lx, modo, replay
+import lx, lxifc, modo, replay
 from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
-
-import lxifc, modo, lx
 
 # The hardest part is going to be dealing with undos.  If the user executes 2 commands,
 # undoes one, and then executes another command, presumably you don't want to record
@@ -17,6 +15,7 @@ import lxifc, modo, lx
 # the post command.  I think there might be some other special cases, though.
 
 class CmdListener(lxifc.CmdSysListener):
+    lazy_queue = {}
 
     def __init__(self):
         self.svc_listen = lx.service.Listener()
@@ -35,6 +34,8 @@ class CmdListener(lxifc.CmdSysListener):
         self.total_depth = 0
         self.tool_doApply = False
         self.record_in_block = False
+
+        self.death_knell = False
 
         # A list of sub-commands and blocks for debug printing.
         self.debug_path = []
@@ -68,8 +69,12 @@ class CmdListener(lxifc.CmdSysListener):
         # We cannot record undo/redo. There is no reliable method of doing so.
         # Instead, we simply stop recording.
         if cmd.Name() in ['app.undo', 'app.redo']:
-            modo.dialogs.alert(message("MECCO_REPLAY", "UNDO_DURING_RECORDING"), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
-            lx.eval('replay.record stop')
+            if isResult:
+                self.queue_lazy_visitor(
+                    replay_record_kill,
+                    message("MECCO_REPLAY", "UNDO_DURING_RECORDING"),
+                    message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name())
+                )
             return False
 
         # We cannot record interactive selections (i.e. clicking in the viewport to select).
@@ -77,8 +82,11 @@ class CmdListener(lxifc.CmdSysListener):
         # NOTE: This can cause crashes. Be careful.
         if cmd.Name() in ['select.paint', 'select.lasso']:
             if isResult:
-                modo.dialogs.alert(message("MECCO_REPLAY", "INTERACTIVE_DURING_RECORDING"), message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name()))
-                lx.eval('replay.record stop')
+                self.queue_lazy_visitor(
+                    replay_record_kill,
+                    message("MECCO_REPLAY", "INTERACTIVE_DURING_RECORDING"),
+                    message("MECCO_REPLAY", "CANNOT_RECORD_MSG", cmd.Name())
+                )
             return False
 
         # If we pass all of the above tests, we're good to record.
@@ -216,27 +224,22 @@ class CmdListener(lxifc.CmdSysListener):
     def closeBlock(self):
         self.record_in_block = False
         if replay.RecordingCache().commands:
-            lx.eval("replay.lastBlockInsert")
-            replay.RecordingCache().clear()
+            self.queue_lazy_visitor(replay_lastBlockInsert)
 
     def sendCommand(self, cmd):
         if self.record_in_block:
             svc_command = lx.service.Command()
             replay.RecordingCache().add_command(svc_command.ArgsAsStringLen(cmd, True))
         else:
-            self.replay_lineInsert(cmd)
+            self.queue_lazy_visitor(replay_lineInsert, cmd)
 
-    def replay_lineInsert(self, cmd):
-        svc_command = lx.service.Command()
-        self.armed = False
+    @classmethod
+    def queue_lazy_visitor(cls, todo_function, *args, **kwargs):
+        visitor = MyOnIdleVisitor(todo_function, *args, **kwargs)
 
-        try:
-            button_name = " {%s}" % cmd.ButtonName()
-        except:
-            button_name = ""
-
-        lx.eval("replay.lineInsertQuiet {%s}%s" % (svc_command.ArgsAsStringLen(cmd, True), button_name))
-        self.armed = True
+        if visitor.arm():
+            pfm_svc = lx.service.Platform()
+            pfm_svc.DoWhenUserIsIdle(visitor, lx.symbol.fUSERIDLE_CMD_STACK_EMPTY)
 
     def debug_path_print(self, msg):
         return
@@ -245,6 +248,45 @@ class CmdListener(lxifc.CmdSysListener):
     def debug_print(self, msg):
         return
         lx.out(msg)
+
+def replay_record_kill(dialog_title, dialog_msg):
+    lx.eval('replay.record stop')
+    modo.dialogs.alert(dialog_title, dialog_msg)
+
+def replay_lastBlockInsert():
+    lx.eval("replay.lastBlockInsert")
+    replay.RecordingCache().clear()
+
+def replay_lineInsert(cmd):
+    svc_command = lx.service.Command()
+    try:
+        button_name = " {%s}" % cmd.ButtonName()
+    except:
+        button_name = ""
+    lx.eval("replay.lineInsertQuiet {%s}%s" % (svc_command.ArgsAsStringLen(cmd, True), button_name))
+
+
+class MyOnIdleVisitor (lxifc.Visitor):
+    def __init__(self, todo_function, *args, **kwargs):
+        self.todo_function = todo_function
+        self.args = args
+        self.kwargs = kwargs
+        self.reset ()
+
+    def reset (self):
+        self._armed = False
+
+    def arm (self):
+        if not self._armed:
+            self._armed = True
+            return True
+        return False
+
+    def vis_Evaluate (self):
+        if self._armed:
+            self.todo_function(*self.args, **self.kwargs)
+        self.reset ()
+
 
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
