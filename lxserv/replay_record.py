@@ -229,15 +229,21 @@ class CmdListener(lxifc.CmdSysListener):
     def replay_lineInsert(self, cmd):
         svc_command = lx.service.Command()
         self.armed = False
-        lx.eval("replay.lineInsertQuiet {%s}" % svc_command.ArgsAsStringLen(cmd, True))
+
+        try:
+            button_name = " {%s}" % cmd.ButtonName()
+        except:
+            button_name = ""
+
+        lx.eval("replay.lineInsertQuiet {%s}%s" % (svc_command.ArgsAsStringLen(cmd, True), button_name))
         self.armed = True
 
     def debug_path_print(self, msg):
-        # return
+        return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
-        # return
+        return
         lx.out(msg)
 
 class RecordCommandClass(replay.commander.CommanderClass):

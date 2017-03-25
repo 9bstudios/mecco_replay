@@ -52,30 +52,33 @@ class MacroCommand(lumberjack.TreeNode):
             self.parse_string(kwargs.get('command'), kwargs.get('comment'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
-            
+
+        if bool(kwargs.get('ButtonName')):
+            self.columns['name'].value = kwargs.get('ButtonName')
+
     def attributesObject(self):
         svc_ = lx.service.Command()
         x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
         return lx.object.Attributes(cmd)
-        
+
     def commandObject(self):
         svc_ = lx.service.Command()
         x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
         return lx.object.Command(cmd)
-        
+
     def newCommandObject(self):
         svc_ = lx.service.Command()
         cmd = svc_.Spawn(0, self.render_LXM_without_comment())
         return lx.object.Command(cmd)
-        
+
     def newAttributesObject(self):
         svc_ = lx.service.Command()
         cmd = svc_.Spawn(0, self.render_LXM_without_comment())
         return lx.object.Attributes(cmd)
-        
+
     def draggable(self):
         return True
-        
+
     def canEval(self):
         return not self.suppress
 
@@ -124,13 +127,13 @@ class MacroCommand(lumberjack.TreeNode):
         return locals()
 
     args = property(**args())
-    
+
     def can_change_suppress(self):
         if hasattr(self.parent, 'suppress'):
             return not self.parent.suppress
         else:
             return True
-    
+
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):
             if not self.suppress:
@@ -147,7 +150,7 @@ class MacroCommand(lumberjack.TreeNode):
                 # self.columns['enable'].icon_resource = None
                 self.columns['name'].color.special_by_name('gray')
                 self.columns['prefix'].color.special_by_name('gray')
-        
+
         for child in self.children:
             if hasattr(child, 'suppress'):
                 child.update_suppress_for_node_and_descendants()
@@ -156,7 +159,7 @@ class MacroCommand(lumberjack.TreeNode):
         doc = "Boolean. True if command suppressed directly not by suppressing block."
         def fget(self):
             return self._suppress
-            
+
         def fset(self, is_suppressed):
             # Set the internal _suppress value. This value is used when we do things
             # like render to LXM, etc.
@@ -166,7 +169,7 @@ class MacroCommand(lumberjack.TreeNode):
             self.update_suppress_for_node_and_descendants()
 
         return locals()
-        
+
     direct_suppress = property(**direct_suppress())
 
     def suppress():
@@ -175,7 +178,7 @@ class MacroCommand(lumberjack.TreeNode):
             if hasattr(self.parent, 'suppress'):
                 return self._suppress or self.parent.suppress
             return self._suppress
-            
+
         return locals()
 
     suppress = property(**suppress())
@@ -240,7 +243,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         if full_command is None:
             raise Exception("Wrong command")
-            
+
         # Get the suppress flag
         self.direct_suppress = suppress
 
@@ -473,7 +476,7 @@ class MacroCommand(lumberjack.TreeNode):
 
     def run(self):
         """Runs the command."""
-        
+
         if self.suppress:
             return
 

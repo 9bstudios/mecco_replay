@@ -16,6 +16,10 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'values_list': self.list_commands,
                 'values_list_type': 'sPresetText',
                 'flags':['query']
+            }, {
+                'name': 'ButtonName',
+                'datatype': 'string',
+                'flags':['optional']
             }
         ]
 
@@ -25,6 +29,7 @@ class LineInsertClass(replay.commander.CommanderClass):
     def commander_execute(self, msg, flags):
         # Get script
         script = self.commander_arg_value(0)
+        ButtonName = self.commander_arg_value(1)
 
         macro = replay.Macro()
 
@@ -37,7 +42,7 @@ class LineInsertClass(replay.commander.CommanderClass):
             idx = macro.primary.index + 1
 
         for line in script.split('\n'):
-            macro.add_command(command = line, index = idx)
+            macro.add_command(command = line, index = idx, ButtonName = ButtonName)
             macro.unsaved_changes = True
             idx += 1
 
