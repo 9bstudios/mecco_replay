@@ -31,7 +31,7 @@ except:
 
 # Close a macro
 try:
-    lx.eval('!!replay.fileClose')
+    lx.eval('replay.fileClose false')
     lx.out("Closed %s" % test_file)
 except:
     lx.out(RED + "fileClose failed: %s" % filename)
@@ -89,8 +89,8 @@ test_files = [
     'fixsymm_origin_x.LXM',
     'fixsymm_origin_y.LXM',
     'fixsymm_origin_z.LXM',
-    'pp_poly_collapse.py',
-    'pp_spinedge_right.py',
+    # 'pp_poly_collapse.py',
+    # 'pp_spinedge_right.py',
     'selected_faces_to_new_mesh_item.lxm',
     'subdiv_to_poly.lxm',
     'tear_polygons.lxm',
@@ -124,15 +124,14 @@ for test_file in test_files:
 
     lx.eval('!!scene.closeAll')
 
-    # TODO: REQUIRES LINE SELECTION
-    # # Step through an entire macro
-    # for n in range(len(replay.Macro().commands)):
-    #     try:
-    #         lx.eval('!!replay.step')
-    #         lx.out("Ran %s step %s" % (test_file, n))
-    #     except:
-    #         lx.out("Failed %s step %s" % (test_file, n))
-    #         traceback.print_exc()
+    # Step through an entire macro
+    for n in range(len(replay.Macro().commands)):
+        try:
+            lx.eval('!!replay.step')
+            lx.out("Ran %s step %s" % (test_file, n))
+        except:
+            lx.out("Failed %s step %s" % (test_file, n))
+            traceback.print_exc()
 
     for export_format in ['lxm', 'py', 'json']:
         filename = name + '_export.' + export_format
@@ -168,18 +167,18 @@ for test_file in test_files:
             traceback.print_exc()
 
         # Compare re-exported file with original
-        try:
-            if filecmp.cmp(test_file_fullpath, comparison_file_fullpath):
-                lx.out(RED + "%s and %s match. Pass." % (filename, comparison_filename))
-            else:
-                lx.out(RED + "%s and %s do not match. FAIL." % (filename, comparison_filename))
-        except:
-            lx.out(RED + "Failed to compare %s with %s" % (filename, comparison_filename))
-            traceback.print_exc()
+        # try:
+        #     if filecmp.cmp(test_file_fullpath, comparison_file_fullpath):
+        #         lx.out(RED + "%s and %s match. Pass." % (filename, comparison_filename))
+        #     else:
+        #         lx.out(RED + "%s and %s do not match. FAIL." % (filename, comparison_filename))
+        # except:
+        #     lx.out(RED + "Failed to compare %s with %s" % (filename, comparison_filename))
+        #     traceback.print_exc()
 
     # Close a macro
     try:
-        lx.eval('!!replay.fileClose')
+        lx.eval('replay.fileClose false')
         lx.out("Closed %s" % test_file)
     except:
         traceback.print_exc()

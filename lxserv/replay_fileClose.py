@@ -7,8 +7,20 @@ https://github.com/adamohern/commander for details"""
 
 class CommandClass(replay.commander.CommanderClass):
 
+    def commander_arguments(self):
+        return [
+            {
+                'name': 'prompt_save',
+                'datatype': 'boolean',
+                'flags': ['optional']
+            }
+        ]
+
+
     """Close the current `Macro()` and, if necessary, prompt user to save changes."""
     def commander_execute(self, msg, flags):
+        prompt_save = self.commander_arg_value(0)
+
         # Stop recording
         lx.eval('replay.record stop')
 
@@ -18,7 +30,7 @@ class CommandClass(replay.commander.CommanderClass):
         macro.select_event_treeview()
 
         # If content is not empty ask user for save
-        if macro.unsaved_changes and not macro.is_empty:
+        if prompt_save and macro.unsaved_changes and not macro.is_empty:
             file_path = macro.file_path
             if file_path is None:
                 file_path = "Untitled"
