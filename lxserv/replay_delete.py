@@ -14,7 +14,7 @@ class CommandClass(replay.commander.CommanderClass):
         if not primary:
             return
 
-        if isinstance(primary, replay.MacroCommand):
+        if isinstance(primary, (replay.MacroCommand, replay.MacroBlockCommand)):
             try:
                 lx.eval('replay.lineDelete')
             except:
