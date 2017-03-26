@@ -160,12 +160,16 @@ class CommandClass(replay.commander.CommanderClass):
                 except:
                     raise Exception(message("MECCO_REPLAY", "INVALID_STRING"), value, type(value), datatype)
 
+            # Text Value Hints
             elif (datatype == lx.symbol.sTYPE_INTEGER) and hints:
                 for idx, name in hints:
                     if name == value:
                         va.AddInt(idx)
+
+            # Booleans
             elif datatype == lx.symbol.sTYPE_BOOLEAN:
                 va.AddInt(1 if value.lower() in ['true', 'on', 'yes'] else 0)
+
             # Integers
             elif datatype in [
                     lx.symbol.sTYPE_INTEGER,
@@ -255,7 +259,7 @@ class CommandClass(replay.commander.CommanderClass):
                     hints = attrs.Hints(argIndex)
                     if len(hints) == 0:
                         hints = None
-                        
+
                 # If nothing is found get from attrs.Type
                 if not argTypeName:
                     lookup = [
@@ -274,7 +278,7 @@ class CommandClass(replay.commander.CommanderClass):
                         hints = attrs.Hints(argIndex)
                         if len(hints) == 0:
                             hints = None
-                            
+
                     # If nothing is found get from attrs.Type
                     if not argTypeName:
                         lookup = [
