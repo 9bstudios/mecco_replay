@@ -19,7 +19,7 @@ class CommandClass(replay.commander.CommanderClass):
 
     """Close the current `Macro()` and, if necessary, prompt user to save changes."""
     def commander_execute(self, msg, flags):
-        prompt_save = self.commander_arg_value(0)
+        prompt_save = self.commander_arg_value(0, True)
 
         # Stop recording
         lx.eval('replay.record stop')
