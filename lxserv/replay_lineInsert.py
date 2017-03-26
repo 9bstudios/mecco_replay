@@ -19,7 +19,7 @@ class LineInsertClass(replay.commander.CommanderClass):
             }, {
                 'name': 'ButtonName',
                 'datatype': 'string',
-                'flags':['optional']
+                'flags':['optional', 'hidden']
             }
         ]
 
