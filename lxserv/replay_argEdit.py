@@ -79,10 +79,10 @@ class CommandClass(replay.commander.CommanderClass):
             lx.out(e)
 
     def store_in_arg_value(self, command, argIndex, argValue):
-        attrs = command.attributesObject()
-        argTypeName = attrs.TypeName(argIndex)
+        attrs = command.attributes()
+        argTypeName = attrs.arg(argIndex).type_name()
         if argTypeName == lx.symbol.sTYPE_INTEGER:
-            hints = attrs.Hints(argIndex)
+            hints = attrs.arg(argIndex).hints()
             for idx, name in hints:
                 if idx == int(argValue):
                     return name
@@ -90,14 +90,14 @@ class CommandClass(replay.commander.CommanderClass):
         return argValue
 
     def arg_values_list(self):
-        datatype, hints, default = self.basic_ArgTypeImpl(1)
+        datatype, hints, default = self.arg_info(1)
         if hints is None:
             return None
 
         return [name for idx, name in hints]
 
     def arg_values_list_type(self):
-        datatype, hints, default = self.basic_ArgTypeImpl(1)
+        datatype, hints, default = self.arg_info(1)
         if hints is None:
             return None
         return 'popup'
@@ -119,7 +119,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         argName = self.commander_args()['argName']
 
-        datatype, hints, default = self.basic_ArgTypeImpl(1)
+        datatype, hints, default = self.arg_info(1)
 
         argValues = set()
         for arg in self.args_by_argName(argName):
@@ -227,10 +227,10 @@ class CommandClass(replay.commander.CommanderClass):
         return self.commander_args()['argName']
 
     def basic_ArgType(self, argIndex):
-        type, hints, default = self.basic_ArgTypeImpl(argIndex)
+        type, hints, default = self.arg_info(argIndex)
         return type
 
-    def basic_ArgTypeImpl(self, argIndex):
+    def arg_info(self, argIndex):
         """Returns sTYPE_INTEGER, sTYPE_FLOAT, or sTYPE_STRING depending on the
         datatype stored in the `MacroCommandArg` object. You'd think this would
         be straightforward, but no. This is MODO."""
@@ -246,52 +246,13 @@ class CommandClass(replay.commander.CommanderClass):
 
             hints = None
             default = None
-            attrs = None
             argTypeName = None
-
-            # Get from command attributes
-            try:
-                attrs = command.attributesObject()
-                default = attrs.GetString(argIndex)
-                argTypeName = attrs.TypeName(argIndex)
-
-                if argTypeName == lx.symbol.sTYPE_INTEGER:
-                    hints = attrs.Hints(argIndex)
-                    if len(hints) == 0:
-                        hints = None
-
-                # If nothing is found get from attrs.Type
-                if not argTypeName:
-                    lookup = [
-                        lx.symbol.sTYPE_STRING, # generic object
-                        lx.symbol.sTYPE_INTEGER,
-                        lx.symbol.sTYPE_FLOAT,
-                        lx.symbol.sTYPE_STRING
-                    ]
-                    argTypeName = lookup[attrs.Type(argIndex)]
-            except:
-                try:
-                    attrs = command.newAttributesObject()
-                    default = command.args[argIndex].value
-                    argTypeName = attrs.TypeName(argIndex)
-                    if argTypeName == lx.symbol.sTYPE_INTEGER:
-                        hints = attrs.Hints(argIndex)
-                        if len(hints) == 0:
-                            hints = None
-
-                    # If nothing is found get from attrs.Type
-                    if not argTypeName:
-                        lookup = [
-                            lx.symbol.sTYPE_STRING, # generic object
-                            lx.symbol.sTYPE_INTEGER,
-                            lx.symbol.sTYPE_FLOAT,
-                            lx.symbol.sTYPE_STRING
-                        ]
-                        argTypeName = lookup[attrs.Type(argIndex)]
-                except:
-                    default = command.args[argIndex].value
-                    argTypeName = lx.symbol.sTYPE_STRING
-
+            
+            attrs = command.attributes()
+            argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
+            default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
+            hints = attrs.arg(argIndex).hints(None)
+            
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))
 
@@ -301,16 +262,16 @@ class CommandClass(replay.commander.CommanderClass):
 
         if len(types) == 1:
             # If all argument types are identical return it
-            argTypeName = list(types)[0]
+            arg_info = list(types)[0]
             # Nasty bug: if we edit a color, we must reset the color
             # else crash.
-            if argTypeName[0] == lx.symbol.sTYPE_COLOR:
+            if arg_info[0] == lx.symbol.sTYPE_COLOR:
                 replay.Macro().reset_color_on_select = True
 
-            return argTypeName
+            return arg_info
         else:
             # If args doesn't have type or have many use string
-            lx.symbol.sTYPE_STRING
+            return (lx.symbol.sTYPE_STRING, None, "")
 
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)

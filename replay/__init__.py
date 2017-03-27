@@ -11,3 +11,4 @@ from Notifier import *
 from Message import *
 from RecordingCache import *
 from LXMParser import *
+from CommandAttributes import *

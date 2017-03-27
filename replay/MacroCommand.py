@@ -6,6 +6,7 @@ import re
 import json
 import lumberjack
 from MacroCommandArg import MacroCommandArg
+from CommandAttributes import CommandAttributes
 
 class MacroCommand(lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
@@ -56,25 +57,8 @@ class MacroCommand(lumberjack.TreeNode):
         if bool(kwargs.get('ButtonName')):
             self.columns['name'].value = kwargs.get('ButtonName')
 
-    def attributesObject(self):
-        svc_ = lx.service.Command()
-        x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
-        return lx.object.Attributes(cmd)
-
-    def commandObject(self):
-        svc_ = lx.service.Command()
-        x, y, cmd = svc_.SpawnFromString(self.render_LXM_without_comment())
-        return lx.object.Command(cmd)
-
-    def newCommandObject(self):
-        svc_ = lx.service.Command()
-        cmd = svc_.Spawn(0, self.render_LXM_without_comment())
-        return lx.object.Command(cmd)
-
-    def newAttributesObject(self):
-        svc_ = lx.service.Command()
-        cmd = svc_.Spawn(0, self.render_LXM_without_comment())
-        return lx.object.Attributes(cmd)
+    def attributes(self):
+        return CommandAttributes(string=self.render_LXM_without_comment())
 
     def draggable(self):
         return True

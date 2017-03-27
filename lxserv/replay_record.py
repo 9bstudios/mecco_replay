@@ -101,14 +101,13 @@ class CmdListener(lxifc.CmdSysListener):
             self.debug_path.append(cmd.Name())
 
     def callId(self, cmd):
-        cmd = lx.object.Command(cmd)
-        attrs = lx.object.Attributes(cmd)
+        attrs = replay.CommandAttributes(object=cmd)
 
-        res = [cmd.Name()]
+        res = [attrs.name()]
 
-        for idx in xrange(0, attrs.Count()):
-            if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_VARIABLE == 0:
-                res.append(attrs.GetString(idx))
+        for idx in xrange(0, attrs.arg_count()):
+            if not attrs.arg(idx).is_variable():
+                res.append(attrs.arg(idx).value_as_string())
 
         return tuple(res)
 
@@ -264,34 +263,20 @@ def wrap_quote(value):
         return value
     
 def commandString(cmd):
-    svc = lx.service.Command()
-    attrs = lx.object.Attributes(cmd)
-    res = svc.ExecFlagsAsPrefixString(cmd.PostExecBehaviorFlags()) + cmd.Name()
+    attrs = replay.CommandAttributes(object=cmd)
+    res = attrs.prefix() + attrs.name()
     def_found = False
-    for idx in range(0, attrs.Count()):
-        if cmd.ArgFlags(idx) & lx.symbol.fCMDARG_VALUE_SET == 0:
+    for idx in range(0, attrs.arg_count()):
+        if not attrs.arg(idx).is_value_set():
             def_found = True
             continue
         if def_found:
-            res += " " + attrs.Name(idx) + ":"
+            res += " " + attrs.arg(idx).name() + ":"
         else:
             res += " "
-        type = attrs.Type(idx)
-        if type == lx.symbol.i_TYPE_FLOAT:
-            res += repr(attrs.GetFlt(idx))
-        elif type == lx.symbol.i_TYPE_INTEGER:
-            val = attrs.GetInt(idx)
-            if attrs.TypeName(idx) == lx.symbol.sTYPE_BOOLEAN:
-                val = "true" if val != 0 else 'false'
-            else:
-                for ival, name in attrs.Hints(idx):
-                    if ival == val:
-                        val = name
-                        break
-            res += wrap_quote(str(val))
-        else:
-            # type == lx.symbol.i_TYPE_STRING: and more
-            res += wrap_quote(attrs.GetString(idx))
+            
+        res += wrap_quote(attrs.arg(idx).value_string())
+
     return res
 
 def replay_lineInsert(cmd):
