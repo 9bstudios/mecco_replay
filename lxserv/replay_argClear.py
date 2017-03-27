@@ -25,7 +25,7 @@ class CommandClass(replay.commander.CommanderClass):
         if lx.eval('replay.record query:?'):
             return False
         return bool(replay.Macro().selected_descendants)
-        
+
 class UndoArgClear(lxifc.Undo):
     def __init__(self, paths):
         self.m_paths = paths
@@ -63,5 +63,6 @@ class UndoArgClear(lxifc.Undo):
             child.value = value
 
         self.finalize_command(macro)
+
 
 lx.bless(CommandClass, 'replay.argClear')

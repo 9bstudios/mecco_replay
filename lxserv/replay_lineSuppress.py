@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
@@ -22,14 +24,14 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-            
+
         if len(replay.Macro().selected_descendants) == 0:
             return False
-            
+
         for command in replay.Macro().selected_descendants:
             if not command.can_change_suppress():
                 return False
-        
+
         return True
 
 class UndoLineSuppress(lxifc.Undo):
@@ -56,5 +58,6 @@ class UndoLineSuppress(lxifc.Undo):
 
     def undo_Reverse(self):
         self.toggle()
+
 
 lx.bless(CommandClass, 'replay.lineSuppress')

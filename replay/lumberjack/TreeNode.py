@@ -5,6 +5,7 @@ from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
 
+
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
     to draw the node in the TreeView UI is contained in the TreeNode, as well
@@ -64,13 +65,13 @@ class TreeNode(object):
         # String for use in input remapping. Must correspond with one of the region
         # strings provided in the Lumberjack blessing_parameters() method.
         self._input_region = kwargs.get('input_region', None)
-        
+
         self._meta = dict()
         self.row_color = RowColor().name
 
         # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
         self._meta = dict(kwargs.get('meta', []))
-        
+
         # List of column names for the node tree. Common to all nodes.
         # Set during `Lumberjack().bless()`
         #
@@ -356,10 +357,10 @@ class TreeNode(object):
 
     # METHODS
     # ----------
-    
+
     def draggable(self):
         return False
-        
+
     def canAcceptDrop(self, source_nodes):
         return False
 
@@ -456,29 +457,29 @@ class TreeNode(object):
             found.extend(child.find_in_descendants)
 
         return found
-        
+
     def path():
         """ Return path to node. Path is a list of indices that can be used to find node """
-        
-            
+
+
         def fget(self):
             if self.parent is None:
                 return []
             else:
                 return self.parent.path + [self.index]
-                
+
         def fset(self, value):
             assert(len(value) != 0), "Cannot move root node"
             lumberjack = self._controller
-            
+
             # saving parent and target because self.parent.children.remove(self) may invalidate indices
             new_parent = lumberjack.node_for_path(value[:-1])
             target_node = new_parent.children[value[-1]]
-            
+
             self.parent.children.remove(self)
-            self.parent = new_parent  
+            self.parent = new_parent
             new_parent.children.insert(target_node.index, self)
-            
+
         return locals()
-        
+
     path = property(**path())

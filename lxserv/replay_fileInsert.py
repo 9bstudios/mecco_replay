@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay
 from replay import message as message
 
@@ -50,17 +52,11 @@ class CommandClass(replay.commander.CommanderClass):
             replay.Macro().unsaved_changes = True
         except Exception as err:
             modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
-            
+
         finally:
             macro.rebuild_view()
             notifier = replay.Notifier()
             notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
-    # def basic_Enable(self, msg):
-    #     if lx.eval('replay.record query:?'):
-    #         return False
-    #     if not replay.Macro().file_path:
-    #         return False
-    #     return True
 
 lx.bless(CommandClass, 'replay.fileInsert')

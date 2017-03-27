@@ -5,6 +5,7 @@ import lx, modo, replay, os, traceback
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
+
 def is_valid_script(path):
     if os.path.isfile(path) and os.path.splitext(path)[1].lower() in ['.py', '.lxm', '.pl']:
         return True
@@ -50,6 +51,5 @@ class CommandClass(replay.commander.CommanderClass):
 
     def label(self):
         return "Run from " + os.path.basename(lx.eval('query platformservice alias ? {%s}' % self.commander_arg_value(0)))
-
 
 lx.bless(CommandClass, 'replay.fileRunFromFolderPop')

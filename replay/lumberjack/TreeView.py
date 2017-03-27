@@ -7,6 +7,7 @@ DROPSOURCE_COMMAND = "replay_command"
 DROP_SERVER = "replay_dropserver"
 DROPSERVERUNIQUEKEY = "118319"
 
+
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
@@ -446,7 +447,7 @@ class TreeView( lxifc.TreeView,
         # Create a string value object.
         cmd_svc = lx.service.Command ()
         vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
-    
+
         # Create a value array so we can access it.
         va = lx.object.ValueArray ()
         va.set(vaQuery)
@@ -458,7 +459,7 @@ class TreeView( lxifc.TreeView,
         for child in self._root.selected_descendants:
             assert(child.draggable())
             va.AddString(json.dumps(child.path))
-    
+
         return va
 
     def treeview_GetDragDropDestinationObject(self, columnIndex, location):
@@ -471,20 +472,20 @@ class TreeView( lxifc.TreeView,
         # Create a string value object.
         cmd_svc = lx.service.Command ()
         vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
-    
+
         # Create a value array so we can access it.
         va = lx.object.ValueArray ()
         va.set(vaQuery)
 
         # Add unique key
         va.AddString(DROPSERVERUNIQUEKEY)
-        
+
         # Add target index
         if location == 2:
             idx = self.m_currentIndex + 1
         else:
             idx = self.m_currentIndex
-            
+
         va.AddString(json.dumps(self.m_currentNode.children[idx].path))
 
         return va
@@ -534,4 +535,3 @@ class TreeView( lxifc.TreeView,
         # If node.columns[] doesn't contain a key for some reason,
         # we need to fail gracefully lest we crash MODO.
         lx.notimpl()
-

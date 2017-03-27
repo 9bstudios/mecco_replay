@@ -2,6 +2,7 @@
 
 import lx
 
+
 def message(table, message_id, *args):
     if len(args) != 0:
         args_list = ["{%s}" % arg for arg in args]

@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay, os
 
 class LastBlockInsertClass(replay.commander.CommanderClass):
@@ -28,7 +30,7 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
 
         if len(cache.commands) > 1:
             macro.add_block(block = cache.commands, name = "", index = idx)
-            
+
         macro.unsaved_changes = True
         idx += 1
 

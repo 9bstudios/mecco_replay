@@ -247,12 +247,12 @@ class CommandClass(replay.commander.CommanderClass):
             hints = None
             default = None
             argTypeName = None
-            
+
             attrs = command.attributes()
             argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
             default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
             hints = attrs.arg(argIndex).hints(None)
-            
+
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))
 
@@ -275,5 +275,6 @@ class CommandClass(replay.commander.CommanderClass):
 
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)
+
 
 lx.bless(CommandClass, 'replay.argEdit')

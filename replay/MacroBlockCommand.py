@@ -8,6 +8,7 @@ import lumberjack
 from MacroCommandArg import MacroCommandArg
 from MacroCommand import MacroCommand
 
+
 class MacroBlockCommand(lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
     MODO command for use in macros or Python scripts. Note that if the `command`

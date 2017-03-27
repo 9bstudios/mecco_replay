@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay
 from replay import message as message
 
@@ -60,5 +62,6 @@ class CommandClass(replay.commander.CommanderClass):
         if replay.Macro().is_empty:
             return False
         return True
+
 
 lx.bless(CommandClass, 'replay.fileExport')

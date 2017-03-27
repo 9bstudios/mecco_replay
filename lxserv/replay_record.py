@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay, re
 from replay import message as message
 
@@ -255,13 +257,13 @@ def replay_record_kill(dialog_title, dialog_msg):
 def replay_lastBlockInsert():
     lx.eval("replay.lastBlockInsert")
     replay.RecordingCache().clear()
-    
+
 def wrap_quote(value):
     if re.search(r"\W", value):
         return "\"{0}\"".format(value)
     else:
         return value
-    
+
 def commandString(cmd):
     attrs = replay.CommandAttributes(object=cmd)
     res = attrs.prefix() + attrs.name()
@@ -274,7 +276,7 @@ def commandString(cmd):
             res += " " + attrs.arg(idx).name() + ":"
         else:
             res += " "
-            
+
         res += wrap_quote(attrs.arg(idx).value_string())
 
     return res

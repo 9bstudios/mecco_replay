@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 from replay import message as message
 
@@ -102,5 +104,6 @@ class UndoLinePrefix(lxifc.Undo):
 
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
+
 
 lx.bless(CommandClass, 'replay.linePrefix')

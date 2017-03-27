@@ -3,7 +3,6 @@
 import lx, modo, replay, traceback, os, sys, filecmp
 
 RED = '\x03(c:33488896)'
-
 kitpath = lx.eval('query platformservice alias ? "kit_mecco_replay:"')
 
 # open event log

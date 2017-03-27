@@ -10,6 +10,7 @@ from Notifier import Notifier
 from LXMParser import LXMParser
 from LXMParser import LXMBuilder
 
+
 class Macro(lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
     class will be instantiated any time MODO wants to use it, which can be
@@ -198,17 +199,17 @@ class Macro(lumberjack.Lumberjack):
         class TmpCommandCache:
             def __init__(self):
                 self.child_args = []
-                
+
             def add_child(self, **kwargs):
                 tmp = dict(kwargs)
                 # Need to remove receiver before deepcopy
                 tmp.pop('receiver', None)
                 self.child_args.append(copy.deepcopy(tmp))
-                
+
             def children_create_args(self):
                 for args in self.child_args:
                     yield args
-                
+
         cache = TmpCommandCache()
 
         if mode == 'open':
@@ -217,11 +218,11 @@ class Macro(lumberjack.Lumberjack):
             format_name = self.parse_and_insert(input_path, receiver=cache)
         else:
             raise Exception("Wrong mode")
-        
+
         if mode == 'open':
             self.root.deselect_descendants()
             self.root.delete_descendants()
-        
+
         for kwargs in cache.children_create_args():
             self.add_child(**kwargs)
 
@@ -263,7 +264,7 @@ class Macro(lumberjack.Lumberjack):
 
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
-        
+
         class MacroTreeBuilder(LXMBuilder):
             def __init__(self, macro, **kwargs):
                 self.macro = macro
@@ -272,7 +273,7 @@ class Macro(lumberjack.Lumberjack):
                 self.kwargs = kwargs
                 self.comments = []
                 self.meta = []
-        
+
             def buildType(self, type):
                 if type == "LXM":
                     self.macro.file_format = "lxm"
@@ -283,22 +284,22 @@ class Macro(lumberjack.Lumberjack):
                 self.kwargs['path'] = self.path
                 self.macro.add_command(command=line, comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
                 self.path[-1] += 1
-                
+
                 self.comments = []
                 self.meta = []
-                
+
             def buildBlockStart(self, block, suppress):
                 self.kwargs['path'] = self.path
                 self.macro.add_block(name = block[-1][0], comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
                 self.path.append(0)
-                
+
                 self.comments = []
                 self.meta = []
 
             def buildBlockEnd(self, block):
                 del self.path[-1]
                 self.path[-1] += 1
-                
+
                 self.comments = []
                 self.meta = []
 
@@ -307,12 +308,12 @@ class Macro(lumberjack.Lumberjack):
 
             def buildComment(self, comment):
                 self.comments.append(comment)
-                
+
         parser = LXMParser()
         builder = MacroTreeBuilder(self, **kwargs)
         parser.parse(input_path, builder)
-            
-        
+
+
     def parse_json(self, input_path, **kwargs):
         """Parse a json file and store its commands in the `commands` property."""
 
@@ -327,11 +328,11 @@ class Macro(lumberjack.Lumberjack):
 
         # Close the .lxm input file:
         input_file.close()
-        
+
         index = kwargs.get('index', 0)
         if 'index' in kwargs:
             del kwargs['index']
-            
+
         # Loop over the commands to get all the command json data:
         for cmdJson in jsonStruct:
             kwargs['index'] = index
@@ -362,7 +363,7 @@ class Macro(lumberjack.Lumberjack):
         # Select the primary command:
         if self.primary is None:
             self.select(0)
-            
+
         command = self.primary
         start_path = command.path
 
@@ -451,9 +452,8 @@ class Macro(lumberjack.Lumberjack):
             self.render_Python(file_path)
         else:
             self.render_json(file_path)
-            
+
     def on_drag_drop(self, source_nodes):
         # After drag and drop update suppress state
         for node in source_nodes:
             node.update_suppress_for_node_and_descendants()
-            

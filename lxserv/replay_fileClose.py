@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay
 from replay import message as message
 
@@ -56,5 +58,6 @@ class CommandClass(replay.commander.CommanderClass):
 
     def basic_Enable(self, msg):
         return True
+
 
 lx.bless(CommandClass, 'replay.fileClose')

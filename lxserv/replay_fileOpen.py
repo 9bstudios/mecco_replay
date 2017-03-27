@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay, os
 from replay import message as message
 
@@ -34,7 +36,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Open the replay palette
         lx.eval('layout.createOrClose ReplayPalette {ReplayPalette} true {Replay Palette} width:400 height:600 persistent:true style:palette')
-    
+
         # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 
@@ -61,7 +63,7 @@ class CommandClass(replay.commander.CommanderClass):
             lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
         except Exception as err:
             modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
-            
+
         finally:
             macro.rebuild_view()
             notifier = replay.Notifier()
@@ -69,5 +71,6 @@ class CommandClass(replay.commander.CommanderClass):
 
     def basic_Enable(self, msg):
         return True
+
 
 lx.bless(CommandClass, 'replay.fileOpen')

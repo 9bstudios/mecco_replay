@@ -4,6 +4,7 @@ import lx
 import re
 import lumberjack
 
+
 class MacroCommandArg(lumberjack.TreeNode):
     """Contains everything pertaining to a single command argument in the macro.
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
@@ -135,7 +136,7 @@ class MacroCommandArg(lumberjack.TreeNode):
         return locals()
 
     argExample = property(**argExample())
-    
+
     def canEval(self):
         return False
 
@@ -228,5 +229,5 @@ class MacroCommandArg(lumberjack.TreeNode):
     def convert_string_to_value(self, arg_value):
         if arg_value is None:
             return None
-        
+
         return str(arg_value)

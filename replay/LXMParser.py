@@ -1,3 +1,5 @@
+# python
+
 import re
 import lx
 
@@ -205,7 +207,7 @@ class LXMParser(object):
                 raise LXMError(line=self.line_index, message="Wrong python command")
             finally:
                 lx.eval = store_lx_eval
-            
+
             if cmd is not None:
                 self.builder.buildCommand(cmd, self.in_suppress)
 

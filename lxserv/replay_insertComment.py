@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 from replay import message as message
 

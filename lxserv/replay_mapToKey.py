@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay
 from replay import message as message
 
@@ -32,5 +34,6 @@ class CommandClass(replay.commander.CommanderClass):
                 return
 
             lx.eval('cmds.mapKey command:{@{%s}}' % file_path)
+
 
 lx.bless(CommandClass, 'replay.mapToKey')

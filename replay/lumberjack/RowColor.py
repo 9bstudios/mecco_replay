@@ -1,5 +1,6 @@
 # python
 
+
 class RowColor(object):
     """Stores a bitwise color flag for treeview rows. Unlike rich text, rows can
     only be one of 18 pre-defined colors in MODO. We set them by name, but get them

@@ -36,4 +36,5 @@ class CmdListener(lxifc.CmdSysListener):
         # ... and rearm on RefireEnd
         self.armed = True
 
+
 cmdListener1 = CmdListener()

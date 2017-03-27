@@ -28,4 +28,5 @@ class CommandClass(replay.commander.CommanderClass):
             return False
         return True
 
+
 lx.bless(CommandClass, 'replay.fileOpenExternal')

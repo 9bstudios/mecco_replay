@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
@@ -97,5 +99,6 @@ class UndoLineColor(lxifc.Undo):
 
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
+
 
 lx.bless(CommandClass, 'replay.lineColor')

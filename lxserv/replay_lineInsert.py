@@ -1,3 +1,5 @@
+# python
+
 import lx, modo, replay, os
 
 """A simple example of a blessed MODO command using the commander module.
@@ -61,6 +63,7 @@ class LineInsertQuietClass(LineInsertClass):
         """Set command flags. This method can be overridden if special flags
         are needed."""
         return lx.symbol.fCMD_UI | lx.symbol.fCMD_QUIET
+
 
 lx.bless(LineInsertClass, 'replay.lineInsert')
 lx.bless(LineInsertQuietClass, 'replay.lineInsertQuiet')

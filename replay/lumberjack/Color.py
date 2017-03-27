@@ -7,7 +7,6 @@ class Color(object):
         self._special = None
 
     # Markup for rich text
-
     def markup(self):
         """Returns the markup string for use in treeview cells."""
         if self._special:
@@ -17,14 +16,12 @@ class Color(object):
         return ''
 
     # Bitwise
-
     def bitwise_rgb(self):
         """Returns the bitwise RGB string for the Color object's current internal RGB."""
         r, g, b = [int(n * 255) for n in self._internal_rgb]
         return str(0x01000000 | ((r << 16) | (g << 8 | b)))
 
     # Set Explicit Color
-
     def set_with_8bit(self, r, g, b):
         """Sets internal RGB with three int values between 0-255."""
         self._internal_rgb = [(n / 255) for n in (r, g, b)]
@@ -43,7 +40,6 @@ class Color(object):
         self._internal_rgb = [r, g, b]
 
     # Set Special Color
-
     def special_by_int():
         doc = """Certain specific color codes are built-in to MODO for common UI
         conventions, such as 4113 for grayed out text. Should be a string. If

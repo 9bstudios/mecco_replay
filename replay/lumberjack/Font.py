@@ -1,5 +1,6 @@
 # python
 
+
 class Font(object):
     """Special class for storing and retrieving font flags for use in treeviews."""
 

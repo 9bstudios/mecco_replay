@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 from replay import message as message
 
@@ -13,5 +15,6 @@ class CommandClass(replay.commander.CommanderClass):
             replay.Macro().commands[0].selected = True
         except:
             pass
+
 
 lx.bless(CommandClass, 'replay.lineSelectFirst')

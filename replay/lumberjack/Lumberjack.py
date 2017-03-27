@@ -8,6 +8,7 @@ from TreeView import DROPSERVERUNIQUEKEY
 from TreeView import DROPSOURCE_COMMAND
 from TreeView import DROP_SERVER
 
+
 class DropServer(lxifc.Drop):
 
     def drop_ActionList(self, source, dest, addDropAction):
@@ -18,17 +19,17 @@ class DropServer(lxifc.Drop):
         # Create a value array for dest
         vaDest = lx.object.ValueArray()
         vaDest.set(dest)
-        
+
         source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
         dest_path = json.loads(vaDest.GetString(1))
 
-        lumberjack = Lumberjack.final_class()        
+        lumberjack = Lumberjack.final_class()
         source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
         dest_node = lumberjack.node_for_path(dest_path)
-        
+
         if not dest_node.parent.canAcceptDrop(source_nodes):
             return
-        
+
         # Check unique key
         if not self.check_key(vaSource) or not self.check_key(vaDest):
             return
@@ -39,7 +40,7 @@ class DropServer(lxifc.Drop):
 
         # Add move action
         obj.AddAction(1, "Move item(s)")
-       
+
     def drop_Drop(self, source, dest, action):
         # Create a value array so we can access source.
         vaSource = lx.object.ValueArray()
@@ -48,7 +49,7 @@ class DropServer(lxifc.Drop):
         # Create a value array for dest
         vaDest = lx.object.ValueArray()
         vaDest.set(dest)
-        
+
         # Check unique key
         if not self.check_key(vaSource) or not self.check_key(vaDest):
             return
@@ -64,11 +65,11 @@ class DropServer(lxifc.Drop):
         # Move children
         for source in source_nodes:
             source.path = dest_path
-            
+
         lumberjack.on_drag_drop(source_nodes)
 
         lumberjack.rebuild_view()
-       
+
     def drop_Preview(self, source, dest, action, draw):
         lx.notimpl()
 
@@ -77,12 +78,12 @@ class DropServer(lxifc.Drop):
         if va.Count() > 1 and va.GetString(0) == DROPSERVERUNIQUEKEY:
             return True
         return False
-       
+
     def drop_Recognize(self, source):
         # Create a value array so we can access source.
         va = lx.object.ValueArray()
         va.set(source)
-        
+
         # Check unique key
         if self.check_key(va):
             return True
@@ -175,14 +176,14 @@ class Lumberjack(object):
 
     class _DropServer(DropServer):
         pass
-        
+
     class _RootNode(TreeNode):
         def __init__(self, **kwargs):
             super(self.__class__, self).__init__(**kwargs)
-        
+
         def canAcceptDrop(self, source_nodes):
             return True
-            
+
 
     _root = None
     _tree_view = None
@@ -210,7 +211,7 @@ class Lumberjack(object):
         and the lumberjack object acts as controller."""
 
         pass
-        
+
     def on_drag_drop(self, source_nodes):
         pass
 
@@ -302,7 +303,7 @@ class Lumberjack(object):
                                 ]
                                 ```
         """
-        
+
         Lumberjack.final_class = cls
 
         # Can only be blessed once per session.
@@ -475,7 +476,7 @@ class Lumberjack(object):
         if 'path' in kwargs:
             kwargs['parent'] = self.node_for_path(kwargs['path'][:-1])
             kwargs['index'] = kwargs['path'][-1]
-            
+
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
         newNode = self.create_child_node(**kwargs)
@@ -518,25 +519,24 @@ class Lumberjack(object):
         `rebuild()`` method."""
 
         self.treeview.notify_NewAttributes()
-        
+
     class BadPath(Exception):
         pass
-        
+
     @staticmethod
     def node_for_path_recursive(node, path):
         # if leaf node
         if len(node.children) == 0 and len(path) != 0:
             raise Lumberjack.BadPath()
-            
+
         if len(path) == 0:
             return node
         else:
             return Lumberjack.node_for_path_recursive(node.children[path[0]], path[1:])
-            
-        
+
+
     def node_for_path(self, path):
         try:
             return Lumberjack.node_for_path_recursive(self.root, path)
         except Lumberjack.BadPath:
-            raise Exception("Invalid path %s" % str(path)) 
-
+            raise Exception("Invalid path %s" % str(path))
