@@ -71,7 +71,7 @@ class LXMParser(object):
         line = file.readline()
         if line.startswith("#LXMacro#"):
             self.type = "LXM"
-        elif line.startswith("# python"):
+        elif re.search("#\s*python\s*", line) is not None:
             self.type = "PY"
         else:
             lx.out("Missing shabang")

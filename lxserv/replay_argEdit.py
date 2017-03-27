@@ -93,8 +93,15 @@ class CommandClass(replay.commander.CommanderClass):
         datatype, hints, default = self.arg_info(1)
         if hints is None:
             return None
+            
+        names = list()
+        indices = set()
+        for idx, name in hints:
+            if idx not in indices:
+                indices.add(idx)
+                names.append(name)
 
-        return [name for idx, name in hints]
+        return names
 
     def arg_values_list_type(self):
         datatype, hints, default = self.arg_info(1)

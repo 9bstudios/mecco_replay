@@ -19,6 +19,9 @@ $RECYCLE.BIN/
 
 # vim files
 *.un~
+*.py~
+*.swp
+*.*~
 
 # =========================
 # Operating System Files
