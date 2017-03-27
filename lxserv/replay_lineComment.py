@@ -87,4 +87,4 @@ class UndoInsertComment(lxifc.Undo):
         self.finalize_command(macro)
 
 
-lx.bless(CommandClass, 'replay.insertComment')
+lx.bless(CommandClass, 'replay.lineComment')
