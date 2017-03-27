@@ -46,6 +46,11 @@ class CmdListener(lxifc.CmdSysListener):
 
     def valid_for_record(self, cmd, isResult = False):
 
+        # There are some QUIET commands that we really do want to record if possible.
+        if cmd.Name() in ['scene.load', 'scene.save']:
+            self.debug_path_print(cmd.Name() + " - Whitelisted command. Record.")
+            return True
+
         # Recording is disabled by user.
         if not self.state:
             return False
@@ -76,7 +81,7 @@ class CmdListener(lxifc.CmdSysListener):
 
         # Certain commands can be safely ignored. These can be added here.
         # Note that any ignored command's sub-commands _will_ be recorded.
-        if cmd.Name() in ['tool.attr','tool.noChange']:
+        if cmd.Name() in ['tool.attr','tool.noChange','actionCenter.state']:
             self.debug_path_print(cmd.Name() + " - Black list. Ignore.")
             return False
 
@@ -255,11 +260,11 @@ class CmdListener(lxifc.CmdSysListener):
             pfm_svc.DoWhenUserIsIdle(visitor, lx.symbol.fUSERIDLE_CMD_STACK_EMPTY)
 
     def debug_path_print(self, msg):
-        # return
+        return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
-        # return
+        return
         lx.out(msg)
 
 def replay_record_kill(dialog_title, dialog_msg):
