@@ -485,6 +485,8 @@ class TreeNode(object):
             self.parent = new_parent
             new_parent.children.insert(len(new_parent.children) if target_node is None else target_node.index, self)
 
+            self._controller.path_event()
+
         return locals()
 
     path = property(**path())

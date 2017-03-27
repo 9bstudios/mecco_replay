@@ -184,6 +184,12 @@ class Macro(lumberjack.Lumberjack):
             except:
                 pass
 
+    def path_event(self):
+        """Fired by `TreeNode` objects whenever the node's `path` property is changed."""
+        self.unsaved_changes = True
+        notifier = Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+
     def select_event(self):
         """Fires whenever a TreeNode `selected` state is changed."""
         notifier = Notifier()
