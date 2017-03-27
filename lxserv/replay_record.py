@@ -79,9 +79,16 @@ class CmdListener(lxifc.CmdSysListener):
             self.debug_path_print(cmd.Name() + " - Replay command. Ignore.")
             return False
 
+        # BLACK LIST
         # Certain commands can be safely ignored. These can be added here.
         # Note that any ignored command's sub-commands _will_ be recorded.
-        if cmd.Name() in ['tool.attr','tool.noChange','actionCenter.state']:
+        if cmd.Name() in [
+            'tool.attr',
+            'tool.noChange',
+            'actionCenter.state',
+            'workPlane.state',
+            'falloff.state'
+            ]:
             self.debug_path_print(cmd.Name() + " - Black list. Ignore.")
             return False
 
