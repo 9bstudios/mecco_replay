@@ -50,6 +50,16 @@ class CmdListener(lxifc.CmdSysListener):
         if not self.state:
             return False
 
+        # Recording `layout.createOrClose` is optional. It's important that we not only
+        # skip the command itself, but also any sub-commands within it. As such, we disarm
+        # until isResult. (Hence `if not self.armed:` happens _after_ this check.)
+        if cmd.Name() == 'layout.createOrClose' and not self.layoutCreateOrClose:
+            self.debug_path_print(cmd.Name() + " - Recording disabled by preference. Ignore.")
+            self.armed = False
+            if isResult:
+                self.armed = True
+            return False
+
         # Recording is disarmed for internal reasons.
         if not self.armed:
             return False
@@ -62,14 +72,6 @@ class CmdListener(lxifc.CmdSysListener):
         # Never record replay commands.
         if cmd.Name().startswith("replay."):
             self.debug_path_print(cmd.Name() + " - Replay command. Ignore.")
-            return False
-
-        if cmd.Name() == 'layout.createOrClose' \
-            and not self.layoutCreateOrClose:
-            self.debug_path_print(cmd.Name() + " - Recording disabled by preference. Ignore.")
-            self.armed = False
-            if isResult:
-                self.armed = True
             return False
 
         # Certain commands can be safely ignored. These can be added here.
@@ -253,11 +255,11 @@ class CmdListener(lxifc.CmdSysListener):
             pfm_svc.DoWhenUserIsIdle(visitor, lx.symbol.fUSERIDLE_CMD_STACK_EMPTY)
 
     def debug_path_print(self, msg):
-        return
+        # return
         self.debug_print(" > ".join(self.debug_path) + " " + msg)
 
     def debug_print(self, msg):
-        return
+        # return
         lx.out(msg)
 
 def replay_record_kill(dialog_title, dialog_msg):
