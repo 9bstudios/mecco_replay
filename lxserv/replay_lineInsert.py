@@ -55,6 +55,19 @@ class LineInsertClass(replay.commander.CommanderClass):
         notifier = replay.Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
+class LineInsertSpecialClass(LineInsertClass):
+    """Same as `replay.lineInsert`, except it isn't undoable and doesn't show up
+    in macros and command history. Used for adding lines during recording."""
+
+    def list_commands(self):
+        return [
+            ('scene.load', 'Open...'),
+            ('scene.save', 'Save'),
+            ('scene.save rename', 'Save As...'),
+            ('scene.save export', 'Export...'),
+            ('preset.do', 'Preset Do'),
+        ]
+
 class LineInsertQuietClass(LineInsertClass):
     """Same as `replay.lineInsert`, except it isn't undoable and doesn't show up
     in macros and command history. Used for adding lines during recording."""
@@ -66,4 +79,5 @@ class LineInsertQuietClass(LineInsertClass):
 
 
 lx.bless(LineInsertClass, 'replay.lineInsert')
+lx.bless(LineInsertSpecialClass, 'replay.lineInsertSpecial')
 lx.bless(LineInsertQuietClass, 'replay.lineInsertQuiet')
