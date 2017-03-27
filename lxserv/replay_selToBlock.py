@@ -9,30 +9,47 @@ https://github.com/adamohern/commander for details"""
 class CommandClass(replay.commander.CommanderClass):
     """Deletes the currently-selected command from the `Macro()` object."""
     def commander_execute(self, msg, flags):
+    
+        macro = replay.Macro()
 
         # collect list of selected paths
         paths = list()
-        for line in replay.Macro().selected_descendants:
+        for line in macro.selected_descendants:
             paths.append(line.path)
 
+        target = None
+        if not isinstance(macro.primary.parent, replay.MacroBlockCommand):
+            target = macro.primary
+        else:
+            for node in rmacro.selected_descendants:
+                if not isinstance(node.parent, replay.MacroBlockCommand):
+                    target = node
+                    
+        if target is None:
+            return
+                    
         # Register Undo object performing operation and apply it
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoToBlock(paths))
+            undo_svc.Apply(UndoToBlock(paths, target.path, ""))
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-        return bool(replay.Macro().selected_descendants)
+           
+        for node in replay.Macro().selected_descendants:
+            if not isinstance(node.parent, replay.MacroBlockCommand):
+                return True
+        
+        return False
 
 class UndoToBlock(lxifc.Undo):
-    def __init__(self, paths):
+    def __init__(self, paths, target_path, name):
         self.m_paths = paths
-        # Need to delete paths sorted in reverse order to not invalidate other paths
-        # Default list comparision working in our case
-        self.m_paths.sort(reverse=True)
-        self.m_deleted_commands = list()
-
+        self.m_paths.sort()
+        self.m_target_path = target_path
+        self.m_name = name
+        
     def finalize_command(self, macro):
         """Does common command finalizing operations"""
         macro.rebuild_view()
@@ -43,27 +60,48 @@ class UndoToBlock(lxifc.Undo):
 
     def undo_Forward(self):
         macro = replay.Macro()
-        del self.m_deleted_commands[:]
-
-        # delete selected paths and store them in json form to be able to undo
+        
+        nodes = list()
+        # Collectiong nodes since paths will be invalidated during move
         for path in self.m_paths:
-            child = macro.node_for_path(path)
-            self.m_deleted_commands.append((path, child.render_json()))
-            child.delete()
+            nodes.append(macro.node_for_path(path))
+            
+        target_node = macro.add_block(name = self.m_name, comment=[], meta = [], suppress=False, path = self.m_target_path)
+        
+        # Storing new paths after creating target_node for undo
+        del self.m_paths[:]
+        for node in nodes:
+            self.m_paths.append(node.path)
+            
+        idx = 0
+        for node in nodes:
+            node.path = target_node.path + [idx]
+            idx += 1
+            
+        self.m_target_path = target_node.path
 
         self.finalize_command(macro)
 
     def undo_Reverse(self):
         macro = replay.Macro()
-
-        # Sort paths in ascending order for undo operation
-        # Default list comparision working in our case
-        self.m_deleted_commands.sort(key=lambda x: x[0])
-
-        # Restore deleted commands
-        for removed_path, json in self.m_deleted_commands:
-            macro.add_command(command_json = json, path = removed_path)
-            macro.node_for_path(removed_path).selected = True
+        
+        target_node = macro.node_for_path(self.m_target_path)
+        
+        nodes = list()
+        
+        # Each move will validate next index
+        for path in self.m_paths:
+            child = target_node.children[0]
+            nodes.append(child)
+            child.path = path
+            
+        self.m_target_path = target_node.path
+        target_node.delete()
+        
+        # Restoring initial paths for redo
+        del self.m_paths[:]
+        for node in nodes:
+            self.m_paths.append(node.path)
 
         self.finalize_command(macro)
 

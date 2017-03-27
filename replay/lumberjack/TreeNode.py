@@ -474,11 +474,16 @@ class TreeNode(object):
 
             # saving parent and target because self.parent.children.remove(self) may invalidate indices
             new_parent = lumberjack.node_for_path(value[:-1])
-            target_node = new_parent.children[value[-1]]
+            
+            if len(new_parent.children) != value[-1]:
+                target_node = new_parent.children[value[-1]]
+            else:
+                # Appending. Will use len(new_parent.children) as index
+                target_node = None
 
             self.parent.children.remove(self)
             self.parent = new_parent
-            new_parent.children.insert(target_node.index, self)
+            new_parent.children.insert(len(new_parent.children) if target_node is None else target_node.index, self)
 
         return locals()
 
