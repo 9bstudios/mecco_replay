@@ -405,6 +405,11 @@ class Lumberjack(object):
         """Returns the selected `TreeNode()` objects at the root of the tree."""
         return self.root.selected_children
 
+    def path_event(self):
+        """Fired by `TreeNode` objects whenever the node's `path` property is changed.
+        Implement in Lumberjack subclass to fire custom notifiers, etc."""
+        pass
+
     def select_event(self):
         """Fired by `TreeNode` objects whenever the node's `selected` property is changed.
         Implement in Lumberjack subclass to fire custom notifiers, etc."""

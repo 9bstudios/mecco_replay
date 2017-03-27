@@ -480,6 +480,8 @@ class TreeNode(object):
             self.parent = new_parent
             new_parent.children.insert(target_node.index, self)
 
+            self._controller.path_event()
+
         return locals()
 
     path = property(**path())
