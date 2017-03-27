@@ -19,11 +19,13 @@ https://github.com/adamohern/commander for details"""
 class CmdListener(lxifc.CmdSysListener):
     lazy_queue = {}
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.svc_listen = lx.service.Listener()
         self.svc_listen.AddListener(self)
         self.armed = True
         self.refiring = False
+
+        self.layoutCreateOrClose = kwargs.get('layoutCreateOrClose', True)
 
         # Sometimes multiple commands are in refire mode at the same time.
         # We need to remember both the order in which they were initially fired
@@ -60,6 +62,14 @@ class CmdListener(lxifc.CmdSysListener):
         # Never record replay commands.
         if cmd.Name().startswith("replay."):
             self.debug_path_print(cmd.Name() + " - Replay command. Ignore.")
+            return False
+
+        if cmd.Name() == 'layout.createOrClose' \
+            and not self.layoutCreateOrClose:
+            self.debug_path_print(cmd.Name() + " - Recording disabled by preference. Ignore.")
+            self.armed = False
+            if isResult:
+                self.armed = True
             return False
 
         # Certain commands can be safely ignored. These can be added here.
@@ -366,10 +376,14 @@ class RecordCommandClass(replay.commander.CommanderClass):
     @classmethod
     def set_lisnter(cls):
         if cls._cmd_listner is None:
-            cls._cmd_listner = CmdListener()
+            layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
+            cls._cmd_listner = CmdListener(
+                layoutCreateOrClose = layoutCreateOrClose
+            )
 
     @classmethod
     def set_lisnter_state(cls, value):
+        cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
         cls._cmd_listner.state = value
 
     def commander_execute(self, msg=None, flags=None):
