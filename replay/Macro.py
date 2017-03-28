@@ -2,9 +2,14 @@
 
 import lx, re, os
 import json
+import copy
 import lumberjack
 from MacroCommand import MacroCommand
+from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
+from LXMParser import LXMParser
+from LXMParser import LXMBuilder
+
 
 class Macro(lumberjack.Lumberjack):
     """Our own Replay-specific subclass of the Lumberjack treeview class. This
@@ -41,9 +46,16 @@ class Macro(lumberjack.Lumberjack):
     # Keeps track of unsaved changes for use in `replay.fileClose`.
     _unsaved_changes = False
 
+    # If a color has been modified, we'll need to reset (see `replay.argEdit`)
+    _reset_color_on_select = False
+
     # We extend the default Lumberjack `TreeNode` object for our own nefarious purposes.
-    # To use this class in Lumberjack, we set the `_TreeNodeClass` to our `TreeNode` subclass.
-    _TreeNodeClass = MacroCommand
+    # To use this class in Lumberjack, we overwrite the create_child method to create our `TreeNode` subclasses.
+    def create_child_node(self, **kwargs):
+        if kwargs.get('type', "command") == "command":
+            return MacroCommand(**kwargs)
+        else:
+            return MacroBlockCommand(**kwargs)
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -59,6 +71,17 @@ class Macro(lumberjack.Lumberjack):
         return locals()
 
     file_path = property(**file_path())
+
+    def reset_color_on_select():
+        doc = """If set to True, the next select event will run `select.color {0 0 0}`
+        to clear out any color values left behind by an argument edit (see `replay.argEdit`)"""
+        def fget(self):
+            return self.__class__._reset_color_on_select
+        def fset(self, value):
+            self.__class__._reset_color_on_select = value
+        return locals()
+
+    reset_color_on_select = property(**reset_color_on_select())
 
     def file_format():
         doc = """The file format for the current macro. If None, assume that the macro
@@ -96,9 +119,10 @@ class Macro(lumberjack.Lumberjack):
         including both selected nodes and nodes that have selected descendants."""
         def fget(self):
             nodes = set()
-            for node in self.root.children:
-                if bool(node.selected_descendants) or node.selected:
-                    nodes.add(node)
+            for node in self.root.selected_descendants:
+                if isinstance(node, MacroCommand):
+                    if bool(node.selected_descendants) or node.selected:
+                        nodes.add(node)
             return list(nodes)
         return locals()
 
@@ -141,39 +165,87 @@ class Macro(lumberjack.Lumberjack):
     is_empty = property(**is_empty())
 
     def add_command(self, **kwargs):
-        return self.add_child(**kwargs)
+        return kwargs.get('receiver', self).add_child(type='command', **kwargs)
 
-    def select_event(self):
-        """Fires whenever a TreeNode `selected` state is changed."""
+    def add_block(self, **kwargs):
+        return kwargs.get('receiver', self).add_child(type='block', **kwargs)
+
+    def select_event_treeview(self):
+        """Fires whenever the TreeView detects a user selection event."""
         # Welcome to an advanced course on Stupid Things About MODO!
         # If we modify a color channel and then suddenly our form control
         # disappears (because of a selection change), MODO will crash. Yay!
         # For those who do not like this behavior, we black out the current
         # color selection whenever we make a change.
-        lx.eval('select.color {0 0 0}')
+        if self.reset_color_on_select:
+            try:
+                lx.eval('!!select.color {0 0 0}')
+                self.reset_color_on_select = False
+            except:
+                pass
 
-
+    def path_event(self):
+        """Fired by `TreeNode` objects whenever the node's `path` property is changed."""
+        self.unsaved_changes = True
         notifier = Notifier()
         notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
-    def parse(self, input_path):
-        """Parse a macro file and store its commands in the `commands` property."""
-        self.root.deselect_descendants()
-        self.root.delete_descendants()
+    def select_event(self):
+        """Fires whenever a TreeNode `selected` state is changed."""
+        notifier = Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
-        format_name = self._parse_and_insert(input_path)
+    def select(self, index):
+        self.root.deselect_descendants()
+        self.root.children[index].selected = True
+
+    def parse(self, mode, input_path):
+        """Parse a macro file and store its commands in the `commands` property."""
+
+        class TmpCommandCache:
+            def __init__(self):
+                self.child_args = []
+
+            def add_child(self, **kwargs):
+                tmp = dict(kwargs)
+                # Need to remove receiver before deepcopy
+                tmp.pop('receiver', None)
+                self.child_args.append(copy.deepcopy(tmp))
+
+            def children_create_args(self):
+                for args in self.child_args:
+                    yield args
+
+        cache = TmpCommandCache()
+
+        if mode == 'open':
+            format_name = self._parse_and_insert(input_path, receiver=cache)
+        elif mode == 'insert':
+            format_name = self.parse_and_insert(input_path, receiver=cache)
+        else:
+            raise Exception("Wrong mode")
+
+        if mode == 'open':
+            self.root.deselect_descendants()
+            self.root.delete_descendants()
+
+        for kwargs in cache.children_create_args():
+            self.add_child(**kwargs)
 
         # Store file path and extension
-        self.file_path = input_path
-        self.file_format = format_name
+        if mode == 'open':
+            self.file_path = input_path
+            self.file_format = format_name
+            if len(self.children) != 0:
+                self.select(0)
 
-    def parse_and_insert(self, input_path):
+    def parse_and_insert(self, input_path, **kwargs):
         if self.primary is None:
             # If there's no primary node, insert at zero
-            self._parse_and_insert(input_path, index=0)
+            self._parse_and_insert(input_path, index=0, **kwargs)
         else:
             # If there's a primary node, insert right after it
-            self._parse_and_insert(input_path, index=self.primary.index+1)
+            self._parse_and_insert(input_path, index=self.primary.index+1, **kwargs)
 
     def _parse_and_insert(self, input_path, **kwargs):
         """Parse a macro file and store its commands in the `commands` property."""
@@ -189,7 +261,7 @@ class Macro(lumberjack.Lumberjack):
                 break
 
         if format_name == "py":
-            self.parse_Python(input_path, **kwargs)
+            self.parse_LXM(input_path, **kwargs)
         elif format_name == 'json':
             self.parse_json(input_path, **kwargs)
         else:
@@ -199,94 +271,54 @@ class Macro(lumberjack.Lumberjack):
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
 
-        # Open the .lxm input file and save the path:
-        input_file = open(input_path, 'r')
+        class MacroTreeBuilder(LXMBuilder):
+            def __init__(self, macro, **kwargs):
+                self.macro = macro
+                self.path = [kwargs.get('index', 0)]
+                kwargs.pop('index', None)
+                self.kwargs = kwargs
+                self.comments = []
+                self.meta = []
 
-        first_line = True
+            def buildType(self, type):
+                if type == "LXM":
+                    self.macro.file_format = "lxm"
+                else:
+                    self.macro.file_format = "py"
 
-        command_with_comments = []
-        # Loop over the lines to get all the command strings:
-        for input_line in input_file:
-            if first_line:
-                first_line = False
-                if not input_line.startswith("#LXMacro#"):
-                    raise Exception("Wrong shebang {sb}".format(sb=input_line))
-                continue
+            def buildCommand(self, line, suppress):
+                self.kwargs['path'] = self.path
+                self.macro.add_command(command=line, comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+                self.path[-1] += 1
 
-            if not input_line: continue
+                self.comments = []
+                self.meta = []
 
-            command_with_comments.append(input_line[:-1])
+            def buildBlockStart(self, block, suppress):
+                self.kwargs['path'] = self.path
+                self.macro.add_block(name = block[-1][0], comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+                self.path.append(0)
 
-            # If this line is a comment, just append it to the full command:
-            if input_line[0] == "#":
-				continue
+                self.comments = []
+                self.meta = []
 
-            kwargs['index'] = kwargs.get('index', 0)
+            def buildBlockEnd(self, block):
+                del self.path[-1]
+                self.path[-1] += 1
 
-            # Parse the command and store it in the commands list:
-            self.add_command(command_string = command_with_comments, **kwargs)
-            command_with_comments = []
+                self.comments = []
+                self.meta = []
 
-            # We need to increment the index with each loop, lest we insert nodes in reverse order
-            kwargs['index'] += 1
+            def buildMeta(self, name, value):
+                self.meta.append((name, value))
 
-        # Close the .lxm input file:
-        input_file.close()
+            def buildComment(self, comment):
+                self.comments.append(comment)
 
-    def parse_Python(self, input_path, **kwargs):
-        """Parse a Python file and store its commands in the `commands` property.
-        If the python code contains anything other than `lx.eval` and `lx.command`
-        calls, parse will raise an error."""
+        parser = LXMParser()
+        builder = MacroTreeBuilder(self, **kwargs)
+        parser.parse(input_path, builder)
 
-        # Open the .py input file:
-        input_file = open(input_path, 'r')
-
-        try:
-            first_line = True
-
-            command_with_comments = []
-            # Loop over the lines to get all the command strings:
-            for input_line in input_file:
-                if first_line:
-                    first_line = False
-                    if not input_line.startswith("# python"):
-                        raise Exception("Wrong shebang {sb}".format(sb=input_line))
-                    continue
-
-                if not input_line: continue
-
-                # If this line is a comment, just append it to the full command:
-                if input_line[0] == "#":
-                    command_with_comments.append(input_line[:-1])
-	            continue
-
-                # Replace lx.eval with function returning command
-                store_lx_eval = lx.eval
-                def return_cmd(cmd):
-                    return cmd
-                lx.eval = return_cmd
-
-                cmd = eval(input_line)
-
-                # Restore lx.eval
-                lx.eval = store_lx_eval
-                if cmd is not None:
-                    command_with_comments.append(cmd)
-
-                # Parse the command and store it in the commands list:
-                self.add_command(command_string = command_with_comments, **kwargs)
-                command_with_comments = []
-
-        except:
-            # Close the .lxm input file:
-            input_file.close()
-
-            # Restore lx.eval
-            lx.eval = store_lx_eval
-            raise Exception('Failed to parse file "%s".' % input_path)
-
-        # Close the .lxm input file:
-        input_file.close()
 
     def parse_json(self, input_path, **kwargs):
         """Parse a json file and store its commands in the `commands` property."""
@@ -303,39 +335,75 @@ class Macro(lumberjack.Lumberjack):
         # Close the .lxm input file:
         input_file.close()
 
+        index = kwargs.get('index', 0)
+        if 'index' in kwargs:
+            del kwargs['index']
+
         # Loop over the commands to get all the command json data:
         for cmdJson in jsonStruct:
-            self.add_command(command_json = cmdJson, **kwargs)
+            kwargs['index'] = index
+            if 'command' in cmdJson:
+                self.add_command(command_json = cmdJson, **kwargs)
+            else:
+                self.add_block(block = [], block_json = cmdJson, **kwargs)
+            index += 1
 
     def run(self):
         """Runs the macro."""
 
         # Run every command in the macro:
         for command in self.commands:
-            command.run()
+            if not command.suppress:
+                command.run()
+
+    def all_suppressed(self):
+        for child in self.children:
+            if not child.suppress:
+                return False
+
+        return True
 
     def run_next_line(self):
         """Runs the next line in the macro, i. e. the primary one."""
 
         # Select the primary command:
+        if self.primary is None:
+            self.select(0)
+
         command = self.primary
+        start_path = command.path
+
+        while command is not None and command.suppress:
+            command.selected = False
+            path = command.path
+            path[-1] += 1
+            if path[-1] == len(command.parent.children): path[-1] = 0
+            if path == start_path:
+                # All commands are suppresed
+                return None
+            command = self.node_for_path(path)
 
         # If there's a primary selected command, run it:
         if command:
             command.run()
         else:
-			return
+			return None
 
         # Get the index for the next command, which will now be the primary one:
-        next_command_index = self.commands.index(command) + 1
-        if next_command_index == len(self.commands): next_command_index = 0
+        next_command_path = command.path
+        next_command_path[-1] += 1
+        if next_command_path[-1] == len(command.parent.children): next_command_path[-1] = 0
+
+        while self.node_for_path(next_command_path).suppress:
+            next_command_path[-1] += 1
+            if next_command_path[-1] == len(command.parent.children): next_command_path[-1] = 0
 
         # Set as primary the next command:
         command.selected = False
-        prev_index = command.index
-        self.commands[next_command_index].selected = True
-        new_index = next_command_index
-        return (prev_index, new_index)
+        prev_path = command.path
+        self.node_for_path(next_command_path).selected = True
+        new_path = next_command_path
+        return (prev_path, new_path)
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
@@ -390,3 +458,8 @@ class Macro(lumberjack.Lumberjack):
             self.render_Python(file_path)
         else:
             self.render_json(file_path)
+
+    def on_drag_drop(self, source_nodes):
+        # After drag and drop update suppress state
+        for node in source_nodes:
+            node.update_suppress_for_node_and_descendants()

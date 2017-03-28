@@ -5,6 +5,7 @@ from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
 
+
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
     to draw the node in the TreeView UI is contained in the TreeNode, as well
@@ -65,8 +66,11 @@ class TreeNode(object):
         # strings provided in the Lumberjack blessing_parameters() method.
         self._input_region = kwargs.get('input_region', None)
 
+        self._meta = dict()
+        self.row_color = RowColor().name
+
         # Catch-all for other metadata we might want to store in our nodes, e.g. row color.
-        self._meta = kwargs.get('meta', {})
+        self._meta = dict(kwargs.get('meta', []))
 
         # List of column names for the node tree. Common to all nodes.
         # Set during `Lumberjack().bless()`
@@ -81,12 +85,11 @@ class TreeNode(object):
         # Controller is added during blessing. Should never change thereafter.
         if 'controller' in kwargs:
             self.__class__._controller = kwargs.get('controller')
+            TreeNode._controller = kwargs.get('controller')
 
         # Add empty TreeValue objects for each column, ready to accept values.
         for column in self._column_definitions:
             self._columns[column['name']] = TreeValue()
-
-        self.row_color = RowColor().name
 
     # PROPERTIES
     # ----------
@@ -355,6 +358,12 @@ class TreeNode(object):
     # METHODS
     # ----------
 
+    def draggable(self):
+        return False
+
+    def canAcceptDrop(self, source_nodes):
+        return False
+
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
         if 'parent' not in kwargs:
@@ -448,3 +457,36 @@ class TreeNode(object):
             found.extend(child.find_in_descendants)
 
         return found
+
+    def path():
+        """ Return path to node. Path is a list of indices that can be used to find node """
+
+
+        def fget(self):
+            if self.parent is None:
+                return []
+            else:
+                return self.parent.path + [self.index]
+
+        def fset(self, value):
+            assert(len(value) != 0), "Cannot move root node"
+            lumberjack = self._controller
+
+            # saving parent and target because self.parent.children.remove(self) may invalidate indices
+            new_parent = lumberjack.node_for_path(value[:-1])
+            
+            if len(new_parent.children) != value[-1]:
+                target_node = new_parent.children[value[-1]]
+            else:
+                # Appending. Will use len(new_parent.children) as index
+                target_node = None
+
+            self.parent.children.remove(self)
+            self.parent = new_parent
+            new_parent.children.insert(len(new_parent.children) if target_node is None else target_node.index, self)
+
+            self._controller.path_event()
+
+        return locals()
+
+    path = property(**path())

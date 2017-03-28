@@ -1,15 +1,18 @@
+# python
+
 import lx, lxifc, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
 
 PREFIXES = [
-    ('',   'None'),
-    ('!',  '!  Suppress dialogs.'),
-    ('!!', '!! Suppress all dialogs.'),
-    ('+',  '+  Show dialogs.'),
-    ('++', '++ Show all dialogs.'),
-    ('?',  '?  Show command dialog.')
+    ('',   message("MECCO_REPLAY", "PREFIX_NONE")),
+    ('!',  message("MECCO_REPLAY", "PREFIX_SUPPRESS_DIALOGS")),
+    ('!!', message("MECCO_REPLAY", "PREFIX_SUPPRESS_ALL_DIALOGS")),
+    ('+',  message("MECCO_REPLAY", "PREFIX_SHOW_DIALOGS")),
+    ('++', message("MECCO_REPLAY", "PREFIX_SHOW_ALL_DIALOGS")),
+    ('q',  message("MECCO_REPLAY", "PREFIX_SHOW_COMMAND_DIALOG"))
 ]
 
 class CommandClass(replay.commander.CommanderClass):
@@ -21,6 +24,8 @@ class CommandClass(replay.commander.CommanderClass):
         `'+'`   - Show dialogs.
         `'++'`  - Show all dialogs.
         `'?'`   - Show command dialog.
+
+    NOTE: Since commands cannot accept `?` as an argument, use `q` for `?`.
 
     See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
 
@@ -38,6 +43,9 @@ class CommandClass(replay.commander.CommanderClass):
 
     def commander_execute(self, msg, flags):
         prefix = self.commander_arg_value(0, '')
+
+        # Since ? is reserved for queries in MODO, we use the letter q as a sub.
+        prefix = "?" if prefix == 'q' else prefix
 
         # Add actions needed to undo and redo this command
         actionList = PrefixActionList()
@@ -96,5 +104,6 @@ class UndoLinePrefix(lxifc.Undo):
 
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
+
 
 lx.bless(CommandClass, 'replay.linePrefix')

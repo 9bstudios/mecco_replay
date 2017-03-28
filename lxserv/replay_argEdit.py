@@ -1,6 +1,8 @@
 # python
 
+import math
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -20,6 +22,8 @@ class CommandClass(replay.commander.CommanderClass):
                 'name': 'value',
                 'label': self.argLabel,
                 'datatype': 'string', # required, but ignored. Could be anything.
+                'values_list_type': self.arg_values_list_type,
+                'values_list': self.arg_values_list,
                 'flags': ['variable', 'query']
             }
         ]
@@ -44,39 +48,66 @@ class CommandClass(replay.commander.CommanderClass):
                     arg_nodes.add(arg)
         return arg_nodes
 
-    def can_float(self, argName):
-        """Returns `True` if all argument is of unspecified type and values can
-        be converted to `Float`.
-
-        Some command arguments in MODO have undefined (generic) `argType` parameters.
-        In these cases, a string is the fail-safe. But many of these generic values
-        are actually numeric, and the string editor in MODO is not ideal for editing
-        numbers. Workaround: if the value has an `argType` of 0 and Python can
-        successfully convert it to a `float` value, do it."""
-        for arg in self.args_by_argName(argName):
-            if arg.argType != 0:
-                return False
-            try:
-                float(arg.value)
-            except:
-                return False
-        return True
+    def commands_by_argName(self, argName):
+        """Returns a list of argument nodes in the current selection with a given
+        `argName` property. Probably not as fast as it should be."""
+        commands = list()
+        for node in replay.Macro().selected_commands:
+            for arg in node.args:
+                if arg.argName == argName:
+                    commands.append((node, arg.index))
+        return commands
 
     def commander_execute(self, msg, flags):
         """Fires whenever the value is updated in the form. Stores changes in the
         proper place."""
-        argName = self.commander_args()['argName']
-        argValue = self.commander_args()['value']
+        try:
+            argName = self.commander_args()['argName']
+            argValue = self.commander_args()['value']
 
-        for arg in self.args_by_argName(argName):
-            arg.value = argValue
+            for command, argIndex in self.commands_by_argName(argName):
+                arg = command.args[argIndex]
+                arg.value = self.store_in_arg_value(command, argIndex, argValue)
 
-        # Notify the TreeView to update itself.
-        replay.Macro().refresh_view()
-        replay.Macro().unsaved_changes = True
+            # Notify the TreeView to update itself.
+            replay.Macro().refresh_view()
+            replay.Macro().unsaved_changes = True
 
-        notifier = replay.Notifier()
-        notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+            notifier = replay.Notifier()
+            notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+        except Exception as e:
+            lx.out(e)
+
+    def store_in_arg_value(self, command, argIndex, argValue):
+        attrs = command.attributes()
+        argTypeName = attrs.arg(argIndex).type_name()
+        if argTypeName == lx.symbol.sTYPE_INTEGER:
+            hints = attrs.arg(argIndex).hints()
+            for idx, name in hints:
+                if idx == int(argValue):
+                    return name
+
+        return argValue
+
+    def arg_values_list(self):
+        datatype, hints, default = self.arg_info(1)
+        if hints is None:
+            return None
+            
+        names = list()
+        indices = set()
+        for idx, name in hints:
+            if idx not in indices:
+                indices.add(idx)
+                names.append(name)
+
+        return names
+
+    def arg_values_list_type(self):
+        datatype, hints, default = self.arg_info(1)
+        if hints is None:
+            return None
+        return 'popup'
 
     def cmd_Query(self, index, vaQuery):
         """Fires whenever the value is displayed in the form. Should return the value(s)
@@ -95,43 +126,27 @@ class CommandClass(replay.commander.CommanderClass):
 
         argName = self.commander_args()['argName']
 
+        datatype, hints, default = self.arg_info(1)
+
         argValues = set()
         for arg in self.args_by_argName(argName):
-
-            # Try to establish datatype by name
-            datatype = arg.argTypeName
-
-            # If not, fall back on the `arg.argType` property:
-            if not datatype:
-                datatype = [
-                    lx.symbol.sTYPE_STRING,     # generic object (as string)
-                    lx.symbol.sTYPE_INTEGER,    # integer
-                    lx.symbol.sTYPE_FLOAT,      # float
-                    lx.symbol.sTYPE_STRING      # string
-                ][arg.argType]
-
-            argValues.add((arg.value, datatype))
+            argValues.add((arg.value))
 
         # If there are no values to return, don't bother.
         if not argValues:
             return lx.result.OK
 
-        # Some arg values will be stored as strings when in fact they should
-        # really be numbers. (Since not all MODO command args specify a datatype.)
-        # We assume that if the datatype is undeclared and the string can be
-        # converted to a float, we should do it.
-        if self.can_float(argName):
-            values_list = [(float(v), lx.symbol.sTYPE_FLOAT) for (v, d) in argValues]
-        else:
-            values_list = list(argValues)
+        values_list = list(argValues)
 
         # RETURN VALUES
         # -------------
 
         # Need to add the proper datatype based on result from commander_query
-        for value, datatype in values_list:
-
+        for value in values_list:
             # Sometimes we get passed empty values. Ignore those.
+            if value is None:
+                value = default
+
             if value is None:
                 continue
 
@@ -150,24 +165,34 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddString(str(value))
                 except:
-                    raise Exception("Invalid string", value, type(value), datatype)
+                    raise Exception(message("MECCO_REPLAY", "INVALID_STRING"), value, type(value), datatype)
+
+            # Text Value Hints
+            elif (datatype == lx.symbol.sTYPE_INTEGER) and hints:
+                for idx, name in hints:
+                    if name == value:
+                        va.AddInt(idx)
+
+            # Booleans
+            elif datatype == lx.symbol.sTYPE_BOOLEAN:
+                va.AddInt(1 if value.lower() in ['true', 'on', 'yes'] else 0)
 
             # Integers
             elif datatype in [
                     lx.symbol.sTYPE_INTEGER,
                     lx.symbol.sTYPE_BOOLEAN
                     ]:
-                va.AddInt(int(value))
+                va.AddInt(int(value if value else 0))
 
             # Floats
             elif datatype in [
                     lx.symbol.sTYPE_ACCELERATION,
-                    lx.symbol.sTYPE_ANGLE,
                     lx.symbol.sTYPE_AXIS,
                     lx.symbol.sTYPE_COLOR1,
                     lx.symbol.sTYPE_FLOAT,
                     lx.symbol.sTYPE_FORCE,
                     lx.symbol.sTYPE_LIGHT,
+                    lx.symbol.sTYPE_DISTANCE,
                     lx.symbol.sTYPE_MASS,
                     lx.symbol.sTYPE_PERCENT,
                     lx.symbol.sTYPE_SPEED,
@@ -176,13 +201,18 @@ class CommandClass(replay.commander.CommanderClass):
                     ]:
                 va.AddFloat(float(value))
 
+            # Angles need to be converted to radians
+            elif datatype in [lx.symbol.sTYPE_ANGLE]:
+                va.AddFloat(math.radians(float(value)))
+
             # Vectors (i.e. strings that need parsing)
             elif datatype in [
                     lx.symbol.sTYPE_ANGLE3,
                     lx.symbol.sTYPE_COLOR,
                     lx.symbol.sTYPE_DISTANCE3,
                     lx.symbol.sTYPE_FLOAT3,
-                    lx.symbol.sTYPE_PERCENT3
+                    lx.symbol.sTYPE_PERCENT3,
+                    '&item'
                     ]:
                 emptyValue = va.AddEmptyValue()
                 emptyValue.SetString(str(value))
@@ -193,7 +223,8 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
-                    raise Exception("Could not detect query datatype.")
+                    lx.out(argName, datatype, values_list)
+                    raise Exception(message("MECCO_REPLAY", "QUERY_DATATYPE_DETECT_ERROR"))
 
         return lx.result.OK
 
@@ -203,51 +234,54 @@ class CommandClass(replay.commander.CommanderClass):
         return self.commander_args()['argName']
 
     def basic_ArgType(self, argIndex):
+        type, hints, default = self.arg_info(argIndex)
+        return type
+
+    def arg_info(self, argIndex):
         """Returns sTYPE_INTEGER, sTYPE_FLOAT, or sTYPE_STRING depending on the
         datatype stored in the `MacroCommandArg` object. You'd think this would
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
 
-        # First, figure out if we have exactly one argType to work with. If we have
-        # zero or more than one, we have to use a string.
-        argTypes = set()
-        for arg in self.args_by_argName(argName):
-            argTypes.add((arg.argType, arg.argTypeName))
+        types = set()
 
-        if not argTypes: return lx.symbol.sTYPE_STRING
-        if len(argTypes) > 1: return lx.symbol.sTYPE_STRING
+        # Loop over all command args with name argName
+        for command, argIndex in self.commands_by_argName(argName):
+            arg = command.args[argIndex]
+            # Get type coming from meta
 
-        # Now that we've established that we only have one argType, act like it.
-        argType = list(argTypes)[0]
+            hints = None
+            default = None
+            argTypeName = None
 
-        # If an `argTypeName` is defined in the arg object, use it.
-        argTypeName = argType[1]
-        if argTypeName:
-            return argTypeName
+            attrs = command.attributes()
+            argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
+            default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
+            hints = attrs.arg(argIndex).hints(None)
 
-        # In many cases, however, we won't have a proper argTypeName :(
+            if argTypeName:
+                types.add((argTypeName, None if hints is None else tuple(hints), default))
+
+            # If we have more than one type no need to continue. Return 'string'
+            if len(types) > 1:
+                break;
+
+        if len(types) == 1:
+            # If all argument types are identical return it
+            arg_info = list(types)[0]
+            # Nasty bug: if we edit a color, we must reset the color
+            # else crash.
+            if arg_info[0] == lx.symbol.sTYPE_COLOR:
+                replay.Macro().reset_color_on_select = True
+
+            return arg_info
         else:
-
-            # If we don't have an argTypeName, check if it can be a float.
-            if self.can_float(argName):
-                return lx.symbol.sTYPE_FLOAT
-
-            # If not, fall back on the `arg.argType` property:
-            #   0: generic
-            #   1: integer
-            #   2: float
-            #   3: string
-
-            lookup = [
-                lx.symbol.sTYPE_STRING, # generic object
-                lx.symbol.sTYPE_INTEGER,
-                lx.symbol.sTYPE_FLOAT,
-                lx.symbol.sTYPE_STRING
-            ]
-            return lookup[argType[0]]
+            # If args doesn't have type or have many use string
+            return (lx.symbol.sTYPE_STRING, None, "")
 
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)
+
 
 lx.bless(CommandClass, 'replay.argEdit')

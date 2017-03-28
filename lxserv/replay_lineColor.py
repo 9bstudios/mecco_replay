@@ -1,3 +1,5 @@
+# python
+
 import lx, lxifc, modo, replay
 
 """A simple example of a blessed MODO command using the commander module.
@@ -43,7 +45,7 @@ class CommandClass(replay.commander.CommanderClass):
         # Add actions needed to undo and redo this command
         actionList = ColorActionList()
         for line in replay.Macro().selected_descendants:
-            actionList.append(line.index, line.row_color, color_name)
+            actionList.append(line.path, line.row_color, color_name)
 
         # Register Undo object performing operation and apply it
         undo_svc = lx.service.Undo()
@@ -59,19 +61,19 @@ class ColorActionList:
     def __init__(self):
         self.m_actions = list()
 
-    def append(self, index, prev_color, new_color):
+    def append(self, path, prev_color, new_color):
         """Add action in action list"""
-        self.m_actions.append((index, prev_color, new_color))
+        self.m_actions.append((path, prev_color, new_color))
 
     def iter_redo(self):
         """iterate actions for redo"""
-        for index, prev_color, new_color in self.m_actions:
-            yield (index, new_color)
+        for path, prev_color, new_color in self.m_actions:
+            yield (path, new_color)
 
     def iter_undo(self):
         """iterate actions for undo"""
-        for index, prev_color, new_color in self.m_actions:
-            yield (index, prev_color)
+        for path, prev_color, new_color in self.m_actions:
+            yield (path, prev_color)
 
 class UndoLineColor(lxifc.Undo):
     def __init__(self, actionList):
@@ -82,8 +84,8 @@ class UndoLineColor(lxifc.Undo):
         macro = replay.Macro()
 
         # Change color of selected nodes
-        for index, color in actions:
-            macro.children[index].row_color = color
+        for path, color in actions:
+            macro.node_for_path(path).row_color = color
 
         # Rebuild view
         macro.rebuild_view()
@@ -97,5 +99,6 @@ class UndoLineColor(lxifc.Undo):
 
     def undo_Reverse(self):
         self.apply(self.m_actionList.iter_undo())
+
 
 lx.bless(CommandClass, 'replay.lineColor')

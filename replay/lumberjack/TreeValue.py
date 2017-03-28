@@ -4,6 +4,7 @@ import lx
 from Color import Color
 from Font import Font
 
+
 class TreeValue(object):
     """Contains all of the necessary properties for a TreeView
     cell value, including internal value, display value, and metadata

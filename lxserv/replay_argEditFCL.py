@@ -34,15 +34,16 @@ class CommandClass(replay.commander.CommanderClass):
 
         args = []
         for node in nodes:
+            command_obj = node.attributes()
             for arg in node.args:
-                args.append(arg.argName)
+                if not command_obj.arg(arg.index).is_hidden(True):
+                    args.append(arg.argName)
 
         commands_list = []
         for arg in self.remove_duplicates(args):
             commands_list.append('replay.argEdit %s ?' % arg)
 
         return commands_list
-
 
 
 lx.bless(CommandClass, 'replay.argEditFCL')

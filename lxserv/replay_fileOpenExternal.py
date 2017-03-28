@@ -15,15 +15,18 @@ https://github.com/adamohern/commander for details"""
 class CommandClass(replay.commander.CommanderClass):
     """Opens the currently-open Macro in the filesystem text editor."""
     def commander_execute(self, msg, flags):
+
+        # Stop recording
+        lx.eval('replay.record stop')
+
         file_path = replay.Macro().file_path
         lx.eval('replay.fileClose')
         lx.eval('file.open {%s}' % file_path)
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         if not replay.Macro().file_path:
             return False
         return True
+
 
 lx.bless(CommandClass, 'replay.fileOpenExternal')

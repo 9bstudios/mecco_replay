@@ -1,8 +1,10 @@
+# python
+
 import lx, lxifc, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
-
 
 class CommandClass(replay.commander.CommanderClass):
     """Reorders the selected command within the `Macro()` object.
@@ -52,19 +54,19 @@ class CommandClass(replay.commander.CommanderClass):
 
         # Checking mode validity
         if mode not in ['up', 'down', 'top', 'bottom', 'index']:
-            modo.dialogs.alert("Empty selection", 'Wrong mode "%s".' % mode, dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "INVALID_MODE"), message("MECCO_REPLAY", "INVALID_MODE_MSG", mode), dtype='warning')
             return None
 
         macro = replay.Macro()
 
         # Checking index range
         if (mode == 'index') and (index >= len(macro.children)):
-            modo.dialogs.alert("Empty selection", 'Index "%s" is out of range.' % index, dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "OUT_OF_RANGE"), message("MECCO_REPLAY", "OUT_OF_RANGE_MSG", index), dtype='warning')
             return None
 
         # Checking if selection exists
         if len(macro.selected_children) == 0:
-            modo.dialogs.alert("Empty selection", "There are no selected commands to reorder", dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "NO_SELECTED_COMMAND"), message("MECCO_REPLAY", "NO_SELECTED_COMMAND_MSG"), dtype='warning')
             return None
 
         actionList = MoveActionList()

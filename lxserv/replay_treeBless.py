@@ -73,7 +73,8 @@ Macro().bless(
         'MacroCommandCommand',
         'MacroCommandArg',
         'MacroCommandEnable',
-        'MacroCommandPrefix'
+        'MacroCommandPrefix',
+        'MacroCommandBlock'
     ],
 
     # :param notifiers:       Returns a list of notifier tuples for auto-updating the tree. Optional.

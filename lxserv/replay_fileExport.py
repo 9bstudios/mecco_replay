@@ -1,4 +1,7 @@
+# python
+
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -31,6 +34,9 @@ class CommandClass(replay.commander.CommanderClass):
         `file_path` property. If `file_path` is `None`, prompt for a destination. Unlike
         `replay.fileSave` this command can save in multiple formats."""
 
+        # Stop recording
+        lx.eval('replay.record stop')
+
         macro = replay.Macro()
 
         format_val = self.commander_arg_value(0)
@@ -39,7 +45,7 @@ class CommandClass(replay.commander.CommanderClass):
         if file_path is None:
             file_path = modo.dialogs.customFile(
                 dtype = 'fileSave',
-                title = 'Export file',
+                title = message("MECCO_REPLAY", "EXPORT_DIALOG_TITLE"),
                 names = macro.export_format_names,
                 unames = macro.export_format_unames,
                 ext = macro.export_format_extensions,
@@ -53,10 +59,9 @@ class CommandClass(replay.commander.CommanderClass):
         replay.Macro().render(format_val, file_path)
 
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         if replay.Macro().is_empty:
             return False
         return True
+
 
 lx.bless(CommandClass, 'replay.fileExport')

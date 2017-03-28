@@ -1,4 +1,7 @@
+# python
+
 import lx, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -20,6 +23,10 @@ class CommandClass(replay.commander.CommanderClass):
            ]
 
     def commander_execute(self, msg, flags):
+
+        # Stop recording
+        lx.eval('replay.record stop')
+
         macro = replay.Macro()
 
         file_path = macro.file_path
@@ -35,7 +42,7 @@ class CommandClass(replay.commander.CommanderClass):
             if not file_path:
                 file_path = modo.dialogs.customFile(
                     dtype = 'fileSave',
-                    title = 'Save LXM file',
+                    title = message("MECCO_REPLAY", "SAVE_DIALOG_TITLE"),
                     names = ('LXM',),
                     unames = ('LXM file'),
                     ext=('LXM',),
@@ -49,11 +56,11 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro.render(file_format, file_path)
 
+        # Add to recently-opened
         lx.eval('replay.fileOpenAddRecent {%s}' % file_path)
 
+
     def basic_Enable(self, msg):
-        if lx.eval('replay.record query:?'):
-            return False
         if replay.Macro().is_empty:
             return False
         return True

@@ -1,11 +1,17 @@
 # python
 
 import lxifc, lx
+import json
+
+DROPSOURCE_COMMAND = "replay_command"
+DROP_SERVER = "replay_dropserver"
+DROPSERVERUNIQUEKEY = "118319"
+
 
 class TreeView( lxifc.TreeView,
                 lxifc.Tree,
                 lxifc.ListenerPort,
-                lxifc.Attributes ):
+                lxifc.Attributes):
 
     """TreeView interface for the MODO API. Boilerplate pulled from:
     http://modo.sdk.thefoundry.co.uk/wiki/Python_Treeview_Example
@@ -313,6 +319,8 @@ class TreeView( lxifc.TreeView,
         elif mode == lx.symbol.iTREEVIEW_SELECT_CLEAR:
             self._controller.clear_selection()
 
+        self._controller.select_event_treeview()
+
     def treeview_CellCommand(self, columnIndex):
         """Cells can contain commands similar to Forms, and this is especially
         useful with query commands like booleans. Note that in order for the `treeview_CellCommand`
@@ -422,14 +430,65 @@ class TreeView( lxifc.TreeView,
 
         That's it, really.
         """
-        lx.notimpl()
+        if columnIndex != 0:
+            return ""
+        if all(node.draggable() for node in self._root.selected_descendants):
+            return DROPSOURCE_COMMAND
+        else:
+            return ""
 
     def treeview_GetDragDropSourceObject(self, columnIndex, type):
-        lx.notimpl()
+        if columnIndex != 0:
+            return None
+
+        if type != DROPSOURCE_COMMAND:
+            return None
+
+        # Create a string value object.
+        cmd_svc = lx.service.Command ()
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
+
+        # Create a value array so we can access it.
+        va = lx.object.ValueArray ()
+        va.set(vaQuery)
+
+        # Add unique key
+        va.AddString(DROPSERVERUNIQUEKEY)
+
+        # Add selected children indices
+        for child in self._root.selected_descendants:
+            assert(child.draggable())
+            va.AddString(json.dumps(child.path))
+
+        return va
 
     def treeview_GetDragDropDestinationObject(self, columnIndex, location):
-        lx.notimpl()
+        if columnIndex != 0:
+            return None
 
+        if location != 0 and location != 2:
+            return None
+
+        # Create a string value object.
+        cmd_svc = lx.service.Command ()
+        vaQuery = cmd_svc.CreateQueryObject(lx.symbol.sTYPE_STRING)
+
+        # Create a value array so we can access it.
+        va = lx.object.ValueArray ()
+        va.set(vaQuery)
+
+        # Add unique key
+        va.AddString(DROPSERVERUNIQUEKEY)
+
+        # Add target index
+        if location == 2:
+            idx = self.m_currentIndex + 1
+        else:
+            idx = self.m_currentIndex
+
+        va.AddString(json.dumps(self.m_currentNode.children[idx].path))
+
+        return va
     # --------------------------------------------------------------------------------------------------
     # Attributes
     # --------------------------------------------------------------------------------------------------

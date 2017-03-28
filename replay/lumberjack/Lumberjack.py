@@ -1,8 +1,93 @@
 # python
 
-import lx, traceback
+import lx, lxifc, traceback
+import json
 from TreeNode import TreeNode
 from TreeView import TreeView
+from TreeView import DROPSERVERUNIQUEKEY
+from TreeView import DROPSOURCE_COMMAND
+from TreeView import DROP_SERVER
+
+
+class DropServer(lxifc.Drop):
+
+    def drop_ActionList(self, source, dest, addDropAction):
+        # Create a value array so we can access source.
+        vaSource = lx.object.ValueArray()
+        vaSource.set(source)
+
+        # Create a value array for dest
+        vaDest = lx.object.ValueArray()
+        vaDest.set(dest)
+
+        source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
+        dest_path = json.loads(vaDest.GetString(1))
+
+        lumberjack = Lumberjack.final_class()
+        source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
+        dest_node = lumberjack.node_for_path(dest_path)
+
+        if not dest_node.parent.canAcceptDrop(source_nodes):
+            return
+
+        # Check unique key
+        if not self.check_key(vaSource) or not self.check_key(vaDest):
+            return
+
+        # Create AddDropAction interface to modify action list
+        obj = lx.object.AddDropAction()
+        obj.set(addDropAction)
+
+        # Add move action
+        obj.AddAction(1, "Move item(s)")
+
+    def drop_Drop(self, source, dest, action):
+        # Create a value array so we can access source.
+        vaSource = lx.object.ValueArray()
+        vaSource.set(source)
+
+        # Create a value array for dest
+        vaDest = lx.object.ValueArray()
+        vaDest.set(dest)
+
+        # Check unique key
+        if not self.check_key(vaSource) or not self.check_key(vaDest):
+            return
+
+        source_paths = [json.loads(vaSource.GetString(idx)) for idx in xrange(1, vaSource.Count())]
+        dest_path = json.loads(vaDest.GetString(1))
+
+        lumberjack = Lumberjack.final_class()
+
+        # Collect all selected children
+        source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
+
+        # Move children
+        for source in source_nodes:
+            source.path = dest_path
+
+        lumberjack.on_drag_drop(source_nodes)
+
+        lumberjack.rebuild_view()
+
+    def drop_Preview(self, source, dest, action, draw):
+        lx.notimpl()
+
+    @classmethod
+    def check_key(cls, va):
+        if va.Count() > 1 and va.GetString(0) == DROPSERVERUNIQUEKEY:
+            return True
+        return False
+
+    def drop_Recognize(self, source):
+        # Create a value array so we can access source.
+        va = lx.object.ValueArray()
+        va.set(source)
+
+        # Check unique key
+        if self.check_key(va):
+            return True
+        return True
 
 class Lumberjack(object):
     """Metaclass containing everything necessary to create
@@ -89,6 +174,17 @@ class Lumberjack(object):
     class _TreeViewSubclass(TreeView):
         pass
 
+    class _DropServer(DropServer):
+        pass
+
+    class _RootNode(TreeNode):
+        def __init__(self, **kwargs):
+            super(self.__class__, self).__init__(**kwargs)
+
+        def canAcceptDrop(self, source_nodes):
+            return True
+
+
     _root = None
     _tree_view = None
     _blessed = False
@@ -97,11 +193,12 @@ class Lumberjack(object):
     _nice_name = ""
     _viewport_type = ""
     _primary = None
+    final_class = None
 
     # In case you need to extend the TreeNode class, you can inherit TreeNode in
-    # your own class and then tell your Lumberjack Object to use it by changing
-    # the TreeNodeClass property.
-    _TreeNodeClass = TreeNode
+    # your own class and then tell your Lumberjack Object to use it by overwriting this method
+    def create_child_node(self, **kwargs):
+        return TreeNode(**kwargs)
 
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
@@ -113,6 +210,9 @@ class Lumberjack(object):
         The TreeNode object is the data moel, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
+        pass
+
+    def on_drag_drop(self, source_nodes):
         pass
 
     @classmethod
@@ -204,20 +304,22 @@ class Lumberjack(object):
                                 ```
         """
 
+        Lumberjack.final_class = cls
+
         # Can only be blessed once per session.
-        if cls._blessed:
+        if Lumberjack._blessed:
             raise Exception('%s class has already been blessed.' % cls.__name__)
 
         # The `TreeNode()` object is the root of the tree, and all other nodes
         # will be children of this node. The root node is NOT visible in the GUI.
-        cls._root = cls._TreeNodeClass(
+        Lumberjack._root = Lumberjack._RootNode(
             column_definitions = column_definitions.get('list', []),
             controller = cls()
         )
 
         # Our internal handle for the view itself.
-        cls._tree_view = cls._TreeViewSubclass(
-            root = cls._root,
+        Lumberjack._tree_view = Lumberjack._TreeViewSubclass(
+            root = Lumberjack._root,
             primary_column_position = column_definitions.get('primary_position', 0),
             input_regions = input_regions,
             controller = cls()
@@ -252,19 +354,26 @@ class Lumberjack(object):
             )
         )
 
-        tags = {
+        tree_view_tags = {
             lx.symbol.sSRV_USERNAME: server_username,
             lx.symbol.sTREEVIEW_TYPE: sTREEVIEW_TYPE,
             lx.symbol.sINMAP_DEFINE: sINMAP
         }
 
+        drop_server_tags = {
+            lx.symbol.sDROP_SOURCETYPE: DROPSOURCE_COMMAND,
+            lx.symbol.sDROP_ACTIONNAMES : "1@moveAction"
+        }
+
         try:
             # Remember: we've created a Lumberjack-specific subclass of our `TreeView()` class for
             # the blessing, just in case more than one Lumberjack subclass exists.
-            lx.bless(cls._TreeViewSubclass, server_name, tags)
+            lx.bless(Lumberjack._TreeViewSubclass, server_name, tree_view_tags)
 
             # Make sure it doesn't happen again.
-            cls._blessed = True
+            Lumberjack._blessed = True
+
+            lx.bless(Lumberjack._DropServer, DROP_SERVER, drop_server_tags)
 
         except:
             traceback.print_exc()
@@ -273,16 +382,16 @@ class Lumberjack(object):
     @property
     def root(self):
         """Returns the class `TreeNode()` object."""
-        if self.__class__._root:
-            return self.__class__._root
+        if Lumberjack._root:
+            return Lumberjack._root
         else:
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
     @property
     def treeview(self):
         """Returns the class `TreeView()` object."""
-        if self.__class__._tree_view:
-            return self.__class__._tree_view
+        if Lumberjack._tree_view:
+            return Lumberjack._tree_view
         else:
             raise Exception('%s: Root cannot be accessed before `bless()`.' % self.__class__.__name__)
 
@@ -295,6 +404,11 @@ class Lumberjack(object):
     def selected_children(self):
         """Returns the selected `TreeNode()` objects at the root of the tree."""
         return self.root.selected_children
+
+    def path_event(self):
+        """Fired by `TreeNode` objects whenever the node's `path` property is changed.
+        Implement in Lumberjack subclass to fire custom notifiers, etc."""
+        pass
 
     def select_event(self):
         """Fired by `TreeNode` objects whenever the node's `selected` property is changed.
@@ -314,21 +428,6 @@ class Lumberjack(object):
         return locals()
 
     primary = property(**primary())
-
-    def TreeNodeClass():
-        doc = """The `TreeNode()`` subclass to use when populating the tree.
-
-        By default, Lumberjack populates itself with vanilla `TreeNode` objects.
-        Should you need to extend `TreeNode` to include application-specific functionality,
-        you can inherit `TreeNode` into your own class, and supply your class to Lumberjack
-        using the `TreeNodeClass` property."""
-        def fget(self):
-            return self._TreeNodeClass
-        def fset(self, value):
-            self._TreeNodeClass = value
-        return locals()
-
-    TreeNodeClass = property(**TreeNodeClass())
 
     def column_definitions():
         doc = """List of columns and their widths for the treeview in the
@@ -379,9 +478,13 @@ class Lumberjack(object):
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
+        if 'path' in kwargs:
+            kwargs['parent'] = self.node_for_path(kwargs['path'][:-1])
+            kwargs['index'] = kwargs['path'][-1]
+
         if not 'parent' in kwargs:
             kwargs['parent'] = self.root
-        newNode = self._TreeNodeClass(**kwargs)
+        newNode = self.create_child_node(**kwargs)
         if 'index' not in kwargs:
             kwargs['parent'].children.append(newNode)
         else:
@@ -421,3 +524,24 @@ class Lumberjack(object):
         `rebuild()`` method."""
 
         self.treeview.notify_NewAttributes()
+
+    class BadPath(Exception):
+        pass
+
+    @staticmethod
+    def node_for_path_recursive(node, path):
+        # if leaf node
+        if len(node.children) == 0 and len(path) != 0:
+            raise Lumberjack.BadPath()
+
+        if len(path) == 0:
+            return node
+        else:
+            return Lumberjack.node_for_path_recursive(node.children[path[0]], path[1:])
+
+
+    def node_for_path(self, path):
+        try:
+            return Lumberjack.node_for_path_recursive(self.root, path)
+        except Lumberjack.BadPath:
+            raise Exception("Invalid path %s" % str(path))

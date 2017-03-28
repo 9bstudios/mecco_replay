@@ -1,4 +1,7 @@
+# python
+
 import lx, lxifc, modo, replay
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -22,7 +25,7 @@ class CommandClass(replay.commander.CommanderClass):
         # Check if selection exists
         selecteds = macro.selected_children
         if len(selecteds) == 0:
-            modo.dialogs.alert("Warning: There is no selected command(s)", dtype='warning')
+            modo.dialogs.alert(message("MECCO_REPLAY", "NO_SELECTED_COMMAND_MSG"), dtype='warning')
             return
 
         # Collect list of selected command indices
@@ -84,4 +87,4 @@ class UndoInsertComment(lxifc.Undo):
         self.finalize_command(macro)
 
 
-lx.bless(CommandClass, 'replay.insertComment')
+lx.bless(CommandClass, 'replay.lineComment')

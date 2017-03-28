@@ -59,6 +59,14 @@ code {
   display: inline-block;
 }
 
+.click {
+  padding: .1em .3em 0;
+  background-color: rgb(245, 230, 255);
+  color: rgb(96, 0, 183);
+  display: inline-block;
+  border-radius: .3em;
+}
+
 .tooltip {
   font-style:italic;
 }
@@ -75,8 +83,22 @@ code {
 }
 
 #quicklinks ul li {
-  padding:1em 0;
+  padding:.5em 0;
   border-top:1px solid #ddd;
+  position: relative;
+}
+
+#quicklinks ul li code {
+  position: absolute;
+  left: 15em;
+}
+
+#quickstart ol {
+  padding-left: 0;
+}
+
+#quickstart li {
+  margin-bottom: 1em;
 }
 
 ul.arguments li {

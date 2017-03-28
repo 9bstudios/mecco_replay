@@ -4,6 +4,7 @@ import lx
 import re
 import lumberjack
 
+
 class MacroCommandArg(lumberjack.TreeNode):
     """Contains everything pertaining to a single command argument in the macro.
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
@@ -31,12 +32,12 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         # `enable` field is empty for arguments
         self.columns['enable'] = lumberjack.TreeValue()
-        self.columns['command'].input_region = None
+        self.columns['enable'].input_region = None
         self.columns['enable'].display_value = ''
 
         # `prefix` field is empty for arguments
         self.columns['prefix'] = lumberjack.TreeValue()
-        self.columns['command'].input_region = None
+        self.columns['prefix'].input_region = None
         self.columns['prefix'].display_value = ''
 
         # `name` field contains the argument name as a `value`,
@@ -136,6 +137,9 @@ class MacroCommandArg(lumberjack.TreeNode):
 
     argExample = property(**argExample())
 
+    def canEval(self):
+        return False
+
     def retreive_arg_meta(self):
         """Retrieve a list of arguments and datatypes from MODO's commandservice.
         See http://sdk.luxology.com/wiki/Commandservice#command.argNames
@@ -225,11 +229,5 @@ class MacroCommandArg(lumberjack.TreeNode):
     def convert_string_to_value(self, arg_value):
         if arg_value is None:
             return None
-        elif self.argType == 1 and isinstance(arg_value, basestring):
-            return True if arg_value.lower() in ['true', 'on', 'yes'] else False
-        elif self.argType == 1 and isinstance(arg_value, (bool, int)):
-            return int(arg_value)
-        elif self.argType == 2:
-            return float(arg_value)
-        else:
-            return str(arg_value)
+
+        return str(arg_value)

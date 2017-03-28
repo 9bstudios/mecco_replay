@@ -1,0 +1,10 @@
+#LXMacro#
+script.run hash:"macro.scriptservice:19601433555:macro"
+tool.set preset:TransformMoveItem mode:on
+# Command Block Begin: 
+    tool.setAttr tool:"xfrm.transform" attr:TX value:"-0.225"
+    tool.setAttr tool:"xfrm.transform" attr:TY value:"0.22"
+    tool.setAttr tool:"xfrm.transform" attr:U value:"-0.225"
+    tool.setAttr tool:"xfrm.transform" attr:V value:"0.22"
+    tool.doApply
+# Command Block End: 

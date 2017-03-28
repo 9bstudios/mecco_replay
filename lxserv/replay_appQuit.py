@@ -18,7 +18,7 @@ class CmdListener(lxifc.CmdSysListener):
             cmd = lx.object.Command(cmd)
             # lx.out("'%s' will fire shortly" % cmd.Name())
             if cmd.Name() == "app.quit":
-                lx.eval('!!replay.fileClose')
+                lx.eval('replay.fileClose')
 
     def cmdsysevent_ExecutePost(self,cmd,isSandboxed,isPostCmd):
         # if self.armed:
@@ -35,5 +35,6 @@ class CmdListener(lxifc.CmdSysListener):
     def cmdsysevent_RefireEnd(self):
         # ... and rearm on RefireEnd
         self.armed = True
+
 
 cmdListener1 = CmdListener()

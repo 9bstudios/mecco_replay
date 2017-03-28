@@ -2,6 +2,7 @@
 
 import lx, lxifc
 
+
 class Notifier(lxifc.Notifier):
     masterList = {}
 

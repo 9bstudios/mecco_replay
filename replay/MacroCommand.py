@@ -1,10 +1,13 @@
 # python
 
 import lx
+import lxifc
 import re
 import json
 import lumberjack
 from MacroCommandArg import MacroCommandArg
+from CommandAttributes import CommandAttributes
+
 
 class MacroCommand(lumberjack.TreeNode):
     """Contains everything necessary to read, construct, write, and translate a
@@ -43,12 +46,26 @@ class MacroCommand(lumberjack.TreeNode):
         self.columns['name'].input_region = 'MacroCommandCommand'
         # self.columns['name'].icon_resource = 'uiicon_replay.suppress'
 
+        if kwargs.get('suppress') != None:
+            self.direct_suppress = kwargs.get('suppress')
+
         # If a command string (it's actually a list of strings) has been passed in, parse it:
-        if bool(kwargs.get('command_string')) and \
-            all(isinstance(elem, basestring) for elem in kwargs.get('command_string')):
-            self.parse_string(kwargs.get('command_string'))
+        if bool(kwargs.get('command')):
+            self.parse_string(kwargs.get('command'), kwargs.get('comment'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
+
+        if bool(kwargs.get('ButtonName')):
+            self.columns['name'].value = kwargs.get('ButtonName')
+
+    def attributes(self):
+        return CommandAttributes(string=self.render_LXM_without_comment())
+
+    def draggable(self):
+        return True
+
+    def canEval(self):
+        return not self.suppress
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
@@ -96,25 +113,22 @@ class MacroCommand(lumberjack.TreeNode):
 
     args = property(**args())
 
-    def suppress():
-        doc = "Boolean. Suppresses (comments) the command by appending a `#` before it."
-        def fget(self):
-            return self._suppress
-        def fset(self, is_suppressed):
-            # Set the internal _suppress value. This value is used when we do things
-            # like render to LXM, etc.
-            self._suppress = is_suppressed
+    def can_change_suppress(self):
+        if hasattr(self.parent, 'suppress'):
+            return not self.parent.suppress
+        else:
+            return True
 
-            # Set the `enable` column display. This is purely visual.
-
-            if not is_suppressed:
+    def update_suppress_for_node_and_descendants(self):
+        if hasattr(self, 'suppress'):
+            if not self.suppress:
                 # If not suppressed, display a checkmark and store True
                 self.columns['enable'].value = True
                 self.columns['enable'].display_value = ''
                 # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
                 self.columns['name'].color.special_by_name('default')
                 self.columns['prefix'].color.special_by_name('default')
-            elif is_suppressed:
+            elif self.suppress:
                 # If it is suppressed, display nothing and store False
                 self.columns['enable'].value = False
                 self.columns['enable'].display_value = '#'
@@ -122,19 +136,47 @@ class MacroCommand(lumberjack.TreeNode):
                 self.columns['name'].color.special_by_name('gray')
                 self.columns['prefix'].color.special_by_name('gray')
 
+        for child in self.children:
+            if hasattr(child, 'suppress'):
+                child.update_suppress_for_node_and_descendants()
+
+    def direct_suppress():
+        doc = "Boolean. True if command suppressed directly not by suppressing block."
+        def fget(self):
+            return self._suppress
+
+        def fset(self, is_suppressed):
+            # Set the internal _suppress value. This value is used when we do things
+            # like render to LXM, etc.
+            self._suppress = is_suppressed
+
+            # Set the `enable` column display. This is purely visual.
+            self.update_suppress_for_node_and_descendants()
+
+        return locals()
+
+    direct_suppress = property(**direct_suppress())
+
+    def suppress():
+        doc = "Boolean. Suppresses (comments) the command by appending a `#` before it."
+        def fget(self):
+            if hasattr(self.parent, 'suppress'):
+                return self._suppress or self.parent.suppress
+            return self._suppress
+
         return locals()
 
     suppress = property(**suppress())
 
     def parse_meta(self, line):
-	meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
-	if meta is not None:
+        meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+        if meta is not None:
             return (meta.group(1), meta.group(2))
-	else:
+        else:
             return None
 
     def render_meta(self, name, val):
-	return "# replay {n}:{v}".format(n=name, v=val)
+        return "# replay {n}:{v}".format(n=name, v=val)
 
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings
@@ -171,16 +213,24 @@ class MacroCommand(lumberjack.TreeNode):
 
     user_comment_before = property(**user_comment_before())
 
-    def parse_string(self, command_string):
+    def parse_string(self, command, comment, suppress):
         """Parse a normal MODO command string into its constituent parts, and
         stores those in the `command` and `args` properties for the object."""
 
         # Get the comments before the command, if any:
-        if len(command_string) > 1:
-            self.comment_before = command_string[:-1]
+        if comment is not None:
+            self.user_comment_before = comment
+        else:
+            self.user_comment_before = []
 
         # Get the prefix and the command:
-        full_command = re.search(r'([!?+]*)(\S+)', command_string[-1])
+        full_command = re.search(r'([!?+]*)(\S+)', command)
+
+        if full_command is None:
+            raise Exception("Wrong command")
+
+        # Get the suppress flag
+        self.direct_suppress = suppress
 
         # Get the prefix, if any:
         if full_command.group(1): self.prefix = full_command.group(1)
@@ -189,7 +239,7 @@ class MacroCommand(lumberjack.TreeNode):
         self.command = full_command.group(2)
 
         # Parse the arguments for this command:
-        self.parse_args(command_string[-1][len(full_command.group(0)):])
+        self.parse_args(command[len(full_command.group(0)):])
 
     def parse_json(self, command_json):
         """Parse a MODO command in json struct into its constituent parts, and
@@ -199,6 +249,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         # Retrive command, prefix and comment
         self.command = command_json["name"]
+        self.direct_suppress = command_json["suppress"]
         self.prefix = command_json["prefix"]
         self.comment_before = command_json["comment"]
         #return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
@@ -276,7 +327,7 @@ class MacroCommand(lumberjack.TreeNode):
 
         arg_counter = 0
 
-        while args_string:
+        while args_string and arg_counter < len(self.args):
 
             # Get the next argument's name (if given) and value:
             arg_name, args_string = self.get_next_arg_name(args_string)
@@ -358,7 +409,10 @@ class MacroCommand(lumberjack.TreeNode):
     def render_LXM(self):
         """Construct MODO command string from stored internal parts. Also adds comments"""
         res = list(self.comment_before)
-        res.append(self.render_LXM_without_comment())
+        if self.direct_suppress:
+            res.append("# replay suppress:")
+
+        res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
 
     def render_LXM_without_comment(self):
@@ -367,7 +421,7 @@ class MacroCommand(lumberjack.TreeNode):
         result = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
 
         def wrap_quote(value):
-            if re.search(r"\s", value):
+            if re.search(r"\W", value):
                 return "\"{0}\"".format(value)
             else:
                 return value
@@ -381,7 +435,9 @@ class MacroCommand(lumberjack.TreeNode):
         """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
 
         res = list(self.comment_before)
-        res.append("lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
+        if self.direct_suppress:
+            res.append("# replay suppress:")
+        res.append(("# " if self.direct_suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
         return res
 
     def render_json(self):
@@ -401,10 +457,13 @@ class MacroCommand(lumberjack.TreeNode):
             arg_dict['argExample'] = arg.argExample
             args_list.append(arg_dict)
 
-        return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
+        return {"command" : {"name" : self.command, "prefix" : self.prefix, "suppress": self.direct_suppress, "comment" : self.comment_before, "args": args_list}}
 
     def run(self):
         """Runs the command."""
+
+        if self.suppress:
+            return
 
         # Build the MODO command string:
         command = self.render_LXM_without_comment()
