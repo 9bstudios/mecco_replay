@@ -353,12 +353,12 @@ class Macro(lumberjack.Lumberjack):
 
     def run(self):
         """Runs the macro."""
-
-        # Run every command in the macro:
-        for command in self.commands:
-            if not command.suppress:
-                command.run()
-
+        
+        # Run every node with run attribute in the macro:
+        for node in self.depth_first_search():
+            if hasattr(node, 'run'):
+                node.run()
+        
     def all_suppressed(self):
         for child in self.children:
             if not child.suppress:

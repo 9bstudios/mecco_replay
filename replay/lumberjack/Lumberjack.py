@@ -527,6 +527,18 @@ class Lumberjack(object):
 
     class BadPath(Exception):
         pass
+        
+    @staticmethod
+    def depth_first_search_recursive(node):
+        for child in node.children:
+            for res in Lumberjack.depth_first_search_recursive(child):
+                yield res
+                
+        yield node
+            
+    def depth_first_search(self):
+        for node in Lumberjack.depth_first_search_recursive(self.root):
+            yield node
 
     @staticmethod
     def node_for_path_recursive(node, path):
