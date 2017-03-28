@@ -67,7 +67,7 @@ class MacroBlockCommand(lumberjack.TreeNode):
 
     def canAcceptDrop(self, source_nodes):
         # Block can accept only commands if we are not allowing nested blocks
-        return all(isinstance(node, MacroCommand) for node in source_nodes)
+        return True
 
     def add_commands(self, **kwargs):
         idx = 0
