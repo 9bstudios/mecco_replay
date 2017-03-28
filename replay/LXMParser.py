@@ -99,7 +99,7 @@ class LXMParser(object):
             self.handleNonCommentLine(line)
 
     def isBlockStart(self, input_line):
-        block = re.search(r'^#\s*Command Block Begin:\s*(\S+|\S+.*\S+)\s*$', input_line)
+        block = re.search(r'^#\s*Command Block Begin:\s*(\S*)\s*$', input_line)
 
         if block is None:
             return None
@@ -107,7 +107,7 @@ class LXMParser(object):
         return block.group(1)
 
     def isBlockEnd(self, input_line):
-        block = re.search(r'^#\s*Command Block End:\s*(\S+|\S+.*\S+)\s*$', input_line)
+        block = re.search(r'^#\s*Command Block End:\s*(\S*)\s*$', input_line)
 
         if block is None:
             return None
