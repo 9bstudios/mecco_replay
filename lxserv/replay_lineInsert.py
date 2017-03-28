@@ -35,20 +35,22 @@ class LineInsertClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
-        idx = -1
+        path = None
         if macro.primary is None:
-            # If there's no primary node, insert at zero
-            idx = len(macro.children)
+            # If there's no primary node, insert at end
+            path = macro.root.path + [len(macro.children)]
         else:
             # If there's a primary node, insert right after it
-            idx = macro.primary.index + 1
+            path = macro.primary.path
+            path[-1] += 1
 
         for line in script.split('\n'):
-            macro.add_command(command = line, index = idx, ButtonName = ButtonName)
+            macro.add_command(command = line, path = path, ButtonName = ButtonName)
             macro.unsaved_changes = True
-            idx += 1
+            path[-1] += 1
 
-        macro.select(idx - 1)
+        path[-1] -= 1
+        macro.select(path)
 
         macro.rebuild_view()
 

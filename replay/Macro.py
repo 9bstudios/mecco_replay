@@ -197,8 +197,11 @@ class Macro(lumberjack.Lumberjack):
 
     def select(self, index):
         self.root.deselect_descendants()
-        self.root.children[index].selected = True
-
+        if isinstance(index, int):
+            self.root.children[index].selected = True
+        else:
+            self.node_for_path(index).selected = True
+        
     def parse(self, mode, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
 
