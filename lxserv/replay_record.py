@@ -46,11 +46,6 @@ class CmdListener(lxifc.CmdSysListener):
 
     def valid_for_record(self, cmd, isResult = False):
 
-        # There are some QUIET commands that we really do want to record if possible.
-        if cmd.Name() in ['scene.load', 'scene.save']:
-            self.debug_path_print(cmd.Name() + " - Whitelisted command. Record.")
-            return True
-
         # Recording is disabled by user.
         if not self.state:
             return False
