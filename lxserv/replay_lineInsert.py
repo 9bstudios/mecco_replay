@@ -16,7 +16,7 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'datatype': 'string',
                 'default': '',
                 'values_list': self.list_commands,
-                'values_list_type': 'sPresetText',
+                'values_list_type': self.values_list_type,
                 'flags':['query']
             }, {
                 'name': 'ButtonName',
@@ -24,6 +24,9 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'flags':['optional', 'hidden']
             }
         ]
+        
+    def values_list_type(self):
+        return 'sPresetText'
 
     def list_commands(self):
         return lx.eval('query commandservice commands ?')
@@ -69,6 +72,9 @@ class LineInsertSpecialClass(LineInsertClass):
             ('scene.save export', 'Export...'),
             ('preset.do', 'Preset Do'),
         ]
+        
+    def values_list_type(self):
+        return 'popup'
 
 class LineInsertQuietClass(LineInsertClass):
     """Same as `replay.lineInsert`, except it isn't undoable and doesn't show up
