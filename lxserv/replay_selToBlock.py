@@ -17,13 +17,7 @@ class CommandClass(replay.commander.CommanderClass):
         for line in macro.selected_descendants:
             paths.append(line.path)
 
-        target = None
-        if not isinstance(macro.primary.parent, replay.MacroBlockCommand):
-            target = macro.primary
-        else:
-            for node in rmacro.selected_descendants:
-                if not isinstance(node.parent, replay.MacroBlockCommand):
-                    target = node
+        target = macro.primary
                     
         if target is None:
             return
@@ -36,12 +30,8 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-           
-        for node in replay.Macro().selected_descendants:
-            if not isinstance(node.parent, replay.MacroBlockCommand):
-                return True
-        
-        return False
+ 
+        return len(replay.Macro().selected_descendants) != 0
 
 class UndoToBlock(lxifc.Undo):
     def __init__(self, paths, target_path, name):

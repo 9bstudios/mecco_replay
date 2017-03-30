@@ -16,7 +16,7 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'datatype': 'string',
                 'default': '',
                 'values_list': self.list_commands,
-                'values_list_type': 'sPresetText',
+                'values_list_type': self.values_list_type,
                 'flags':['query']
             }, {
                 'name': 'ButtonName',
@@ -24,6 +24,9 @@ class LineInsertClass(replay.commander.CommanderClass):
                 'flags':['optional', 'hidden']
             }
         ]
+        
+    def values_list_type(self):
+        return 'sPresetText'
 
     def list_commands(self):
         return lx.eval('query commandservice commands ?')
@@ -35,20 +38,22 @@ class LineInsertClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
-        idx = -1
+        path = None
         if macro.primary is None:
-            # If there's no primary node, insert at zero
-            idx = len(macro.children)
+            # If there's no primary node, insert at end
+            path = macro.root.path + [len(macro.children)]
         else:
             # If there's a primary node, insert right after it
-            idx = macro.primary.index + 1
+            path = macro.primary.path
+            path[-1] += 1
 
         for line in script.split('\n'):
-            macro.add_command(command = line, index = idx, ButtonName = ButtonName)
+            macro.add_command(command = line, path = path, ButtonName = ButtonName)
             macro.unsaved_changes = True
-            idx += 1
+            path[-1] += 1
 
-        macro.select(idx - 1)
+        path[-1] -= 1
+        macro.select(path)
 
         macro.rebuild_view()
 
@@ -67,6 +72,9 @@ class LineInsertSpecialClass(LineInsertClass):
             ('scene.save export', 'Export...'),
             ('preset.do', 'Preset Do'),
         ]
+        
+    def values_list_type(self):
+        return 'popup'
 
 class LineInsertQuietClass(LineInsertClass):
     """Same as `replay.lineInsert`, except it isn't undoable and doesn't show up

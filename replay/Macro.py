@@ -197,8 +197,11 @@ class Macro(lumberjack.Lumberjack):
 
     def select(self, index):
         self.root.deselect_descendants()
-        self.root.children[index].selected = True
-
+        if isinstance(index, int):
+            self.root.children[index].selected = True
+        else:
+            self.node_for_path(index).selected = True
+        
     def parse(self, mode, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
 
@@ -350,12 +353,12 @@ class Macro(lumberjack.Lumberjack):
 
     def run(self):
         """Runs the macro."""
-
-        # Run every command in the macro:
-        for command in self.commands:
-            if not command.suppress:
-                command.run()
-
+        
+        # Run every node with run attribute in the macro:
+        for node in self.depth_first_search():
+            if hasattr(node, 'run'):
+                node.run()
+        
     def all_suppressed(self):
         for child in self.children:
             if not child.suppress:
