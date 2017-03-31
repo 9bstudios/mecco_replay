@@ -82,6 +82,18 @@ class MacroBlockCommand(MacroBaseCommand):
 
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
         return res
+        
+    def render_LXM_if_selected(self):
+        if self.selected:
+            return self.render_LXM()
+        else:
+            res = []
+            for command in self.children:
+                lines = command.render_LXM_if_selected()
+                for line in lines:
+                    res.append(("# " if self.direct_suppress else "") + line)
+                    
+            return res
 
     def render_LXM(self):
         return self.render_LXM_Python('render_LXM')

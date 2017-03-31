@@ -284,6 +284,12 @@ class MacroCommand(MacroBaseCommand):
 
         res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
+        
+    def render_LXM_if_selected(self):
+        if self.selected:
+            return self.render_LXM()
+        else:
+            return []
 
     def render_LXM_without_comment(self):
         """Construct MODO command string from stored internal parts."""

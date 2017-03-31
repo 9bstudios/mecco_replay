@@ -423,6 +423,20 @@ class Macro(lumberjack.Lumberjack):
                 output_file.write(line + "\n")
 
         output_file.close()
+        
+    def render_LXM_selected(self):
+        """Generates an LXM string for export."""
+
+        # Render shabang
+        res = "#LXMacro#" + os.linesep;
+
+        # Loop over the commands to get all the command strings:
+        for command in self.commands:
+            lines = command.render_LXM_if_selected()
+            for line in lines:
+                res += line + os.linesep
+                
+        return res
 
     def render_Python(self, output_path):
         """Generates a Python string for export."""
