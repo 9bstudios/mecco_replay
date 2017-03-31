@@ -38,6 +38,12 @@ class LXMParser(object):
 
     def __init__(self):
         self.builder = None
+        
+    def parseString(self, string, builder):
+        try:
+            self.parseStream(string.split("\n"), builder)
+        except LXMError as err:
+            raise LXMError(file=file_name, line=err.line, message=err.message)
 
     def parse(self, file_name, builder):
         file = open(file_name, 'r')
@@ -68,7 +74,7 @@ class LXMParser(object):
         self.block_stack = []
 
     def readShabang(self, file):
-        line = file.readline()
+        line = file[0] if isinstance(file, list) else file.readline() 
         if line.startswith("#LXMacro#"):
             self.type = "LXM"
         elif re.search("#\s*python\s*", line) is not None:
