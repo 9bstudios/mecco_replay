@@ -52,6 +52,8 @@ class MacroCommand(MacroBaseCommand):
             else:
                 return None
         def fset(self, value):
+            if not value in lx.eval('query commandservice commands ?'):
+                raise Exception("Invalid command %s" % value)
             self.columns['command'].value = value
             self.retreive_args()
             self.columns['name'].value = self.command_meta()['username']

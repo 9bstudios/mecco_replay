@@ -19,7 +19,12 @@ class CommandClass(replay.commander.CommanderClass):
         # Register Undo object performing operation and apply it
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoPast(lxm))
+            past = UndoPast(lxm)
+            try:
+                past.undo_Forward()
+            except:
+                return
+            undo_svc.Record(step)
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
