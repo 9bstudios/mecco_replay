@@ -362,6 +362,10 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
+        if self.targetNode() is not None:
+            toolTip = self.targetNode().tooltip(columnIndex)
+            if toolTip:
+                return toolTip
         lx.notimpl()
 
     def treeview_BadgeType(self, columnIndex, badgeIndex):
