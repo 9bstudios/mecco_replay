@@ -120,10 +120,11 @@ class MacroCommand(MacroBaseCommand):
         command_json = command_json["command"]
 
         # Retrive command, prefix and comment
+        # Comment need to be assigned first to get button name meta before command assignment
+        self.comment_before = command_json["comment"]
         self.command = command_json["name"]
         self.direct_suppress = command_json["suppress"]
         self.prefix = command_json["prefix"]
-        self.comment_before = command_json["comment"]
         #return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
 
         # Retrive args
