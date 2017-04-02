@@ -74,7 +74,12 @@ class LXMParser(object):
         self.block_stack = []
 
     def readShabang(self, file):
-        line = file[0] if isinstance(file, list) else file.readline() 
+        if isinstance(file, list):
+            line = file[0]
+            file.pop(0)
+        else:
+            line = file.readline() 
+            
         if line.startswith("#LXMacro#"):
             self.type = "LXM"
         elif re.search("#\s*python\s*", line) is not None:
