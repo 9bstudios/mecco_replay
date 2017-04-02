@@ -143,6 +143,8 @@ class TreeView( lxifc.TreeView,
 
     def targetNode(self):
         """Returns the targeted layer node in the current tier"""
+        if self.m_currentIndex >= len(self.m_currentNode.children):
+            return None
         return self.m_currentNode.children[ self.m_currentIndex ]
 
     # --------------------------------------------------------------------------------------------------
@@ -360,13 +362,6 @@ class TreeView( lxifc.TreeView,
         lx.notimpl()
 
     def treeview_ToolTip(self, columnIndex):
-        # column_definitions = self._root.column_definitions
-        # try:
-        #     tooltip = self.targetNode().columns[column_definitions[columnIndex]['name']].tooltip
-        #     if tooltip:
-        #         return tooltip
-        # except:
-        #     pass
         lx.notimpl()
 
     def treeview_BadgeType(self, columnIndex, badgeIndex):

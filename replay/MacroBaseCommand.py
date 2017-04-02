@@ -44,6 +44,16 @@ class MacroBaseCommand(lumberjack.TreeNode):
     def canAcceptDrop(self, source_nodes):
         return True
 
+    def iter_tooltip(self):
+        for line in self.user_comment_before:
+            line = line.strip()
+            if (len(line) > 0) and line[0] == '#':
+                line = line[1:]
+            yield line
+        
+    def tooltip(self, columnIndex):
+        return '\n'.join(self.iter_tooltip())
+
     def can_change_suppress(self):
         if hasattr(self.parent, 'suppress'):
             return not self.parent.suppress

@@ -363,6 +363,9 @@ class TreeNode(object):
 
     def canAcceptDrop(self, source_nodes):
         return False
+        
+    def tooltip(self, columnIndex):
+        return None
 
     def add_child(self, **kwargs):
         """Adds a child `TreeNode()` to the current node and returns it."""
