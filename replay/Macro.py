@@ -258,10 +258,12 @@ class Macro(lumberjack.Lumberjack):
     def parse_and_insert(self, input_path, **kwargs):
         if self.primary is None:
             # If there's no primary node, insert at zero
-            self._parse_and_insert(input_path, index=0, **kwargs)
+            self._parse_and_insert(input_path, path=[0], **kwargs)
         else:
             # If there's a primary node, insert right after it
-            self._parse_and_insert(input_path, index=self.primary.index+1, **kwargs)
+            path = self.primary.path
+            path[-1] += 1
+            self._parse_and_insert(input_path, path=path, **kwargs)
 
     def _parse_and_insert(self, input_path, **kwargs):
         """Parse a macro file and store its commands in the `commands` property."""
