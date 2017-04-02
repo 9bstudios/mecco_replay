@@ -24,7 +24,7 @@ class CommandClass(replay.commander.CommanderClass):
                 past.undo_Forward()
             except:
                 return
-            undo_svc.Record(step)
+            undo_svc.Record(past)
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
