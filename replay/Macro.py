@@ -201,25 +201,38 @@ class Macro(lumberjack.Lumberjack):
             self.root.children[index].selected = True
         else:
             self.node_for_path(index).selected = True
-        
+            
+    class TmpCommandCache:
+        def __init__(self):
+            self.child_args = []
+
+        def add_child(self, **kwargs):
+            tmp = dict(kwargs)
+            # Need to remove receiver before deepcopy
+            tmp.pop('receiver', None)
+            self.child_args.append(copy.deepcopy(tmp))
+
+        def children_create_args(self):
+            for args in self.child_args:
+                yield args
+                
+    def parse_and_insert_string(self, string, path):
+        """Parse a macro file and store its commands in the `commands` property."""
+
+        cache = Macro.TmpCommandCache()
+
+        self.parse_LXM_string(string, receiver=cache, path=path)
+
+        nodes = []
+        for kwargs in cache.children_create_args():
+            nodes.append(self.add_child(**kwargs))
+
+        return nodes
+            
     def parse(self, mode, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
 
-        class TmpCommandCache:
-            def __init__(self):
-                self.child_args = []
-
-            def add_child(self, **kwargs):
-                tmp = dict(kwargs)
-                # Need to remove receiver before deepcopy
-                tmp.pop('receiver', None)
-                self.child_args.append(copy.deepcopy(tmp))
-
-            def children_create_args(self):
-                for args in self.child_args:
-                    yield args
-
-        cache = TmpCommandCache()
+        cache = Macro.TmpCommandCache()
 
         if mode == 'open':
             format_name = self._parse_and_insert(input_path, receiver=cache)
@@ -245,10 +258,12 @@ class Macro(lumberjack.Lumberjack):
     def parse_and_insert(self, input_path, **kwargs):
         if self.primary is None:
             # If there's no primary node, insert at zero
-            self._parse_and_insert(input_path, index=0, **kwargs)
+            self._parse_and_insert(input_path, path=[0], **kwargs)
         else:
             # If there's a primary node, insert right after it
-            self._parse_and_insert(input_path, index=self.primary.index+1, **kwargs)
+            path = self.primary.path
+            path[-1] += 1
+            self._parse_and_insert(input_path, path=path, **kwargs)
 
     def _parse_and_insert(self, input_path, **kwargs):
         """Parse a macro file and store its commands in the `commands` property."""
@@ -270,58 +285,66 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.parse_LXM(input_path, **kwargs)
         return format_name
+        
+    class MacroTreeBuilder(LXMBuilder):
+        def __init__(self, macro, **kwargs):
+            self.macro = macro
+            if 'path' in kwargs:
+                self.path = kwargs.get('path', None)
+            else:
+                self.path = [kwargs.get('index', 0)]
+            kwargs.pop('index', None)
+            kwargs.pop('path', None)
+            self.kwargs = kwargs
+            self.comments = []
+            self.meta = []
+
+        def buildType(self, type):
+            if type == "LXM":
+                self.macro.file_format = "lxm"
+            else:
+                self.macro.file_format = "py"
+
+        def buildCommand(self, line, suppress):
+            self.kwargs['path'] = self.path
+            self.macro.add_command(command=line, comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+            self.path[-1] += 1
+
+            self.comments = []
+            self.meta = []
+
+        def buildBlockStart(self, block, suppress):
+            self.kwargs['path'] = self.path
+            self.macro.add_block(name = block[-1][0], comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
+            self.path.append(0)
+
+            self.comments = []
+            self.meta = []
+
+        def buildBlockEnd(self, block):
+            del self.path[-1]
+            self.path[-1] += 1
+
+            self.comments = []
+            self.meta = []
+
+        def buildMeta(self, name, value):
+            self.meta.append((name, value))
+
+        def buildComment(self, comment):
+            self.comments.append(comment)
 
     def parse_LXM(self, input_path, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
-
-        class MacroTreeBuilder(LXMBuilder):
-            def __init__(self, macro, **kwargs):
-                self.macro = macro
-                self.path = [kwargs.get('index', 0)]
-                kwargs.pop('index', None)
-                self.kwargs = kwargs
-                self.comments = []
-                self.meta = []
-
-            def buildType(self, type):
-                if type == "LXM":
-                    self.macro.file_format = "lxm"
-                else:
-                    self.macro.file_format = "py"
-
-            def buildCommand(self, line, suppress):
-                self.kwargs['path'] = self.path
-                self.macro.add_command(command=line, comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
-                self.path[-1] += 1
-
-                self.comments = []
-                self.meta = []
-
-            def buildBlockStart(self, block, suppress):
-                self.kwargs['path'] = self.path
-                self.macro.add_block(name = block[-1][0], comment=self.comments, meta = self.meta, suppress=suppress, **self.kwargs)
-                self.path.append(0)
-
-                self.comments = []
-                self.meta = []
-
-            def buildBlockEnd(self, block):
-                del self.path[-1]
-                self.path[-1] += 1
-
-                self.comments = []
-                self.meta = []
-
-            def buildMeta(self, name, value):
-                self.meta.append((name, value))
-
-            def buildComment(self, comment):
-                self.comments.append(comment)
-
         parser = LXMParser()
-        builder = MacroTreeBuilder(self, **kwargs)
+        builder = Macro.MacroTreeBuilder(self, **kwargs)
         parser.parse(input_path, builder)
-
+        
+    def parse_LXM_string(self, string, **kwargs):
+        """Parse an LXM file and store its commands in the `commands` property."""
+        parser = LXMParser()
+        builder = Macro.MacroTreeBuilder(self, **kwargs)
+        parser.parseString(string, builder)
 
     def parse_json(self, input_path, **kwargs):
         """Parse a json file and store its commands in the `commands` property."""
@@ -423,6 +446,20 @@ class Macro(lumberjack.Lumberjack):
                 output_file.write(line + "\n")
 
         output_file.close()
+        
+    def render_LXM_selected(self):
+        """Generates an LXM string for export."""
+
+        # Render shabang
+        res = "#LXMacro#" + os.linesep;
+
+        # Loop over the commands to get all the command strings:
+        for command in self.commands:
+            lines = command.render_LXM_if_selected()
+            for line in lines:
+                res += line + os.linesep
+                
+        return res
 
     def render_Python(self, output_path):
         """Generates a Python string for export."""

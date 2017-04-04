@@ -30,15 +30,15 @@ class MacroCommand(MacroBaseCommand):
         self.columns['enable'].input_region = 'MacroCommandEnable'
         self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandCommand'
+        
+        if bool(kwargs.get('ButtonName')):
+            self.meta['name'] = kwargs.get('ButtonName')
 
         # If a command string (it's actually a list of strings) has been passed in, parse it:
         if bool(kwargs.get('command')):
             self.parse_string(kwargs.get('command'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
-
-        if bool(kwargs.get('ButtonName')):
-            self.columns['name'].value = kwargs.get('ButtonName')
 
     def attributes(self):
         return CommandAttributes(string=self.render_LXM_without_comment())
@@ -52,9 +52,11 @@ class MacroCommand(MacroBaseCommand):
             else:
                 return None
         def fset(self, value):
+            if not value in lx.eval('query commandservice commands ?'):
+                raise Exception("Invalid command %s" % value)
             self.columns['command'].value = value
             self.retreive_args()
-            self.columns['name'].value = self.command_meta()['username']
+            self.columns['name'].value = self.meta['name'] if 'name' in self.meta else self.command_meta()['username']
         return locals()
 
     command = property(**command())
@@ -118,10 +120,11 @@ class MacroCommand(MacroBaseCommand):
         command_json = command_json["command"]
 
         # Retrive command, prefix and comment
+        # Comment need to be assigned first to get button name meta before command assignment
+        self.comment_before = command_json["comment"]
         self.command = command_json["name"]
         self.direct_suppress = command_json["suppress"]
         self.prefix = command_json["prefix"]
-        self.comment_before = command_json["comment"]
         #return {"command" : {"name" : self.command, "prefix" : self.prefix, "comment" : self.comment_before, "args": args_list}}
 
         # Retrive args
@@ -284,6 +287,12 @@ class MacroCommand(MacroBaseCommand):
 
         res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
+        
+    def render_LXM_if_selected(self):
+        if self.selected:
+            return self.render_LXM()
+        else:
+            return []
 
     def render_LXM_without_comment(self):
         """Construct MODO command string from stored internal parts."""
