@@ -5,6 +5,7 @@ import json
 import copy
 import lumberjack
 from MacroCommand import MacroCommand
+from MacroCommandArg import MacroCommandArg
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 from LXMParser import LXMParser
@@ -128,7 +129,18 @@ class Macro(lumberjack.Lumberjack):
 
     selected_commands = property(**selected_commands())
 
+    def selected_args():
+        doc = """Returns a list of implicitly selected `MacroCommand()` objects,
+        including both selected nodes and nodes that have selected descendants."""
+        def fget(self):
+            nodes = set()
+            for node in self.root.selected_descendants:
+                if isinstance(node, MacroCommandArg):
+                    nodes.add(node)
+            return list(nodes)
+        return locals()
 
+    selected_args = property(**selected_args())
 
     @property
     def import_format_names(self):

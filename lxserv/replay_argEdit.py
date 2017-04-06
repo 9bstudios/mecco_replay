@@ -37,25 +37,31 @@ class CommandClass(replay.commander.CommanderClass):
         # We need to update our values whenever the replay notifier fires for
         # selection state changes and tree updates.
         return [("replay.notifier", "")]
+        
+    def selected_args(self):
+        for node in replay.Macro().selected_commands:
+            for arg in node.args:
+                yield arg
+                
+        for arg in replay.Macro().selected_args:        
+            yield arg
 
     def args_by_argName(self, argName):
         """Returns a list of argument nodes in the current selection with a given
         `argName` property. Probably not as fast as it should be."""
         arg_nodes = set()
-        for node in replay.Macro().selected_commands:
-            for arg in node.args:
-                if arg.argName == argName:
-                    arg_nodes.add(arg)
+        for arg in self.selected_args():
+            if arg.argName == argName:
+                arg_nodes.add(arg)
         return arg_nodes
 
     def commands_by_argName(self, argName):
         """Returns a list of argument nodes in the current selection with a given
         `argName` property. Probably not as fast as it should be."""
         commands = list()
-        for node in replay.Macro().selected_commands:
-            for arg in node.args:
-                if arg.argName == argName:
-                    commands.append((node, arg.index))
+        for arg in self.selected_args():
+            if arg.argName == argName:
+                commands.append((arg.parent, arg.index))
         return commands
 
     def commander_execute(self, msg, flags):

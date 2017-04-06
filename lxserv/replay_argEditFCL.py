@@ -32,18 +32,24 @@ class CommandClass(replay.commander.CommanderClass):
     def list_commands(self):
         nodes = replay.Macro().selected_commands
 
+        # Collect args of selected commands
         args = []
         for node in nodes:
             command_obj = node.attributes()
             for arg in node.args:
                 if not command_obj.arg(arg.index).is_hidden(True):
                     args.append(arg.argName)
+                    
+        # Collect selected args
+        for arg in replay.Macro().selected_args:
+            command_obj = arg.parent.attributes()
+            if not command_obj.arg(arg.index).is_hidden(True):
+                args.append(arg.argName)
 
         commands_list = []
         for arg in self.remove_duplicates(args):
             commands_list.append('replay.argEdit %s ?' % arg)
 
-        return commands_list
-
+        return commands_list                
 
 lx.bless(CommandClass, 'replay.argEditFCL')
