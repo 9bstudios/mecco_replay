@@ -25,9 +25,9 @@ class DropServer(lxifc.Drop):
 
         lumberjack = Lumberjack.final_class()
         source_nodes = [lumberjack.node_for_path(path) for path in source_paths]
-        dest_node = lumberjack.node_for_path(dest_path)
+        dest_node_parent = lumberjack.node_for_path(dest_path[:-1])
 
-        if not dest_node.parent.canAcceptDrop(source_nodes):
+        if not dest_node_parent.canAcceptDrop(source_nodes):
             return
 
         # Check unique key

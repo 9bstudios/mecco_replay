@@ -485,7 +485,7 @@ class TreeView( lxifc.TreeView,
         else:
             idx = self.m_currentIndex
 
-        va.AddString(json.dumps(self.m_currentNode.children[idx].path))
+        va.AddString(json.dumps(self.m_currentNode.path + [idx]))
 
         return va
     # --------------------------------------------------------------------------------------------------

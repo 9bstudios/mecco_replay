@@ -42,6 +42,9 @@ class MacroCommand(MacroBaseCommand):
 
     def attributes(self):
         return CommandAttributes(string=self.render_LXM_without_comment())
+        
+    def canAcceptDrop(self, source_nodes):
+        return False
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
