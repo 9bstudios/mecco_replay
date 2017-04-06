@@ -5,6 +5,7 @@ from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
 
+fTREE_VIEW_ITEM_ATTR = 0x00000001
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed

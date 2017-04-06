@@ -4,14 +4,13 @@ import lx
 import re
 import lumberjack
 
-
 class MacroCommandArg(lumberjack.TreeNode):
     """Contains everything pertaining to a single command argument in the macro.
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
     argument."""
 
     def __init__(self, parent, arg_index, **kwargs):
-        super(self.__class__, self).__init__(**kwargs)
+        super(self.__class__, self).__init__(state=lumberjack.fTREE_VIEW_ITEM_ATTR, **kwargs)
 
         # We have to manually pass these in from the parent because the `parent`
         # parameter won't be operational until the object has finished `__init__()`.
