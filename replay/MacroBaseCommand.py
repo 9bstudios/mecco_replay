@@ -46,9 +46,6 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def iter_tooltip(self):
         for line in self.user_comment_before:
-            line = line.strip()
-            if (len(line) > 0) and line[0] == '#':
-                line = line[1:]
             yield line
         
     def tooltip(self, columnIndex):
@@ -128,14 +125,20 @@ class MacroBaseCommand(lumberjack.TreeNode):
     suppress = property(**suppress())
 
     def parse_meta(self, line):
-        meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+        meta = re.search(r'^replay\s+(\S+):(.+)$', line)
         if meta is not None:
             return (meta.group(1), meta.group(2))
         else:
             return None
 
     def render_meta(self, name, val):
-        return "# replay {n}:{v}".format(n=name, v=val)
+        return "replay {n}:{v}".format(n=name, v=val)
+        
+    def render_comments(self):
+        res = []
+        for comment in self.comment_before:
+            res.append("# " + comment)
+        return res
 
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings

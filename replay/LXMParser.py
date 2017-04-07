@@ -197,6 +197,11 @@ class LXMParser(object):
         if self.handleBlockEnd(line):
             return
 
+        line = line.strip()
+        if (len(line) > 0) and line[0] == '#':
+            line = line[1:]
+        if (len(line) > 0) and line[0] == ' ':
+            line = line[1:]
         self.builder.buildComment(line)
 
     def handleNonCommentLine(self, line):

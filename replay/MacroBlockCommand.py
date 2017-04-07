@@ -68,7 +68,7 @@ class MacroBlockCommand(MacroBaseCommand):
 
     def render_LXM_Python(self, renderName):
         """Construct MODO command string from stored internal parts. Also adds comments"""
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
         res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.original_name)

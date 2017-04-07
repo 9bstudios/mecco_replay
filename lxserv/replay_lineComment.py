@@ -78,7 +78,7 @@ class UndoInsertComment(lxifc.Undo):
             # Store line count of old comment for restoring in undo
             self.m_line_counts_before[path_idx] = len(macro.node_for_path(path).user_comment_before)
             # Add # before each line in comment and append it
-            for line in ("#" + line for line in self.m_comment.split('\n')):
+            for line in self.m_comment.split('\n'):
                 macro.node_for_path(path).user_comment_before.append(line)
 
         self.finalize_command(macro)

@@ -281,10 +281,10 @@ class MacroCommand(MacroBaseCommand):
             meta[term] = lx.eval("query commandservice command.%s ? {%s}" % (term, self.command))
 
         return meta
-
+        
     def render_LXM(self):
         """Construct MODO command string from stored internal parts. Also adds comments"""
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
 
@@ -316,7 +316,7 @@ class MacroCommand(MacroBaseCommand):
     def render_Python(self):
         """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
 
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
         res.append(("# " if self.direct_suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
