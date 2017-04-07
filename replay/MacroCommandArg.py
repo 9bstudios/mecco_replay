@@ -56,6 +56,15 @@ class MacroCommandArg(lumberjack.TreeNode):
             
     def can_change_suppress(self):
         return False
+        
+    def can_change_color(self):
+        return False
+        
+    def can_add_command(self):
+        return False
+        
+    def can_add_to_block(self):
+        return False
 
     def value():
         doc = """The value property is really a proxy for the `command` cell value.

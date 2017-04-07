@@ -59,6 +59,15 @@ class MacroBaseCommand(lumberjack.TreeNode):
             return not self.parent.suppress
         else:
             return True
+            
+    def can_change_color(self):
+        return True
+        
+    def can_add_command(self):
+        return True
+        
+    def can_add_to_block(self):
+        return True
 
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):
