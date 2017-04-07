@@ -130,7 +130,16 @@ class TreeNode(object):
         return locals()
 
     row_color = property(**row_color())
+    
+    def name():
+        def fget(self):
+            return self.columns['name'].value
+        def fset(self, value):
+            self.columns['name'].value = value
+        return locals()
 
+    name = property(**name())
+    
     def selectable():
         doc = "Whether the node is selectable in the GUI. (boolean)"
         def fget(self):

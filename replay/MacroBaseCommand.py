@@ -74,6 +74,9 @@ class MacroBaseCommand(lumberjack.TreeNode):
         
     def can_delete(self):
         return True
+        
+    def can_change_name(self):
+        return True
 
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):

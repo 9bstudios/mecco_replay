@@ -74,6 +74,9 @@ class MacroCommandArg(lumberjack.TreeNode):
         
     def can_delete(self):
         return False
+        
+    def can_change_name(self):
+        return False
 
     def value():
         doc = """The value property is really a proxy for the `command` cell value.
