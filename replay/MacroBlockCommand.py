@@ -28,7 +28,7 @@ class MacroBlockCommand(MacroBaseCommand):
         self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandBlock'
 
-        self.original_name = kwargs.get('name', "")
+        self.name = kwargs.get('name', "")
 
         if kwargs.get('block_json'):
             self.parse_json(kwargs.get('block_json'), **kwargs)
@@ -55,23 +55,23 @@ class MacroBlockCommand(MacroBaseCommand):
 
     block_name = property(**block_name())
 
-    def original_name():
+    def name():
         def fget(self):
-            return self._original_name
+            return self._name
         def fset(self, value):
-            self._original_name = value
+            self._name = value
             self.block_name = "Block: " + value
 
         return locals()
 
-    original_name = property(**original_name())
+    name = property(**name())
 
     def render_LXM_Python(self, renderName):
         """Construct MODO command string from stored internal parts. Also adds comments"""
         res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
-        res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.name)
 
         for command in self.children:
             render = getattr(command, renderName)
@@ -80,7 +80,7 @@ class MacroBlockCommand(MacroBaseCommand):
             for line in lines:
                 res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
 
-        res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
         
     def render_LXM_if_selected(self):
@@ -108,11 +108,11 @@ class MacroBlockCommand(MacroBaseCommand):
             command = command.render_json()
             commands.append(command)
 
-        return {"command block" : {"name" : self.original_name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
+        return {"command block" : {"name" : self.name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
 
     def parse_json(self, json_struct, **kwargs):
         attributes = json_struct['command block']
-        self.original_name = attributes['name']
+        self.name = attributes['name']
         self.direct_suppress = attributes['suppress']
         self.comment_before = attributes['comment']
 

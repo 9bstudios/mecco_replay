@@ -63,6 +63,16 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     command = property(**command())
+    
+    def name():
+        def fget(self):
+            return self.meta.get('name')
+        def fset(self, value):
+            self._meta['name'] = value
+            self.columns['name'].value = self.meta['name']
+        return locals()
+
+    name = property(**name())
 
     def prefix():
         doc = """Usually one or two characters to prepend to the command string to
