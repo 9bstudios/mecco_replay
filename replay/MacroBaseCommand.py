@@ -68,6 +68,15 @@ class MacroBaseCommand(lumberjack.TreeNode):
         
     def can_add_to_block(self):
         return True
+        
+    def can_copy(self):
+        return True
+        
+    def can_insert_after(self):
+        return True
+        
+    def can_delete(self):
+        return True
 
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):

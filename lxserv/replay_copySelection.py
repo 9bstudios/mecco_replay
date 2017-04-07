@@ -17,9 +17,14 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-        for node in replay.Macro().selected_descendants:
-            if isinstance(node, replay.MacroBaseCommand):
-                return True
-        return False
+
+        if len(replay.Macro().selected_descendants) == 0:
+            return False
+
+        for command in replay.Macro().selected_descendants:
+            if not command.can_copy():
+                return False
+
+        return True
 
 lx.bless(CommandClass, 'replay.copySelection')

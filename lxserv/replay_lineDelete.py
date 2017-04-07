@@ -23,7 +23,15 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-        return bool(replay.Macro().selected_descendants)
+
+        if len(replay.Macro().selected_descendants) == 0:
+            return False
+
+        for command in replay.Macro().selected_descendants:
+            if not command.can_delete():
+                return False
+
+        return True
 
 class UndoLineDelete(lxifc.Undo):
     def __init__(self, paths):

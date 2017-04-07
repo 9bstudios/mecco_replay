@@ -29,7 +29,10 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
-        
+
+        if replay.Macro().primary is not None and not replay.Macro().primary.can_insert_after():
+            return False
+            
         return True
 
 class UndoPast(lxifc.Undo):
