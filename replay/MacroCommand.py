@@ -40,11 +40,15 @@ class MacroCommand(MacroBaseCommand):
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
             
-    def markArgumentAsString(self, index):
-        if self.markedStringArgs is None:
-            self.markedStringArgs = [index]
+    def markArgumentAsString(self, index, value = True):
+        if value:
+            if self.markedStringArgs is None:
+                self.markedStringArgs = [index]
+            else:
+                self.markedStringArgs += [index]
         else:
-            self.markedStringArgs += [index]
+            if self.markedStringArgs is not None:
+                self.markedStringArgs.remove(index)
         
     def markedAsString(self, index):
         if self.markedStringArgs is None:
