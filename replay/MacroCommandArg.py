@@ -95,6 +95,15 @@ class MacroCommandArg(lumberjack.TreeNode):
         return locals()
 
     value = property(**value())
+    
+    def asString():
+        def fget(self):
+            return (self.columns['prefix'].display_value == "%")
+        def fset(self, value):
+            self.columns['prefix'].display_value = "%" if value else ""
+        return locals()
+
+    asString = property(**asString())
 
     def argName():
         doc = "The argName property is really a proxy for the `name` cell value."

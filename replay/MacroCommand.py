@@ -49,6 +49,8 @@ class MacroCommand(MacroBaseCommand):
         else:
             if self.markedStringArgs is not None:
                 self.markedStringArgs.remove(index)
+                
+        self.args[index].asString = value
         
     def markedAsString(self, index):
         if self.markedStringArgs is None:
