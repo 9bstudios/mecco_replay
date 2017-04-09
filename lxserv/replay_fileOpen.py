@@ -62,6 +62,7 @@ class CommandClass(replay.commander.CommanderClass):
             # If successfully parsed add to recently-opened
             lx.eval('replay.fileOpenAddRecent {%s}' % input_path)
         except Exception as err:
+            lx.out("Error ", str(err))
             modo.dialogs.alert(message("MECCO_REPLAY", "OPEN_FILE_FAIL"), message("MECCO_REPLAY", "OPEN_FILE_FAIL_MSG", str(err)), dtype='warning')
 
         finally:

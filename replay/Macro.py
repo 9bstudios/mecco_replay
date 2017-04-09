@@ -446,6 +446,18 @@ class Macro(lumberjack.Lumberjack):
         self.node_for_path(next_command_path).selected = True
         new_path = next_command_path
         return (prev_path, new_path)
+        
+    def shabang(self, lxm, sep):
+        res = ""
+        if lxm:
+            res = "#LXMacro#" + sep;
+        else:
+            res = "# python" + sep
+            
+        res += "# Made with Replay" + sep
+        res += "# mechanicalcolor.com" + sep + sep
+        
+        return res
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
@@ -453,7 +465,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .lxm file
         output_file = open(output_path, 'w')
 
-        output_file.write("#LXMacro#\n")
+        output_file.write(self.shabang(True, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -467,7 +479,7 @@ class Macro(lumberjack.Lumberjack):
         """Generates an LXM string for export."""
 
         # Render shabang
-        res = "#LXMacro#" + os.linesep;
+        res = self.shabang(True, os.linesep)
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -482,7 +494,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .py file
         output_file = open(output_path, 'w')
 
-        output_file.write("# python\n")
+        output_file.write(self.shabang(False, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:

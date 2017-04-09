@@ -72,6 +72,7 @@ class LXMParser(object):
         self.in_suppress = False
         self.in_suppress_counter = 0
         self.block_stack = []
+        self.skip_next_comments = True
 
     def readShabang(self, file):
         if isinstance(file, list):
@@ -88,6 +89,7 @@ class LXMParser(object):
             lx.out("Missing shabang")
             self.type = "LXM"
         self.builder.buildType(self.type)
+        self.skip_next_comments = True
 
     def readLines(self, file):
         for line in file:
@@ -102,12 +104,14 @@ class LXMParser(object):
         line = self.stripLine(line)
 
         if len(line) == 0:
+            self.skip_next_comments = False
             return
 
         if line[0] == '#':
             self.handleCommentLine(line)
         else:
             self.handleNonCommentLine(line)
+            self.skip_next_comments = False
 
     def isBlockStart(self, input_line):
         block = re.search(r'^#\s*Command Block Begin:\s*(\S*)\s*$', input_line)
@@ -185,6 +189,9 @@ class LXMParser(object):
         return False
 
     def handleCommentLine(self, line):
+        if self.skip_next_comments:
+            return
+            
         if self.handleSuppress(line):
             return
 
