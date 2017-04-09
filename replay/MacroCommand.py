@@ -39,6 +39,18 @@ class MacroCommand(MacroBaseCommand):
             self.parse_string(kwargs.get('command'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
+            
+    def markArgumentAsString(self, index):
+        if self.markedStringArgs is None:
+            self.markedStringArgs = {index}
+        else:
+            self.markedStringArgs.insert(index)
+        
+    def markedAsString(self, index):
+        if self.markedStringArgs is None:
+            return False
+        else:
+            return index in self.markedStringArgs
 
     def attributes(self):
         return CommandAttributes(string=self.render_LXM_without_comment())
@@ -73,6 +85,15 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     name = property(**name())
+    
+    def markedStringArgs():
+        def fget(self):
+            return self.meta.get('asString')
+        def fset(self, value):
+            self._meta['asString'] = value
+        return locals()
+
+    markedStringArgs = property(**markedStringArgs())
 
     def prefix():
         doc = """Usually one or two characters to prepend to the command string to

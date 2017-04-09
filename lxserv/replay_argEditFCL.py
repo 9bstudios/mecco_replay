@@ -17,6 +17,12 @@ class CommandClass(replay.commander.CommanderClass):
                 'values_list_type': 'fcl',
                 'values_list': self.list_commands,
                 'flags': ['query']
+            }, {
+                'name': 'asString',
+                'label': "As String",
+                'datatype': 'boolean',
+                'default': 'false',
+                'flags': ['optional']
             }
         ]
 
@@ -31,6 +37,8 @@ class CommandClass(replay.commander.CommanderClass):
 
     def list_commands(self):
         nodes = replay.Macro().selected_commands
+        
+        asString = self.commander_args().get('asString', False)
 
         # Collect args of selected commands
         args = []
@@ -48,7 +56,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         commands_list = []
         for arg in self.remove_duplicates(args):
-            commands_list.append('replay.argEdit %s ?' % arg)
+            commands_list.append('replay.argEdit %s ?%s' % (arg, " asString" if asString else ""))
 
         return commands_list                
 

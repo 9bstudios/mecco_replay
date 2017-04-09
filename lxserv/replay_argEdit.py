@@ -25,6 +25,12 @@ class CommandClass(replay.commander.CommanderClass):
                 'values_list_type': self.arg_values_list_type,
                 'values_list': self.arg_values_list,
                 'flags': ['variable', 'query']
+            }, {
+                'name': 'asString',
+                'label': "As String",
+                'datatype': 'boolean',
+                'default': 'false',
+                'flags': ['optional']
             }
         ]
 
@@ -69,11 +75,14 @@ class CommandClass(replay.commander.CommanderClass):
         proper place."""
         try:
             argName = self.commander_args()['argName']
+            asString = self.commander_args().get('asString', False)
             argValue = self.commander_args()['value']
 
             for command, argIndex in self.commands_by_argName(argName):
                 arg = command.args[argIndex]
                 arg.value = self.store_in_arg_value(command, argIndex, argValue)
+                if asString:
+                    command.markArgumentAsString(argIndex)
 
             # Notify the TreeView to update itself.
             replay.Macro().refresh_view()
@@ -249,6 +258,7 @@ class CommandClass(replay.commander.CommanderClass):
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
+        asString = self.commander_args().get('asString', False)
 
         types = set()
 
@@ -261,10 +271,15 @@ class CommandClass(replay.commander.CommanderClass):
             default = None
             argTypeName = None
 
-            attrs = command.attributes()
-            argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
-            default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
-            hints = attrs.arg(argIndex).hints(None)
+            if asString or command.markedAsString(argIndex):
+                argTypeName = lx.symbol.sTYPE_STRING
+                default = command.args[argIndex].value
+                hints = None
+            else:
+                attrs = command.attributes()
+                argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
+                default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
+                hints = attrs.arg(argIndex).hints(None)
 
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))

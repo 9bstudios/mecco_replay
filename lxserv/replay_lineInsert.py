@@ -84,6 +84,9 @@ class LineInsertSpecialClass(LineInsertClass):
         
     def values_list_type(self):
         return 'popup'
+        
+    def basic_Enable(self, msg):
+        return True
 
 class LineInsertQuietClass(LineInsertClass):
     """Same as `replay.lineInsert`, except it isn't undoable and doesn't show up
@@ -93,6 +96,9 @@ class LineInsertQuietClass(LineInsertClass):
         """Set command flags. This method can be overridden if special flags
         are needed."""
         return lx.symbol.fCMD_UI | lx.symbol.fCMD_QUIET
+        
+    def basic_Enable(self, msg):
+        return True
 
 
 lx.bless(LineInsertClass, 'replay.lineInsert')
