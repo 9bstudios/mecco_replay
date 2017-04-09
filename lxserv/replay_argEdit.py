@@ -8,9 +8,12 @@ from replay import message as message
 https://github.com/adamohern/commander for details"""
 
 
-class CommandClass(replay.commander.CommanderClass):
+class ArgEditClass(replay.commander.CommanderClass):
     """Editor for command argument values. Accepts an argName and a value query.
     Designed specifically for use with `replay.argEditFCL`."""
+    
+    def asString(self):
+        return False
 
     def commander_arguments(self):
         return [
@@ -25,12 +28,6 @@ class CommandClass(replay.commander.CommanderClass):
                 'values_list_type': self.arg_values_list_type,
                 'values_list': self.arg_values_list,
                 'flags': ['variable', 'query']
-            }, {
-                'name': 'asString',
-                'label': "As String",
-                'datatype': 'boolean',
-                'default': 'false',
-                'flags': ['optional']
             }
         ]
 
@@ -75,14 +72,16 @@ class CommandClass(replay.commander.CommanderClass):
         proper place."""
         try:
             argName = self.commander_args()['argName']
-            asString = self.commander_args().get('asString', False)
+            asString = self.asString()
             argValue = self.commander_args()['value']
 
             for command, argIndex in self.commands_by_argName(argName):
                 arg = command.args[argIndex]
-                arg.value = self.store_in_arg_value(command, argIndex, argValue)
                 if asString:
+                    arg.value = argValue
                     command.markArgumentAsString(argIndex)
+                else:
+                    arg.value = self.store_in_arg_value(command, argIndex, argValue)
 
             # Notify the TreeView to update itself.
             replay.Macro().refresh_view()
@@ -238,7 +237,6 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
-                    lx.out(argName, datatype, values_list)
                     raise Exception(message("MECCO_REPLAY", "QUERY_DATATYPE_DETECT_ERROR"))
 
         return lx.result.OK
@@ -258,7 +256,7 @@ class CommandClass(replay.commander.CommanderClass):
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
-        asString = self.commander_args().get('asString', False)
+        asString = self.asString()
 
         types = set()
 
@@ -304,5 +302,10 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)
 
+class ArgEditAsStringClass(ArgEditClass):
 
-lx.bless(CommandClass, 'replay.argEdit')
+    def asString(self):
+        return True
+
+lx.bless(ArgEditClass, 'replay.argEdit')
+lx.bless(ArgEditAsStringClass, 'replay.argEditAsString')

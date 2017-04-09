@@ -56,7 +56,8 @@ class CommandClass(replay.commander.CommanderClass):
 
         commands_list = []
         for arg in self.remove_duplicates(args):
-            commands_list.append('replay.argEdit %s ?%s' % (arg, " asString" if asString else ""))
+            lx.out("cmd = ", 'replay.argEdit%s %s ?' % ("AsString" if asString else "", arg))
+            commands_list.append('replay.argEdit%s %s ?' % ("AsString" if asString else "", arg))
 
         return commands_list                
 
