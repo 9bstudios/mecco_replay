@@ -45,7 +45,8 @@ class MacroCommand(MacroBaseCommand):
             if self.markedStringArgs is None:
                 self.markedStringArgs = [index]
             else:
-                self.markedStringArgs += [index]
+                if index not in self.markedStringArgs:
+                    self.markedStringArgs += [index]
         else:
             if self.markedStringArgs is not None:
                 self.markedStringArgs.remove(index)
