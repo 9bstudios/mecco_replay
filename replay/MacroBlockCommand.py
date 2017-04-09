@@ -116,7 +116,7 @@ class MacroBlockCommand(MacroBaseCommand):
         self.direct_suppress = attributes['suppress']
         self.comment_before = attributes['comment']
 
-        kwargs.pop('block', None)
+        kwargs.pop('type', None)
         kwargs.pop('command_json', None)
         kwargs.pop('block_json', None)
 
@@ -125,9 +125,9 @@ class MacroBlockCommand(MacroBaseCommand):
             kwargs['index'] = index
             kwargs['parent'] = self
             if 'command' in command:
-                self._controller.add_child(command_json = command, **kwargs)
+                self._controller.add_command(command_json = command, **kwargs)
             else:
-                self._controller.add_child(block = [], block_json = command, **kwargs)
+                self._controller.add_block(block_json = command, **kwargs)
             index += 1
 
     def run(self):

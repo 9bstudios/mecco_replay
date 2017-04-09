@@ -42,9 +42,9 @@ class MacroCommand(MacroBaseCommand):
             
     def markArgumentAsString(self, index):
         if self.markedStringArgs is None:
-            self.markedStringArgs = {index}
+            self.markedStringArgs = [index]
         else:
-            self.markedStringArgs.insert(index)
+            self.markedStringArgs += [index]
         
     def markedAsString(self, index):
         if self.markedStringArgs is None:

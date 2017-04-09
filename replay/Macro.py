@@ -341,7 +341,11 @@ class Macro(lumberjack.Lumberjack):
             self.meta = []
 
         def buildMeta(self, name, value):
-            self.meta.append((name, value))
+            try:
+                self.meta.append((name, json.loads(value)))
+            except:
+                # For backward compatibility
+                self.meta.append((name, value))
 
         def buildComment(self, comment):
             self.comments.append(comment)
@@ -383,7 +387,7 @@ class Macro(lumberjack.Lumberjack):
             if 'command' in cmdJson:
                 self.add_command(command_json = cmdJson, **kwargs)
             else:
-                self.add_block(block = [], block_json = cmdJson, **kwargs)
+                self.add_block(block_json = cmdJson, **kwargs)
             index += 1
 
     def run(self):

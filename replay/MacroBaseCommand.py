@@ -2,6 +2,7 @@
 
 import lx
 import re
+import json
 import lumberjack
 
 class MacroBaseCommand(lumberjack.TreeNode):
@@ -130,12 +131,12 @@ class MacroBaseCommand(lumberjack.TreeNode):
     def parse_meta(self, line):
         meta = re.search(r'^replay\s+(\S+):(.+)$', line)
         if meta is not None:
-            return (meta.group(1), meta.group(2))
+            return (meta.group(1), json.loads(meta.group(2)))
         else:
             return None
 
     def render_meta(self, name, val):
-        return "replay {n}:{v}".format(n=name, v=val)
+        return "replay {n}:{v}".format(n=name, v=json.dumps(val))
         
     def render_comments(self):
         res = []
