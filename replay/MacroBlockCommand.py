@@ -78,7 +78,10 @@ class MacroBlockCommand(MacroBaseCommand):
             assert(render != None)
             lines = render()
             for line in lines:
-                res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
+                if line.startswith('#'):
+                    res.append(("# " if self.direct_suppress else "") + line)
+                else:
+                    res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
 
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
