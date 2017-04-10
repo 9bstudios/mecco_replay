@@ -27,4 +27,4 @@ class CommandClass(replay.commander.CommanderClass):
 
         return True
 
-lx.bless(CommandClass, 'replay.copySelection')
+lx.bless(CommandClass, 'replay.clipboardCopy')

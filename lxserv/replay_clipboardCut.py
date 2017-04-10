@@ -10,11 +10,11 @@ https://github.com/adamohern/commander for details"""
 class CommandClass(replay.commander.CommanderClass):
     """Deletes the currently-selected command from the `Macro()` object."""
     def commander_execute(self, msg, flags):
-    
+
         # Copy selection
         lxm = replay.Macro().render_LXM_selected()
         pyperclip.copy(lxm)
-        
+
         lx.eval("replay.lineDelete")
 
     def basic_Enable(self, msg):
@@ -30,4 +30,4 @@ class CommandClass(replay.commander.CommanderClass):
 
         return True
 
-lx.bless(CommandClass, 'replay.cutSelection')
+lx.bless(CommandClass, 'replay.clipboardCut')
