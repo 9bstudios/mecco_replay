@@ -25,7 +25,6 @@ class MacroBlockCommand(MacroBaseCommand):
         self.columns['command'].input_region = None
 
         self.columns['enable'].input_region = 'MacroCommandEnable'
-        self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandBlock'
 
         self.name = kwargs.get('name', "")
@@ -85,7 +84,7 @@ class MacroBlockCommand(MacroBaseCommand):
 
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
-        
+
     def render_LXM_if_selected(self):
         if self.selected:
             return self.render_LXM()
@@ -95,7 +94,7 @@ class MacroBlockCommand(MacroBaseCommand):
                 lines = command.render_LXM_if_selected()
                 for line in lines:
                     res.append(("# " if self.direct_suppress else "") + line)
-                    
+
             return res
 
     def render_LXM(self):
