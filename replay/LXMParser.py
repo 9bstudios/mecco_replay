@@ -38,7 +38,7 @@ class LXMParser(object):
 
     def __init__(self):
         self.builder = None
-        
+
     def parseString(self, string, builder):
         try:
             self.parseStream(string.split("\n"), builder)
@@ -79,8 +79,8 @@ class LXMParser(object):
             line = file[0]
             file.pop(0)
         else:
-            line = file.readline() 
-            
+            line = file.readline()
+
         if line.startswith("#LXMacro#"):
             self.type = "LXM"
         elif re.search("#\s*python\s*", line) is not None:
@@ -189,9 +189,6 @@ class LXMParser(object):
         return False
 
     def handleCommentLine(self, line):
-        if self.skip_next_comments:
-            return
-            
         if self.handleSuppress(line):
             return
 
@@ -202,6 +199,9 @@ class LXMParser(object):
             return
 
         if self.handleBlockEnd(line):
+            return
+
+        if self.skip_next_comments:
             return
 
         line = line.strip()
