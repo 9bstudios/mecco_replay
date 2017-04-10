@@ -121,9 +121,9 @@ class MacroCommand(MacroBaseCommand):
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
-            return self.columns['prefix'].value
+            return self.columns['prefix'].display_value
         def fset(self, value):
-            self.columns['prefix'].value = value
+            self.columns['prefix'].display_value = value
         return locals()
 
     prefix = property(**prefix())
