@@ -1,6 +1,7 @@
 # python
 
 import lx, modo, replay, traceback, os, sys, filecmp
+import tempfile
 
 RED = '\x03(c:33488896)'
 kitpath = lx.eval('query platformservice alias ? "kit_mecco_replay:"')
@@ -73,7 +74,9 @@ except:
 # -----------------
 
 # Ask for a
-file_path = modo.dialogs.dirBrowse('Where to save test files?')
+file_path = tempfile.gettempdir()
+if file_path is None or not os.path.isdir(file_path):
+    file_path = modo.dialogs.dirBrowse('Where to save test files?')
 # User cancelled. Abort.
 if file_path is None:
     sys.exit()

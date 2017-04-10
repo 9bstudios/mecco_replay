@@ -89,10 +89,13 @@ class MacroCommand(MacroBaseCommand):
     
     def name():
         def fget(self):
-            return self.meta.get('name')
+            return self.columns.get('name').value
         def fset(self, value):
-            self._meta['name'] = value
-            self.columns['name'].value = self.meta['name']
+            if value == self.command_meta()['username']:
+                self._meta.pop('name', None)
+            else:
+                self._meta['name'] = value
+            self.columns['name'].value = value
         return locals()
 
     name = property(**name())
