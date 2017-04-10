@@ -30,7 +30,7 @@ class MacroCommand(MacroBaseCommand):
         self.columns['enable'].input_region = 'MacroCommandEnable'
         self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandCommand'
-        
+
         if bool(kwargs.get('ButtonName')):
             self.meta['name'] = kwargs.get('ButtonName')
 
@@ -39,11 +39,11 @@ class MacroCommand(MacroBaseCommand):
             self.parse_string(kwargs.get('command'), kwargs.get('suppress'))
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
-            
+
         if self.markedStringArgs is not None:
             for idx in self.markedStringArgs:
                 self.args[idx].asString = True
-            
+
     def markArgumentAsString(self, index, value = True):
         if value:
             if self.markedStringArgs is None:
@@ -54,9 +54,9 @@ class MacroCommand(MacroBaseCommand):
         else:
             if self.markedStringArgs is not None:
                 self.markedStringArgs.remove(index)
-                
+
         self.args[index].asString = value
-        
+
     def markedAsString(self, index):
         if self.markedStringArgs is None:
             return False
@@ -65,7 +65,7 @@ class MacroCommand(MacroBaseCommand):
 
     def attributes(self):
         return CommandAttributes(string=self.render_LXM_without_comment())
-        
+
     def canAcceptDrop(self, source_nodes):
         return False
 
@@ -86,7 +86,7 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     command = property(**command())
-    
+
     def name():
         def fget(self):
             return self.columns.get('name').value
@@ -99,7 +99,7 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     name = property(**name())
-    
+
     def markedStringArgs():
         def fget(self):
             return self.meta.get('asString')
@@ -121,9 +121,9 @@ class MacroCommand(MacroBaseCommand):
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
-            return self.columns['prefix'].display_value
+            return self.columns['prefix'].value
         def fset(self, value):
-            self.columns['prefix'].display_value = value
+            self.columns['prefix'].value = value
         return locals()
 
     prefix = property(**prefix())
@@ -326,7 +326,7 @@ class MacroCommand(MacroBaseCommand):
             meta[term] = lx.eval("query commandservice command.%s ? {%s}" % (term, self.command))
 
         return meta
-        
+
     def render_LXM(self):
         """Construct MODO command string from stored internal parts. Also adds comments"""
         res = self.render_comments()
@@ -335,7 +335,7 @@ class MacroCommand(MacroBaseCommand):
 
         res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
-        
+
     def render_LXM_if_selected(self):
         if self.selected:
             return self.render_LXM()
