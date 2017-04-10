@@ -40,27 +40,14 @@ class MacroBlockCommand(MacroBaseCommand):
             self.children.append(MacroCommand(parent=self, command = cmd, index = idx))
             idx = idx + 1
 
-    def block_name():
-        def fget(self):
-            name = self.columns.get('name')
-            if name:
-                return name.value
-            else:
-                return None
-        def fset(self, value):
-            self.columns['name'].value = value
-
-        return locals()
-
-    block_name = property(**block_name())
-
     def name():
         def fget(self):
-            return self._name
+            return self.columns['name'].value
         def fset(self, value):
-            self._name = value
-            self.block_name = "Block: " + value
-
+            self.columns['name'].value = value
+            if not value:
+                value = "\x03(c:4113)\x03(f:FONT_ITALIC)<untitled>"
+            self.columns['name'].display_value = "Block: " + value
         return locals()
 
     name = property(**name())
