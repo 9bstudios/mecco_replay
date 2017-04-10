@@ -96,6 +96,15 @@ class MacroCommandArg(lumberjack.TreeNode):
 
     value = property(**value())
     
+    def display_prefix():
+        def fget(self):
+            return self.columns['prefix'].display_value
+        def fset(self, value):
+            self.columns['prefix'].display_value = value
+        return locals()
+
+    display_prefix = property(**display_prefix())
+    
     def asString():
         def fget(self):
             return (self.columns['prefix'].display_value == "%")
