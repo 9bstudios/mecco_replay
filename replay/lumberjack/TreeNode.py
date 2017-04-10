@@ -5,6 +5,7 @@ from re import search
 from TreeValue import TreeValue
 from RowColor import RowColor
 
+fTREE_VIEW_ITEM_ATTR = 0x00000001
 
 class TreeNode(object):
     """Generalized container object for TreeView node data. Everything needed
@@ -129,7 +130,7 @@ class TreeNode(object):
         return locals()
 
     row_color = property(**row_color())
-
+    
     def selectable():
         doc = "Whether the node is selectable in the GUI. (boolean)"
         def fget(self):

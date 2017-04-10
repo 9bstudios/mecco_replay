@@ -57,6 +57,15 @@ class CommandClass(replay.commander.CommanderClass):
             macro.rebuild_view()
             notifier = replay.Notifier()
             notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+            
+    def basic_Enable(self, msg):
+        if lx.eval('replay.record query:?'):
+            return False
+
+        if replay.Macro().primary is not None and not replay.Macro().primary.can_insert_after():
+            return False
+            
+        return True
 
 
 lx.bless(CommandClass, 'replay.fileInsert')

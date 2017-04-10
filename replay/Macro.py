@@ -5,6 +5,7 @@ import json
 import copy
 import lumberjack
 from MacroCommand import MacroCommand
+from MacroCommandArg import MacroCommandArg
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 from LXMParser import LXMParser
@@ -128,7 +129,18 @@ class Macro(lumberjack.Lumberjack):
 
     selected_commands = property(**selected_commands())
 
+    def selected_args():
+        doc = """Returns a list of implicitly selected `MacroCommand()` objects,
+        including both selected nodes and nodes that have selected descendants."""
+        def fget(self):
+            nodes = set()
+            for node in self.root.selected_descendants:
+                if isinstance(node, MacroCommandArg):
+                    nodes.add(node)
+            return list(nodes)
+        return locals()
 
+    selected_args = property(**selected_args())
 
     @property
     def import_format_names(self):
@@ -329,7 +341,11 @@ class Macro(lumberjack.Lumberjack):
             self.meta = []
 
         def buildMeta(self, name, value):
-            self.meta.append((name, value))
+            try:
+                self.meta.append((name, json.loads(value)))
+            except:
+                # For backward compatibility
+                self.meta.append((name, value))
 
         def buildComment(self, comment):
             self.comments.append(comment)
@@ -371,7 +387,7 @@ class Macro(lumberjack.Lumberjack):
             if 'command' in cmdJson:
                 self.add_command(command_json = cmdJson, **kwargs)
             else:
-                self.add_block(block = [], block_json = cmdJson, **kwargs)
+                self.add_block(block_json = cmdJson, **kwargs)
             index += 1
 
     def run(self):
@@ -430,6 +446,18 @@ class Macro(lumberjack.Lumberjack):
         self.node_for_path(next_command_path).selected = True
         new_path = next_command_path
         return (prev_path, new_path)
+        
+    def shabang(self, lxm, sep):
+        res = ""
+        if lxm:
+            res = "#LXMacro#" + sep;
+        else:
+            res = "# python" + sep
+            
+        res += "# Made with Replay" + sep
+        res += "# mechanicalcolor.com" + sep + sep
+        
+        return res
 
     def render_LXM(self, output_path):
         """Generates an LXM string for export."""
@@ -437,7 +465,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .lxm file
         output_file = open(output_path, 'w')
 
-        output_file.write("#LXMacro#\n")
+        output_file.write(self.shabang(True, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -451,7 +479,7 @@ class Macro(lumberjack.Lumberjack):
         """Generates an LXM string for export."""
 
         # Render shabang
-        res = "#LXMacro#" + os.linesep;
+        res = self.shabang(True, os.linesep)
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -466,7 +494,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .py file
         output_file = open(output_path, 'w')
 
-        output_file.write("# python\n")
+        output_file.write(self.shabang(False, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:

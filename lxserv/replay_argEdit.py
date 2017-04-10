@@ -8,9 +8,12 @@ from replay import message as message
 https://github.com/adamohern/commander for details"""
 
 
-class CommandClass(replay.commander.CommanderClass):
+class ArgEditClass(replay.commander.CommanderClass):
     """Editor for command argument values. Accepts an argName and a value query.
     Designed specifically for use with `replay.argEditFCL`."""
+    
+    def asString(self):
+        return False
 
     def commander_arguments(self):
         return [
@@ -37,25 +40,31 @@ class CommandClass(replay.commander.CommanderClass):
         # We need to update our values whenever the replay notifier fires for
         # selection state changes and tree updates.
         return [("replay.notifier", "")]
+        
+    def selected_args(self):
+        for node in replay.Macro().selected_commands:
+            for arg in node.args:
+                yield arg
+                
+        for arg in replay.Macro().selected_args:        
+            yield arg
 
     def args_by_argName(self, argName):
         """Returns a list of argument nodes in the current selection with a given
         `argName` property. Probably not as fast as it should be."""
         arg_nodes = set()
-        for node in replay.Macro().selected_commands:
-            for arg in node.args:
-                if arg.argName == argName:
-                    arg_nodes.add(arg)
+        for arg in self.selected_args():
+            if arg.argName == argName:
+                arg_nodes.add(arg)
         return arg_nodes
 
     def commands_by_argName(self, argName):
         """Returns a list of argument nodes in the current selection with a given
         `argName` property. Probably not as fast as it should be."""
         commands = list()
-        for node in replay.Macro().selected_commands:
-            for arg in node.args:
-                if arg.argName == argName:
-                    commands.append((node, arg.index))
+        for arg in self.selected_args():
+            if arg.argName == argName:
+                commands.append((arg.parent, arg.index))
         return commands
 
     def commander_execute(self, msg, flags):
@@ -63,11 +72,16 @@ class CommandClass(replay.commander.CommanderClass):
         proper place."""
         try:
             argName = self.commander_args()['argName']
+            asString = self.asString()
             argValue = self.commander_args()['value']
 
             for command, argIndex in self.commands_by_argName(argName):
                 arg = command.args[argIndex]
-                arg.value = self.store_in_arg_value(command, argIndex, argValue)
+                if asString:
+                    arg.value = argValue
+                    command.markArgumentAsString(argIndex)
+                else:
+                    arg.value = self.store_in_arg_value(command, argIndex, argValue)
 
             # Notify the TreeView to update itself.
             replay.Macro().refresh_view()
@@ -223,7 +237,6 @@ class CommandClass(replay.commander.CommanderClass):
                 try:
                     va.AddValue(value)
                 except:
-                    lx.out(argName, datatype, values_list)
                     raise Exception(message("MECCO_REPLAY", "QUERY_DATATYPE_DETECT_ERROR"))
 
         return lx.result.OK
@@ -243,6 +256,7 @@ class CommandClass(replay.commander.CommanderClass):
         be straightforward, but no. This is MODO."""
 
         argName = self.commander_args()['argName']
+        asString = self.asString()
 
         types = set()
 
@@ -255,10 +269,15 @@ class CommandClass(replay.commander.CommanderClass):
             default = None
             argTypeName = None
 
-            attrs = command.attributes()
-            argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
-            default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
-            hints = attrs.arg(argIndex).hints(None)
+            if asString or command.markedAsString(argIndex):
+                argTypeName = lx.symbol.sTYPE_STRING
+                default = command.args[argIndex].value
+                hints = None
+            else:
+                attrs = command.attributes()
+                argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
+                default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
+                hints = attrs.arg(argIndex).hints(None)
 
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))
@@ -283,5 +302,10 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         return bool(replay.Macro().selected_descendants)
 
+class ArgEditAsStringClass(ArgEditClass):
 
-lx.bless(CommandClass, 'replay.argEdit')
+    def asString(self):
+        return True
+
+lx.bless(ArgEditClass, 'replay.argEdit')
+lx.bless(ArgEditAsStringClass, 'replay.argEditAsString')

@@ -4,14 +4,13 @@ import lx
 import re
 import lumberjack
 
-
 class MacroCommandArg(lumberjack.TreeNode):
     """Contains everything pertaining to a single command argument in the macro.
     Each `MacroCommand` object will create one `MacroCommandArg` child for each
     argument."""
 
     def __init__(self, parent, arg_index, **kwargs):
-        super(self.__class__, self).__init__(**kwargs)
+        super(self.__class__, self).__init__(state=lumberjack.fTREE_VIEW_ITEM_ATTR, **kwargs)
 
         # We have to manually pass these in from the parent because the `parent`
         # parameter won't be operational until the object has finished `__init__()`.
@@ -54,6 +53,30 @@ class MacroCommandArg(lumberjack.TreeNode):
             all(isinstance(elem, basestring) for elem in kwargs.get('arg_string')):
 
             self.parse_string(kwargs.get('arg_string'))
+            
+    def can_change_suppress(self):
+        return False
+        
+    def can_change_color(self):
+        return False
+        
+    def can_add_command(self):
+        return False
+        
+    def can_add_to_block(self):
+        return False
+        
+    def can_copy(self):
+        return False
+        
+    def can_insert_after(self):
+        return False
+        
+    def can_delete(self):
+        return False
+        
+    def can_change_name(self):
+        return False
 
     def value():
         doc = """The value property is really a proxy for the `command` cell value.
@@ -72,6 +95,15 @@ class MacroCommandArg(lumberjack.TreeNode):
         return locals()
 
     value = property(**value())
+    
+    def asString():
+        def fget(self):
+            return (self.columns['prefix'].display_value == "%")
+        def fset(self, value):
+            self.columns['prefix'].display_value = "%" if value else ""
+        return locals()
+
+    asString = property(**asString())
 
     def argName():
         doc = "The argName property is really a proxy for the `name` cell value."

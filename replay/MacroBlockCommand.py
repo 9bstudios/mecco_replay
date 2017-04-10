@@ -25,10 +25,9 @@ class MacroBlockCommand(MacroBaseCommand):
         self.columns['command'].input_region = None
 
         self.columns['enable'].input_region = 'MacroCommandEnable'
-        self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandBlock'
 
-        self.original_name = kwargs.get('name', "")
+        self.name = kwargs.get('name', "")
 
         if kwargs.get('block_json'):
             self.parse_json(kwargs.get('block_json'), **kwargs)
@@ -41,48 +40,38 @@ class MacroBlockCommand(MacroBaseCommand):
             self.children.append(MacroCommand(parent=self, command = cmd, index = idx))
             idx = idx + 1
 
-    def block_name():
+    def name():
         def fget(self):
-            name = self.columns.get('name')
-            if name:
-                return name.value
-            else:
-                return None
+            return self.columns['name'].value
         def fset(self, value):
             self.columns['name'].value = value
-
+            if not value:
+                value = "\x03(c:4113)\x03(f:FONT_ITALIC)<untitled>"
+            self.columns['name'].display_value = "Block: " + value
         return locals()
 
-    block_name = property(**block_name())
-
-    def original_name():
-        def fget(self):
-            return self._original_name
-        def fset(self, value):
-            self._original_name = value
-            self.block_name = "Block: " + value
-
-        return locals()
-
-    original_name = property(**original_name())
+    name = property(**name())
 
     def render_LXM_Python(self, renderName):
         """Construct MODO command string from stored internal parts. Also adds comments"""
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
-        res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block Begin: %s" % self.name)
 
         for command in self.children:
             render = getattr(command, renderName)
             assert(render != None)
             lines = render()
             for line in lines:
-                res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
+                if line.startswith('#'):
+                    res.append(("# " if self.direct_suppress else "") + line)
+                else:
+                    res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
 
-        res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.original_name)
+        res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
-        
+
     def render_LXM_if_selected(self):
         if self.selected:
             return self.render_LXM()
@@ -92,7 +81,7 @@ class MacroBlockCommand(MacroBaseCommand):
                 lines = command.render_LXM_if_selected()
                 for line in lines:
                     res.append(("# " if self.direct_suppress else "") + line)
-                    
+
             return res
 
     def render_LXM(self):
@@ -108,15 +97,15 @@ class MacroBlockCommand(MacroBaseCommand):
             command = command.render_json()
             commands.append(command)
 
-        return {"command block" : {"name" : self.original_name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
+        return {"command block" : {"name" : self.name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
 
     def parse_json(self, json_struct, **kwargs):
         attributes = json_struct['command block']
-        self.original_name = attributes['name']
+        self.name = attributes['name']
         self.direct_suppress = attributes['suppress']
         self.comment_before = attributes['comment']
 
-        kwargs.pop('block', None)
+        kwargs.pop('type', None)
         kwargs.pop('command_json', None)
         kwargs.pop('block_json', None)
 
@@ -125,9 +114,9 @@ class MacroBlockCommand(MacroBaseCommand):
             kwargs['index'] = index
             kwargs['parent'] = self
             if 'command' in command:
-                self._controller.add_child(command_json = command, **kwargs)
+                self._controller.add_command(command_json = command, **kwargs)
             else:
-                self._controller.add_child(block = [], block_json = command, **kwargs)
+                self._controller.add_block(block_json = command, **kwargs)
             index += 1
 
     def run(self):

@@ -2,6 +2,7 @@
 
 import lx
 import re
+import json
 import lumberjack
 
 class MacroBaseCommand(lumberjack.TreeNode):
@@ -46,9 +47,6 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def iter_tooltip(self):
         for line in self.user_comment_before:
-            line = line.strip()
-            if (len(line) > 0) and line[0] == '#':
-                line = line[1:]
             yield line
         
     def tooltip(self, columnIndex):
@@ -59,6 +57,27 @@ class MacroBaseCommand(lumberjack.TreeNode):
             return not self.parent.suppress
         else:
             return True
+            
+    def can_change_color(self):
+        return True
+        
+    def can_add_command(self):
+        return True
+        
+    def can_add_to_block(self):
+        return True
+        
+    def can_copy(self):
+        return True
+        
+    def can_insert_after(self):
+        return True
+        
+    def can_delete(self):
+        return True
+        
+    def can_change_name(self):
+        return True
 
     def update_suppress_for_node_and_descendants(self):
         if hasattr(self, 'suppress'):
@@ -110,14 +129,20 @@ class MacroBaseCommand(lumberjack.TreeNode):
     suppress = property(**suppress())
 
     def parse_meta(self, line):
-        meta = re.search(r'^\# replay\s+(\S+):(.+)$', line)
+        meta = re.search(r'^replay\s+(\S+):(.+)$', line)
         if meta is not None:
-            return (meta.group(1), meta.group(2))
+            return (meta.group(1), json.loads(meta.group(2)))
         else:
             return None
 
     def render_meta(self, name, val):
-        return "# replay {n}:{v}".format(n=name, v=val)
+        return "replay {n}:{v}".format(n=name, v=json.dumps(val))
+        
+    def render_comments(self):
+        res = []
+        for comment in self.comment_before:
+            res.append("# " + comment)
+        return res
 
     def comment_before():
         doc = """String to be added as comment text before the command. Long strings

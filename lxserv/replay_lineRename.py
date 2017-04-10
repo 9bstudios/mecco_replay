@@ -11,46 +11,25 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_arguments(self):
         return [
             {
-                'name': 'line_color',
+                'name': 'comment',
                 'datatype': 'string',
-                'default': 'none',
-                'values_list_type': 'popup',
-                'values_list': [
-                    'none',
-                    'red',
-                    'magenta',
-                    'pink',
-                    'brown',
-                    'orange',
-                    'yellow',
-                    'green',
-                    'light_g',
-                    'cyan',
-                    'blue',
-                    'light_blue',
-                    'ultrama',
-                    'purple',
-                    'light_pu',
-                    'dark_grey',
-                    'grey',
-                    'white'
-                ],
-                'flags': ['query']
+                'default': '',
+                'flags':[]
             }
         ]
 
     def commander_execute(self, msg, flags):
-        color_name = self.commander_arg_value(0, 'none')
+        name = self.commander_arg_value(0, 'none')
 
         # Add actions needed to undo and redo this command
-        actionList = ColorActionList()
+        actionList = NameActionList()
         for line in replay.Macro().selected_descendants:
-            actionList.append(line.path, line.row_color, color_name)
+            actionList.append(line.path, line.name, name)
 
         # Register Undo object performing operation and apply it
         undo_svc = lx.service.Undo()
         if undo_svc.State() != lx.symbol.iUNDO_INVALID:
-            undo_svc.Apply(UndoLineColor(actionList))
+            undo_svc.Apply(UndoLineRename(actionList))
 
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
@@ -60,30 +39,30 @@ class CommandClass(replay.commander.CommanderClass):
             return False
 
         for command in replay.Macro().selected_descendants:
-            if not command.can_change_color():
+            if not command.can_change_name():
                 return False
 
         return True
 
-class ColorActionList:
+class NameActionList:
     def __init__(self):
         self.m_actions = list()
 
-    def append(self, path, prev_color, new_color):
+    def append(self, path, prev_name, new_name):
         """Add action in action list"""
-        self.m_actions.append((path, prev_color, new_color))
+        self.m_actions.append((path, prev_name, new_name))
 
     def iter_redo(self):
         """iterate actions for redo"""
-        for path, prev_color, new_color in self.m_actions:
-            yield (path, new_color)
+        for path, prev_name, new_name in self.m_actions:
+            yield (path, new_name)
 
     def iter_undo(self):
         """iterate actions for undo"""
-        for path, prev_color, new_color in self.m_actions:
-            yield (path, prev_color)
+        for path, prev_name, new_name in self.m_actions:
+            yield (path, prev_name)
 
-class UndoLineColor(lxifc.Undo):
+class UndoLineRename(lxifc.Undo):
     def __init__(self, actionList):
         self.m_actionList = actionList
 
@@ -91,9 +70,9 @@ class UndoLineColor(lxifc.Undo):
         """Change colors for each item in actions"""
         macro = replay.Macro()
 
-        # Change color of selected nodes
-        for path, color in actions:
-            macro.node_for_path(path).row_color = color
+        # Change name of selected nodes
+        for path, name in actions:
+            macro.node_for_path(path).name = name
 
         # Rebuild view
         macro.rebuild_view()
@@ -109,4 +88,4 @@ class UndoLineColor(lxifc.Undo):
         self.apply(self.m_actionList.iter_undo())
 
 
-lx.bless(CommandClass, 'replay.lineColor')
+lx.bless(CommandClass, 'replay.lineRename')

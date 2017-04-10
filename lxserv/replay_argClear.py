@@ -46,8 +46,9 @@ class UndoArgClear(lxifc.Undo):
         # Save values in m_cleared_values and clear them
         for path in self.m_paths:
             child = macro.node_for_path(path)
-            self.m_cleared_values.append(child.value)
+            self.m_cleared_values.append((child.value, child.parent.markedAsString(path[-1])))
             child.value = None
+            child.parent.markArgumentAsString(path[-1], False)
 
         self.finalize_command(macro)
 
@@ -58,9 +59,11 @@ class UndoArgClear(lxifc.Undo):
         # Restore cleared values
         for idx in range(0, len(self.m_paths)):
             path = self.m_paths[idx]
-            value = self.m_cleared_values[idx]
+            value = self.m_cleared_values[idx][0]
+            asString = self.m_cleared_values[idx][1]
             child = macro.node_for_path(path)
             child.value = value
+            child.parent.markArgumentAsString(path[-1], asString)
 
         self.finalize_command(macro)
 

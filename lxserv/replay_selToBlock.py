@@ -30,8 +30,15 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
- 
-        return len(replay.Macro().selected_descendants) != 0
+
+        if len(replay.Macro().selected_descendants) == 0:
+            return False
+
+        for command in replay.Macro().selected_descendants:
+            if not command.can_add_to_block():
+                return False
+
+        return True
 
 class UndoToBlock(lxifc.Undo):
     def __init__(self, paths, target_path, name):

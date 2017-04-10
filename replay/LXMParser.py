@@ -38,7 +38,7 @@ class LXMParser(object):
 
     def __init__(self):
         self.builder = None
-        
+
     def parseString(self, string, builder):
         try:
             self.parseStream(string.split("\n"), builder)
@@ -72,14 +72,15 @@ class LXMParser(object):
         self.in_suppress = False
         self.in_suppress_counter = 0
         self.block_stack = []
+        self.skip_next_comments = True
 
     def readShabang(self, file):
         if isinstance(file, list):
             line = file[0]
             file.pop(0)
         else:
-            line = file.readline() 
-            
+            line = file.readline()
+
         if line.startswith("#LXMacro#"):
             self.type = "LXM"
         elif re.search("#\s*python\s*", line) is not None:
@@ -88,6 +89,7 @@ class LXMParser(object):
             lx.out("Missing shabang")
             self.type = "LXM"
         self.builder.buildType(self.type)
+        self.skip_next_comments = True
 
     def readLines(self, file):
         for line in file:
@@ -102,12 +104,14 @@ class LXMParser(object):
         line = self.stripLine(line)
 
         if len(line) == 0:
+            self.skip_next_comments = False
             return
 
         if line[0] == '#':
             self.handleCommentLine(line)
         else:
             self.handleNonCommentLine(line)
+            self.skip_next_comments = False
 
     def isBlockStart(self, input_line):
         block = re.search(r'^#\s*Command Block Begin:\s*(\S*)\s*$', input_line)
@@ -197,6 +201,14 @@ class LXMParser(object):
         if self.handleBlockEnd(line):
             return
 
+        if self.skip_next_comments:
+            return
+
+        line = line.strip()
+        if (len(line) > 0) and line[0] == '#':
+            line = line[1:]
+        if (len(line) > 0) and line[0] == ' ':
+            line = line[1:]
         self.builder.buildComment(line)
 
     def handleNonCommentLine(self, line):

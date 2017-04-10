@@ -30,7 +30,7 @@ class MacroCommand(MacroBaseCommand):
         self.columns['enable'].input_region = 'MacroCommandEnable'
         self.columns['prefix'].input_region = 'MacroCommandPrefix'
         self.columns['name'].input_region = 'MacroCommandCommand'
-        
+
         if bool(kwargs.get('ButtonName')):
             self.meta['name'] = kwargs.get('ButtonName')
 
@@ -40,8 +40,34 @@ class MacroCommand(MacroBaseCommand):
         elif bool(kwargs.get('command_json')):
             self.parse_json(kwargs.get('command_json'))
 
+        if self.markedStringArgs is not None:
+            for idx in self.markedStringArgs:
+                self.args[idx].asString = True
+
+    def markArgumentAsString(self, index, value = True):
+        if value:
+            if self.markedStringArgs is None:
+                self.markedStringArgs = [index]
+            else:
+                if index not in self.markedStringArgs:
+                    self.markedStringArgs += [index]
+        else:
+            if self.markedStringArgs is not None:
+                self.markedStringArgs.remove(index)
+
+        self.args[index].asString = value
+
+    def markedAsString(self, index):
+        if self.markedStringArgs is None:
+            return False
+        else:
+            return index in self.markedStringArgs
+
     def attributes(self):
         return CommandAttributes(string=self.render_LXM_without_comment())
+
+    def canAcceptDrop(self, source_nodes):
+        return False
 
     def command():
         doc = "The base MODO command, e.g. `item.name`."
@@ -60,6 +86,28 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     command = property(**command())
+
+    def name():
+        def fget(self):
+            return self.columns.get('name').value
+        def fset(self, value):
+            if value == self.command_meta()['username']:
+                self._meta.pop('name', None)
+            else:
+                self._meta['name'] = value
+            self.columns['name'].value = value
+        return locals()
+
+    name = property(**name())
+
+    def markedStringArgs():
+        def fget(self):
+            return self.meta.get('asString')
+        def fset(self, value):
+            self._meta['asString'] = value
+        return locals()
+
+    markedStringArgs = property(**markedStringArgs())
 
     def prefix():
         doc = """Usually one or two characters to prepend to the command string to
@@ -281,13 +329,13 @@ class MacroCommand(MacroBaseCommand):
 
     def render_LXM(self):
         """Construct MODO command string from stored internal parts. Also adds comments"""
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
 
         res.append(("# " if self.direct_suppress else "") + self.render_LXM_without_comment())
         return res
-        
+
     def render_LXM_if_selected(self):
         if self.selected:
             return self.render_LXM()
@@ -313,7 +361,7 @@ class MacroCommand(MacroBaseCommand):
     def render_Python(self):
         """Construct MODO command string wrapped in lx.eval() from stored internal parts."""
 
-        res = list(self.comment_before)
+        res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
         res.append(("# " if self.direct_suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))

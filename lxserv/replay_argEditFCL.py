@@ -17,6 +17,12 @@ class CommandClass(replay.commander.CommanderClass):
                 'values_list_type': 'fcl',
                 'values_list': self.list_commands,
                 'flags': ['query']
+            }, {
+                'name': 'asString',
+                'label': "As String",
+                'datatype': 'boolean',
+                'default': 'false',
+                'flags': ['optional']
             }
         ]
 
@@ -31,19 +37,27 @@ class CommandClass(replay.commander.CommanderClass):
 
     def list_commands(self):
         nodes = replay.Macro().selected_commands
+        
+        asString = self.commander_args().get('asString', False)
 
+        # Collect args of selected commands
         args = []
         for node in nodes:
             command_obj = node.attributes()
             for arg in node.args:
                 if not command_obj.arg(arg.index).is_hidden(True):
                     args.append(arg.argName)
+                    
+        # Collect selected args
+        for arg in replay.Macro().selected_args:
+            command_obj = arg.parent.attributes()
+            if not command_obj.arg(arg.index).is_hidden(True):
+                args.append(arg.argName)
 
         commands_list = []
         for arg in self.remove_duplicates(args):
-            commands_list.append('replay.argEdit %s ?' % arg)
+            commands_list.append('replay.argEdit%s %s ?' % ("AsString" if asString else "", arg))
 
-        return commands_list
-
+        return commands_list                
 
 lx.bless(CommandClass, 'replay.argEditFCL')
