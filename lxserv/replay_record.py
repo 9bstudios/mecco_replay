@@ -178,9 +178,9 @@ class CmdListener(lxifc.CmdSysListener):
         # is still running. Not all sub-commands are grouped into blocks, and not all
         # blocks are comprised of sub-commands.
 
-        if self.block_depth == self.total_depth:
+        if self.block_depth == 0:
             # RecordingCache should be clear at this point. Just in any case clear it again
-            replay.RecordingCache().beginBlock()
+            replay.RecordingCache().clear()
             self.record_in_block = True
             self.debug_path_print("Begin Recorded Block")
         else:
@@ -197,7 +197,7 @@ class CmdListener(lxifc.CmdSysListener):
 
         del self.debug_path[-1]
 
-        if self.block_depth == self.total_depth:
+        if self.block_depth == 0:
             self.debug_path_print("End Recorded Block")
             # If refiring, wait to end block until we get to cmdsysevent_RefireEnd()
             if not self.refiring:
@@ -275,7 +275,7 @@ def replay_record_kill(dialog_title, dialog_msg):
 
 def replay_lastBlockInsert():
     lx.eval("replay.lastBlockInsert")
-    replay.RecordingCache().endBlock()
+    replay.RecordingCache().clear()
 
 def wrap_quote(value):
     if re.search(r"\W", value):

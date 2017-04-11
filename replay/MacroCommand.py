@@ -129,6 +129,16 @@ class MacroCommand(MacroBaseCommand):
     prefix = property(**prefix())
     
     def display_prefix():
+        doc = """Usually one or two characters to prepend to the command string to
+        suppress or force dialogs, etc. e.g. `!mesh.cleanup`
+
+        `'!'`   - Suppress dialogs.
+        `'!!'`  - Suppress all dialogs.
+        `'+'`   - Show dialogs.
+        `'++'`  - Show all dialogs.
+        `'?'`   - Show command dialog.
+
+        See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes"""
         def fget(self):
             return self.columns['prefix'].display_value
         def fset(self, value):
