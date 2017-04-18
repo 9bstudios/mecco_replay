@@ -1,7 +1,7 @@
 # python
 
 import math
-import lx, modo, replay
+import lx, lxifc, modo, replay
 from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
@@ -74,34 +74,21 @@ class ArgEditClass(replay.commander.CommanderClass):
             argName = self.commander_args()['argName']
             asString = self.asString()
             argValue = self.commander_args()['value']
+            
+            paths = list()
 
             for command, argIndex in self.commands_by_argName(argName):
                 arg = command.args[argIndex]
-                if asString:
-                    arg.value = argValue
-                    command.markArgumentAsString(argIndex)
-                else:
-                    arg.value = self.store_in_arg_value(command, argIndex, argValue)
-
-            # Notify the TreeView to update itself.
-            replay.Macro().refresh_view()
-            replay.Macro().unsaved_changes = True
-
-            notifier = replay.Notifier()
-            notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+                paths.append(arg.path)
+                
+            argEdit = UndoArgEdit(asString, argValue, paths)
+                
+            undo_svc = lx.service.Undo()
+            argEdit.undo_Forward()
+            undo_svc.Record(argEdit)
+                
         except Exception as e:
-            lx.out(e)
-
-    def store_in_arg_value(self, command, argIndex, argValue):
-        attrs = command.attributes()
-        argTypeName = attrs.arg(argIndex).type_name()
-        if argTypeName == lx.symbol.sTYPE_INTEGER:
-            hints = attrs.arg(argIndex).hints()
-            for idx, name in hints:
-                if idx == int(argValue):
-                    return name
-
-        return argValue
+            pass
 
     def arg_values_list(self):
         datatype, hints, default = self.arg_info(1)
@@ -306,6 +293,68 @@ class ArgEditAsStringClass(ArgEditClass):
 
     def asString(self):
         return True
+        
+class UndoArgEdit(lxifc.Undo):
+    def __init__(self, asString, argValue, paths):
+        self.m_asString = asString
+        self.m_argValue = argValue
+        self.m_paths = paths
+        self.m_storedValues = list()
+
+    def finalize_command(self, macro):
+        """Does common command finalizing operations"""
+        macro.rebuild_view()
+        replay.Macro().unsaved_changes = True
+
+        notifier = replay.Notifier()
+        notifier.Notify(lx.symbol.fCMDNOTIFY_VALUE)
+        
+    def store_in_arg_value(self, command, argIndex, argValue):
+        attrs = command.attributes()
+        argTypeName = attrs.arg(argIndex).type_name()
+        if argTypeName == lx.symbol.sTYPE_INTEGER:
+            hints = attrs.arg(argIndex).hints()
+            for idx, name in hints:
+                if idx == int(argValue):
+                    return name
+
+        return argValue
+
+    def undo_Forward(self):
+        macro = replay.Macro()
+        
+        del self.m_storedValues[:]
+
+        for path in self.m_paths:
+            arg = macro.node_for_path(path)
+            command = arg.parent
+            if self.m_asString:
+                self.m_storedValues.append((arg.value, command.markedAsString(path[-1])))
+                
+                arg.value = self.m_argValue
+                command.markArgumentAsString(path[-1])
+            else:
+                self.m_storedValues.append(arg.value)
+                arg.value = self.store_in_arg_value(command, path[-1], self.m_argValue)
+
+        self.finalize_command(macro)
+
+    def undo_Reverse(self):
+        macro = replay.Macro()
+
+        for idx in range(len(self.m_paths)):
+            path = self.m_paths[idx]
+            arg = macro.node_for_path(path)
+            command = arg.parent
+            if self.m_asString:
+                val, asString = self.m_storedValues[idx]
+                arg.value = val
+                command.markArgumentAsString(path[-1], asString)
+            else:
+                val = self.m_storedValues[idx]
+                arg.value = val
+
+        self.finalize_command(macro)
 
 lx.bless(ArgEditClass, 'replay.argEdit')
 lx.bless(ArgEditAsStringClass, 'replay.argEditAsString')
