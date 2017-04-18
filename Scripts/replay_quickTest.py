@@ -102,6 +102,28 @@ class TestLineDelete(unittest.TestCase):
         self.assertEqual(len(macro.children), 0)
         
         lx.eval('replay.fileClose prompt_save:false')
+        
+    def test_lineDeleteUndoRedo_bug_114(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        replay.RecordingCache().add_command('tool.set preset:"prim.cube" mode:on')
+        replay.RecordingCache().add_command('tool.set preset:"prim.cube" mode:on')
+        lx.eval("replay.lastBlockInsert")
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+
+        # Cannot use app.undo app.redo here. Have to do it manually
+        lineDelete = UndoLineDelete([[0]])
+        lineDelete.undo_Forward()
+        self.assertEqual(len(macro.children), 0)
+        
+        lineDelete.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        
+        lineDelete.undo_Forward()
+        self.assertEqual(len(macro.children), 0)
+        
+        lx.eval('replay.fileClose prompt_save:false')
 
 from replay_argClear import UndoArgClear
 class TestArgClear(unittest.TestCase):
@@ -393,6 +415,7 @@ class TestDelete(unittest.TestCase):
         
 def runUnitTest():
     moc_stdout = StringIO()
+        
     runner = unittest.TextTestRunner(moc_stdout)
     suite = loader.loadTestsFromTestCase(TestLineInsert)
     runner.run(suite)

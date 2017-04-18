@@ -73,8 +73,9 @@ class UndoPaste(lxifc.Undo):
         for node in self.m_added_nodes:
             node.delete()
         
-        macro = replay.Macro()        
-        macro.select(self.m_old_primary_path)
+        macro = replay.Macro()
+        if self.m_old_primary_path is not None:
+            macro.select(self.m_old_primary_path)
 
         self.finalize_command()
 

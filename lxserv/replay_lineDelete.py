@@ -70,7 +70,7 @@ class UndoLineDelete(lxifc.Undo):
 
         # Restore deleted commands
         for removed_path, json in self.m_deleted_commands:
-            macro.add_command(command_json = json, path = removed_path)
+            macro.add_json_command_or_block(json, path = removed_path)
             macro.node_for_path(removed_path).selected = True
 
         self.finalize_command(macro)
