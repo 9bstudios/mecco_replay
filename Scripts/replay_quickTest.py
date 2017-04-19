@@ -8,6 +8,7 @@ import unittest
 from unittest import TestCase, TextTestRunner, defaultTestLoader as loader
 from cStringIO import StringIO
 
+from replay_lineInsert import UndoLineInsert
 class TestLineInsert(unittest.TestCase):
     def test_lineInsert(self):
         lx.eval('replay.fileClose prompt_save:false')
@@ -29,6 +30,77 @@ class TestLineInsert(unittest.TestCase):
         self.assertEqual(macro.children[0].args[3].value, None)
         self.assertEqual(macro.children[0].args[4].argName, "rawquery")
         self.assertEqual(macro.children[0].args[4].value, None)
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        
+    def test_lineInsertUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lineInsert1 = UndoLineInsert('tool.set preset:"prim.cube" mode:on', "BtnName1", [0])
+        lineInsert2 = UndoLineInsert('tool.set preset:"prim.sphere" mode:on', "BtnName2", [1])
+        lineInsert3 = UndoLineInsert('tool.set preset:"prim.cone" mode:on', "BtnName3", [2])
+        lineInsert1.undo_Forward()
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, "BtnName1")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertTrue(macro.node_for_path([0]).selected)
+        
+        lineInsert2.undo_Forward()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, "BtnName1")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        
+        self.assertEqual(macro.children[1].name, "BtnName2")
+        self.assertEqual(len(macro.children[1].args), 5)
+        self.assertEqual(macro.children[1].args[0].value, "prim.sphere")
+        self.assertFalse(macro.node_for_path([0]).selected)
+        self.assertTrue(macro.node_for_path([1]).selected)
+        
+        # Select all. first is primary
+        macro.node_for_path([1]).selected = True
+        macro.node_for_path([0]).selected = True
+        
+        lineInsert3.undo_Forward()
+        self.assertEqual(len(macro.children), 3)
+        self.assertEqual(macro.children[0].name, "BtnName1")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        
+        self.assertEqual(macro.children[1].name, "BtnName2")
+        self.assertEqual(len(macro.children[1].args), 5)
+        self.assertEqual(macro.children[1].args[0].value, "prim.sphere")
+        
+        self.assertEqual(macro.children[2].name, "BtnName3")
+        self.assertEqual(len(macro.children[2].args), 5)
+        self.assertEqual(macro.children[2].args[0].value, "prim.cone")
+        self.assertFalse(macro.node_for_path([0]).selected)
+        self.assertFalse(macro.node_for_path([1]).selected)
+        self.assertTrue(macro.node_for_path([2]).selected)
+        
+        lineInsert3.undo_Reverse()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, "BtnName1")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        
+        self.assertEqual(macro.children[1].name, "BtnName2")
+        self.assertEqual(len(macro.children[1].args), 5)
+        self.assertEqual(macro.children[1].args[0].value, "prim.sphere")
+        self.assertTrue(macro.node_for_path([0]).selected)
+        self.assertTrue(macro.node_for_path([1]).selected)
+        
+        lineInsert2.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, "BtnName1")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertTrue(macro.node_for_path([0]).selected)
+
+        lineInsert1.undo_Reverse()
+        self.assertEqual(len(macro.children), 0)
         
         lx.eval('replay.fileClose prompt_save:false')
         
@@ -172,6 +244,7 @@ class TestArgClear(unittest.TestCase):
         lx.eval('replay.fileClose prompt_save:false')
         
         
+from replay_argEdit import UndoArgEdit
 class TestArgEdit(unittest.TestCase):
     def test_argEditArgument(self):
         lx.eval('replay.fileClose prompt_save:false')
@@ -195,6 +268,61 @@ class TestArgEdit(unittest.TestCase):
         
         val = lx.eval('replay.argEditAsString argName:preset ?')
         self.assertEqual(val, "prim.something")
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        
+    def test_argEditUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        lx.eval('replay.lineSelect 0;0')
+        #x.eval('replay.argEdit argName:preset value:prim.sphere')
+        argEdit = UndoArgEdit(False, "prim.sphere", [[0, 0]])
+        argEdit.undo_Forward()
+        
+        macro = replay.Macro()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, " ")
+        self.assertEqual(macro.children[0].args[0].value, "prim.sphere")
+        
+        argEdit.undo_Reverse()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, " ")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        
+        argEditAs1 = UndoArgEdit(True, "val1", [[0, 0]])
+        argEditAs2 = UndoArgEdit(True, "val2", [[0, 0]])
+        
+        argEditAs1.undo_Forward()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, "%")
+        self.assertEqual(macro.children[0].args[0].value, "val1")
+        
+        argEditAs2.undo_Forward()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, "%")
+        self.assertEqual(macro.children[0].args[0].value, "val2")
+        
+        argEditAs2.undo_Reverse()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, "%")
+        self.assertEqual(macro.children[0].args[0].value, "val1")
+        
+        argEditAs1.undo_Reverse()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].display_prefix, " ")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
         
         lx.eval('replay.fileClose prompt_save:false')
 
