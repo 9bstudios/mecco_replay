@@ -1361,6 +1361,18 @@ class TestFileSaveOpen(unittest.TestCase):
         macro.unsaved_changes = False
         lx.eval('replay.fileNew')
         
+class TestFileOpenAddRecent(unittest.TestCase):
+    def test_lineInsert(self):
+        lx.eval('user.value mecco_replay_recent_files ""')
+        lx.eval('replay.fileOpenAddRecent "path1"')
+        
+        existing_paths = lx.eval('user.value mecco_replay_recent_files ?')
+        self.assertEqual(existing_paths, "path1;")
+        
+        lx.eval('replay.fileOpenAddRecent "path2"')
+        existing_paths = lx.eval('user.value mecco_replay_recent_files ?')
+        self.assertEqual(existing_paths, "path2;path1;")
+        
 def runUnitTest():
     moc_stdout = StringIO()
         
@@ -1378,6 +1390,7 @@ def runUnitTest():
     suite.addTests(loader.loadTestsFromTestCase(TestFileExportOpen))
     suite.addTests(loader.loadTestsFromTestCase(TestFileExportInsert))
     suite.addTests(loader.loadTestsFromTestCase(TestFileSaveOpen))
+    suite.addTests(loader.loadTestsFromTestCase(TestFileOpenAddRecent))
     runner.run(suite)
     lx.out(moc_stdout.getvalue())
     
