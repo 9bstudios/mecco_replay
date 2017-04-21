@@ -127,6 +127,186 @@ class TestLineInsert(unittest.TestCase):
         
         lx.eval('replay.fileClose prompt_save:false')
         
+class TestLastBlockInsert(unittest.TestCase):
+    def test_lastBlockInsert(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        replay.RecordingCache().clear()
+        replay.RecordingCache().add_command('tool.set preset:"prim.cube" mode:on')
+        replay.RecordingCache().add_command('tool.set preset:"prim.sphere" mode:off')
+        lx.eval("replay.lastBlockInsert")
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.sphere" mode:off}')
+        
+        macro = replay.Macro()
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 3)
+        
+        self.assertEqual(macro.children[1].columns['name'].value, "")
+        self.assertFalse(macro.children[1].direct_suppress)
+        self.assertEqual(len(macro.children[1].children), 2)
+        
+        self.assertEqual(macro.node_for_path([1, 0]).command, "tool.set")
+        self.assertEqual(macro.node_for_path([1, 0]).name, "Set Tool")
+        self.assertFalse(macro.node_for_path([1, 0]).direct_suppress)
+        self.assertEqual(macro.node_for_path([1, 0]).user_comment_before, [])
+        self.assertEqual(macro.node_for_path([1, 0]).row_color, None)
+        self.assertEqual(len(macro.node_for_path([1, 0]).args), 5)
+        self.assertEqual(macro.node_for_path([1, 0]).args[0].argName, "preset")
+        self.assertEqual(macro.node_for_path([1, 0]).args[0].value, "prim.cube")
+        self.assertEqual(macro.node_for_path([1, 0]).args[1].argName, "mode")
+        self.assertEqual(macro.node_for_path([1, 0]).args[1].value, "on")
+        self.assertEqual(macro.node_for_path([1, 0]).args[2].argName, "task")
+        self.assertEqual(macro.node_for_path([1, 0]).args[2].value, None)
+        self.assertEqual(macro.node_for_path([1, 0]).args[3].argName, "snap")
+        self.assertEqual(macro.node_for_path([1, 0]).args[3].value, None)
+        self.assertEqual(macro.node_for_path([1, 0]).args[4].argName, "rawquery")
+        self.assertEqual(macro.node_for_path([1, 0]).args[4].value, None)
+        
+        self.assertEqual(macro.node_for_path([1, 1]).command, "tool.set")
+        self.assertEqual(macro.node_for_path([1, 1]).name, "Set Tool")
+        self.assertFalse(macro.node_for_path([1, 1]).direct_suppress)
+        self.assertEqual(macro.node_for_path([1, 1]).user_comment_before, [])
+        self.assertEqual(macro.node_for_path([1, 1]).row_color, None)
+        self.assertEqual(len(macro.node_for_path([1, 1]).args), 5)
+        self.assertEqual(macro.node_for_path([1, 1]).args[0].argName, "preset")
+        self.assertEqual(macro.node_for_path([1, 1]).args[0].value, "prim.sphere")
+        self.assertEqual(macro.node_for_path([1, 1]).args[1].argName, "mode")
+        self.assertEqual(macro.node_for_path([1, 1]).args[1].value, "off")
+        self.assertEqual(macro.node_for_path([1, 1]).args[2].argName, "task")
+        self.assertEqual(macro.node_for_path([1, 1]).args[2].value, None)
+        self.assertEqual(macro.node_for_path([1, 1]).args[3].argName, "snap")
+        self.assertEqual(macro.node_for_path([1, 1]).args[3].value, None)
+        self.assertEqual(macro.node_for_path([1, 1]).args[4].argName, "rawquery")
+        self.assertEqual(macro.node_for_path([1, 1]).args[4].value, None)
+        
+        lx.eval('replay.fileClose prompt_save:false')
+
+from replay_lineColor import UndoLineColor
+from replay_lineColor import ColorActionList
+class TestLineColor(unittest.TestCase):
+    def test_lineColor(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+
+        macro = replay.Macro()        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].row_color, None)
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.lineColor red')
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].command, "tool.set")
+        self.assertEqual(macro.children[0].name, "Other Name")
+        self.assertFalse(macro.children[0].direct_suppress)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+        self.assertEqual(macro.children[0].row_color, "red")
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].argName, "preset")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertEqual(macro.children[0].args[1].argName, "mode")
+        self.assertEqual(macro.children[0].args[1].value, "on")
+        self.assertEqual(macro.children[0].args[2].argName, "task")
+        self.assertEqual(macro.children[0].args[2].value, None)
+        self.assertEqual(macro.children[0].args[3].argName, "snap")
+        self.assertEqual(macro.children[0].args[3].value, None)
+        self.assertEqual(macro.children[0].args[4].argName, "rawquery")
+        self.assertEqual(macro.children[0].args[4].value, None)
+
+        lx.eval('replay.fileClose prompt_save:false')
+        
+    def test_lineColorUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+
+        macro = replay.Macro()        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].row_color, None)
+
+        actionList = ColorActionList()
+        actionList.append([0], None, 'red')        
+        
+        lineColor = UndoLineColor(actionList)
+        lineColor.undo_Forward()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].row_color, "red")
+        
+        lineColor.undo_Reverse()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].row_color, None)
+        
+        lineColor.undo_Forward()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].row_color, "red")
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        
+from replay_lineComment import UndoInsertComment
+class TestLineComment(unittest.TestCase):
+    def test_lineComment(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+        
+        insertComment1 = UndoInsertComment([[0]], 'first')
+        insertComment2 = UndoInsertComment([[0]], 'last')
+
+        insertComment1.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first'])
+        
+        insertComment2.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first', 'last'])
+        
+        insertComment2.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first'])
+        
+        insertComment1.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+
+    def test_lineCommentUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.lineComment "first"')
+        lx.eval('replay.lineColor red')
+        lx.eval('replay.lineComment "last"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].command, "tool.set")
+        self.assertEqual(macro.children[0].name, "Other Name")
+        self.assertFalse(macro.children[0].direct_suppress)
+        self.assertEqual(macro.children[0].user_comment_before, ["first", "last"])
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].argName, "preset")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertEqual(macro.children[0].args[1].argName, "mode")
+        self.assertEqual(macro.children[0].args[1].value, "on")
+        self.assertEqual(macro.children[0].args[2].argName, "task")
+        self.assertEqual(macro.children[0].args[2].value, None)
+        self.assertEqual(macro.children[0].args[3].argName, "snap")
+        self.assertEqual(macro.children[0].args[3].value, None)
+        self.assertEqual(macro.children[0].args[4].argName, "rawquery")
+        self.assertEqual(macro.children[0].args[4].value, None)
+
+        lx.eval('replay.fileClose prompt_save:false')   
+        
 from replay_lineDelete import UndoLineDelete
 class TestLineDelete(unittest.TestCase):
     def test_lineDelete(self):
@@ -1381,6 +1561,9 @@ def runUnitTest():
         
     runner = unittest.TextTestRunner(moc_stdout)
     suite = loader.loadTestsFromTestCase(TestLineInsert)
+    suite.addTests(loader.loadTestsFromTestCase(TestLastBlockInsert))
+    suite.addTests(loader.loadTestsFromTestCase(TestLineColor))
+    suite.addTests(loader.loadTestsFromTestCase(TestLineComment))
     suite.addTests(loader.loadTestsFromTestCase(TestLineDelete))
     suite.addTests(loader.loadTestsFromTestCase(TestArgClear))
     suite.addTests(loader.loadTestsFromTestCase(TestArgEdit))
