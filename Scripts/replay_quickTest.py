@@ -255,33 +255,6 @@ class TestLineComment(unittest.TestCase):
         self.assertEqual(len(macro.children), 1)
         self.assertEqual(macro.children[0].user_comment_before, [])
         
-        insertComment1 = UndoInsertComment([[0]], 'first')
-        insertComment2 = UndoInsertComment([[0]], 'last')
-
-        insertComment1.undo_Forward()
-        self.assertEqual(len(macro.children), 1)
-        self.assertEqual(macro.children[0].user_comment_before, ['first'])
-        
-        insertComment2.undo_Forward()
-        self.assertEqual(len(macro.children), 1)
-        self.assertEqual(macro.children[0].user_comment_before, ['first', 'last'])
-        
-        insertComment2.undo_Reverse()
-        self.assertEqual(len(macro.children), 1)
-        self.assertEqual(macro.children[0].user_comment_before, ['first'])
-        
-        insertComment1.undo_Reverse()
-        self.assertEqual(len(macro.children), 1)
-        self.assertEqual(macro.children[0].user_comment_before, [])
-
-    def test_lineCommentUndoRedo(self):
-        lx.eval('replay.fileClose prompt_save:false')
-        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
-        
-        macro = replay.Macro()
-        self.assertEqual(len(macro.children), 1)
-        self.assertEqual(macro.children[0].user_comment_before, [])
-        
         lx.eval('replay.lineSelect 0')
         lx.eval('replay.lineComment "first"')
         lx.eval('replay.lineColor red')
@@ -306,6 +279,89 @@ class TestLineComment(unittest.TestCase):
         self.assertEqual(macro.children[0].args[4].value, None)
 
         lx.eval('replay.fileClose prompt_save:false')   
+        
+    def test_lineCommentUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+        
+        insertComment1 = UndoInsertComment([[0]], 'first')
+        insertComment2 = UndoInsertComment([[0]], 'last')
+
+        insertComment1.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first'])
+        
+        insertComment2.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first', 'last'])
+        
+        insertComment2.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, ['first'])
+        
+        insertComment1.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].user_comment_before, [])
+        
+from replay_linePrefix import UndoLinePrefix
+from replay_linePrefix import PrefixActionList
+class TestLinePrefix(unittest.TestCase):
+    def test_linePrefix(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].display_prefix, ' ')
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.linePrefix "!!"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].command, "tool.set")
+        self.assertEqual(macro.children[0].name, "Other Name")
+        self.assertFalse(macro.children[0].direct_suppress)
+        self.assertEqual(macro.children[0].display_prefix, '!!')
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].argName, "preset")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertEqual(macro.children[0].args[1].argName, "mode")
+        self.assertEqual(macro.children[0].args[1].value, "on")
+        self.assertEqual(macro.children[0].args[2].argName, "task")
+        self.assertEqual(macro.children[0].args[2].value, None)
+        self.assertEqual(macro.children[0].args[3].argName, "snap")
+        self.assertEqual(macro.children[0].args[3].value, None)
+        self.assertEqual(macro.children[0].args[4].argName, "rawquery")
+        self.assertEqual(macro.children[0].args[4].value, None)
+
+        lx.eval('replay.fileClose prompt_save:false')   
+        
+    def test_linePrefixUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].display_prefix, ' ')
+        
+        actionList = PrefixActionList()
+        actionList.append([0], ' ', '+')
+        linePrefix = UndoLinePrefix(actionList)
+        
+        linePrefix.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].display_prefix, '+')
+        
+        linePrefix.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].display_prefix, ' ')
+        
+        lx.eval('replay.fileClose prompt_save:false')  
         
 from replay_lineDelete import UndoLineDelete
 class TestLineDelete(unittest.TestCase):
@@ -1564,6 +1620,7 @@ def runUnitTest():
     suite.addTests(loader.loadTestsFromTestCase(TestLastBlockInsert))
     suite.addTests(loader.loadTestsFromTestCase(TestLineColor))
     suite.addTests(loader.loadTestsFromTestCase(TestLineComment))
+    suite.addTests(loader.loadTestsFromTestCase(TestLinePrefix))
     suite.addTests(loader.loadTestsFromTestCase(TestLineDelete))
     suite.addTests(loader.loadTestsFromTestCase(TestArgClear))
     suite.addTests(loader.loadTestsFromTestCase(TestArgEdit))
