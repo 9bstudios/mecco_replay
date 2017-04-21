@@ -377,15 +377,15 @@ class Macro(lumberjack.Lumberjack):
         # Close the .lxm input file:
         input_file.close()
 
-        index = kwargs.get('index', 0)
-        if 'index' in kwargs:
-            del kwargs['index']
+        path = kwargs.get('path', [0])
+        if 'path' in kwargs:
+            del kwargs['path']
 
         # Loop over the commands to get all the command json data:
         for cmdJson in jsonStruct:
-            kwargs['index'] = index
+            kwargs['path'] = path
             self.add_json_command_or_block(cmdJson, **kwargs)
-            index += 1
+            path[-1] += 1
 
     def add_json_command_or_block(self, cmdJson, **kwargs):
         if 'command' in cmdJson:
