@@ -1360,18 +1360,21 @@ class TestFileSaveOpen(unittest.TestCase):
         
         macro.unsaved_changes = False
         lx.eval('replay.fileNew')
-        
-class TestFileOpenAddRecent(unittest.TestCase):
-    def test_lineInsert(self):
+
+from replay_fileOpenRecentPop import CommandClass as fileOpenRecentPop
+class TestFileOpenAddRecent_Pop(unittest.TestCase):
+    def test(self):
         lx.eval('user.value mecco_replay_recent_files ""')
-        lx.eval('replay.fileOpenAddRecent "path1"')
+        lx.eval('replay.fileOpenAddRecent "%s"' % os.path.join("path1", "file1"))
         
         existing_paths = lx.eval('user.value mecco_replay_recent_files ?')
-        self.assertEqual(existing_paths, "path1;")
+        self.assertEqual(existing_paths, "%s;" % os.path.join("path1", "file1"))
+        self.assertEqual(fileOpenRecentPop().list_commands(), [(os.path.join("path1", "file1"), "file1")])
         
-        lx.eval('replay.fileOpenAddRecent "path2"')
+        lx.eval('replay.fileOpenAddRecent "%s"' % os.path.join("path2", "file2"))
         existing_paths = lx.eval('user.value mecco_replay_recent_files ?')
-        self.assertEqual(existing_paths, "path2;path1;")
+        self.assertEqual(existing_paths, "%s;%s;" % (os.path.join("path2", "file2"), os.path.join("path1", "file1")))
+        self.assertEqual(fileOpenRecentPop().list_commands(), [(os.path.join("path2", "file2"), "file2"), (os.path.join("path1", "file1"), "file1")])
         
 def runUnitTest():
     moc_stdout = StringIO()
@@ -1390,7 +1393,7 @@ def runUnitTest():
     suite.addTests(loader.loadTestsFromTestCase(TestFileExportOpen))
     suite.addTests(loader.loadTestsFromTestCase(TestFileExportInsert))
     suite.addTests(loader.loadTestsFromTestCase(TestFileSaveOpen))
-    suite.addTests(loader.loadTestsFromTestCase(TestFileOpenAddRecent))
+    suite.addTests(loader.loadTestsFromTestCase(TestFileOpenAddRecent_Pop))
     runner.run(suite)
     lx.out(moc_stdout.getvalue())
     
