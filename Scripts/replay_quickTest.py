@@ -363,6 +363,214 @@ class TestLinePrefix(unittest.TestCase):
         
         lx.eval('replay.fileClose prompt_save:false')  
         
+        
+from replay_lineRename import UndoLineRename
+from replay_lineRename import NameActionList
+class TestLineRename(unittest.TestCase):
+    def test_lineRename(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, 'Set Tool')
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.lineRename "Other Name"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].command, "tool.set")
+        self.assertEqual(macro.children[0].name, "Other Name")
+        self.assertFalse(macro.children[0].direct_suppress)
+        self.assertEqual(macro.children[0].display_prefix, ' ')
+        self.assertEqual(len(macro.children[0].args), 5)
+        self.assertEqual(macro.children[0].args[0].argName, "preset")
+        self.assertEqual(macro.children[0].args[0].value, "prim.cube")
+        self.assertEqual(macro.children[0].args[1].argName, "mode")
+        self.assertEqual(macro.children[0].args[1].value, "on")
+        self.assertEqual(macro.children[0].args[2].argName, "task")
+        self.assertEqual(macro.children[0].args[2].value, None)
+        self.assertEqual(macro.children[0].args[3].argName, "snap")
+        self.assertEqual(macro.children[0].args[3].value, None)
+        self.assertEqual(macro.children[0].args[4].argName, "rawquery")
+        self.assertEqual(macro.children[0].args[4].value, None)
+
+        lx.eval('replay.fileClose prompt_save:false')   
+        
+    def test_lineRenameUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, 'Set Tool')
+        
+        actionList = NameActionList()
+        actionList.append([0], 'Set Tool', 'Other Name')
+        lineRename = UndoLineRename(actionList)
+        
+        lineRename.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, 'Other Name')
+        
+        lineRename.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(macro.children[0].name, 'Set Tool')
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        
+class TestLineReorder(unittest.TestCase):
+    def test_lineReorder(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name1"')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name2"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, 'Name1')
+        self.assertEqual(macro.children[1].name, 'Name2')
+        
+        lx.eval('replay.lineSelect 1')
+        lx.eval('replay.lineReorder up')
+        
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, 'Name2')
+        self.assertEqual(macro.children[1].name, 'Name1')
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        
+from replay_lineSuppress import UndoLineSuppress
+class TestLineSuppress(unittest.TestCase):
+    def test_lineSuppress(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        replay.RecordingCache().clear()
+        replay.RecordingCache().add_command('tool.set preset:"prim.cube" mode:on')
+        replay.RecordingCache().add_command('tool.set preset:"prim.sphere" mode:off')
+        lx.eval("replay.lastBlockInsert")
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 2)
+        self.assertFalse(macro.children[0].direct_suppress)
+        self.assertFalse(macro.children[1].direct_suppress)
+        self.assertEqual(len(macro.children[1].children), 2)
+        self.assertFalse(macro.node_for_path([1, 0]).direct_suppress)
+        self.assertFalse(macro.node_for_path([1, 1]).direct_suppress)
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.lineSuppress')
+        
+        self.assertEqual(len(macro.children), 2)
+        self.assertTrue(macro.children[0].direct_suppress)
+        self.assertFalse(macro.children[1].direct_suppress)
+        self.assertEqual(len(macro.children[1].children), 2)
+        self.assertFalse(macro.node_for_path([1, 0]).direct_suppress)
+        self.assertFalse(macro.node_for_path([1, 1]).direct_suppress)
+        
+        lx.eval('replay.lineSelect 1')
+        lx.eval('replay.lineSuppress')
+        
+        self.assertEqual(len(macro.children), 2)
+        self.assertTrue(macro.children[0].direct_suppress)
+        self.assertTrue(macro.children[1].direct_suppress)
+        self.assertEqual(len(macro.children[1].children), 2)
+        self.assertFalse(macro.node_for_path([1, 0]).direct_suppress)
+        self.assertFalse(macro.node_for_path([1, 1]).direct_suppress)
+        
+        lx.eval('replay.lineSuppress')
+        lx.eval('replay.lineSelect "1;1"')
+        lx.eval('replay.lineSuppress')
+        
+        self.assertEqual(len(macro.children), 2)
+        self.assertTrue(macro.children[0].direct_suppress)
+        self.assertFalse(macro.children[1].direct_suppress)
+        self.assertEqual(len(macro.children[1].children), 2)
+        self.assertFalse(macro.node_for_path([1, 0]).direct_suppress)
+        self.assertTrue(macro.node_for_path([1, 1]).direct_suppress)
+        
+        lx.eval('replay.fileClose prompt_save:false')   
+        
+    def test_lineSuppressUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on}')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 1)
+        self.assertFalse(macro.children[0].direct_suppress)
+        
+        lineSuppress = UndoLineSuppress([[0]])
+        lineSuppress.undo_Forward()
+        self.assertEqual(len(macro.children), 1)
+        self.assertTrue(macro.children[0].direct_suppress)
+        
+        lineSuppress.undo_Reverse()
+        self.assertEqual(len(macro.children), 1)
+        self.assertFalse(macro.children[0].direct_suppress)
+                
+        lx.eval('replay.fileClose prompt_save:false')
+        
+from replay_selToBlock import UndoToBlock
+class TestSelToBlock(unittest.TestCase):
+    def test_selToBlock(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name1"')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name2"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, "Name1")
+        self.assertEqual(macro.children[1].name, "Name2")
+        
+        lx.eval('replay.lineSelect 0')
+        lx.eval('replay.lineSelect 1 true')
+        lx.eval('replay.selToBlock')
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].children), 2)
+        self.assertEqual(macro.node_for_path([0, 0]).name, "Name1")
+        self.assertEqual(macro.node_for_path([0, 1]).name, "Name2")
+        
+        lx.eval('replay.lineSelect "0;0"')
+        lx.eval('replay.lineSelect "0;1" true')
+        lx.eval('replay.selToBlock')
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].children), 1)
+        self.assertEqual(len(macro.children[0].children[0].children), 2)
+        self.assertEqual(macro.node_for_path([0, 0, 0]).name, "Name1")
+        self.assertEqual(macro.node_for_path([0, 0, 1]).name, "Name2")
+        
+        lx.eval('replay.fileClose prompt_save:false')   
+        
+    def test_test_selToBlockUndoRedo(self):
+        lx.eval('replay.fileClose prompt_save:false')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name1"')
+        lx.eval('replay.lineInsert command:{tool.set preset:"prim.cube" mode:on} ButtonName:"Name2"')
+        
+        macro = replay.Macro()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, "Name1")
+        self.assertEqual(macro.children[1].name, "Name2")
+        
+        block = UndoToBlock([[0], [1]], [0], "")
+        block.undo_Forward()
+        
+        self.assertEqual(len(macro.children), 1)
+        self.assertEqual(len(macro.children[0].children), 2)
+        self.assertEqual(macro.node_for_path([0, 0]).name, "Name1")
+        self.assertEqual(macro.node_for_path([0, 1]).name, "Name2")
+        
+        block.undo_Reverse()
+        self.assertEqual(len(macro.children), 2)
+        self.assertEqual(macro.children[0].name, "Name1")
+        self.assertEqual(macro.children[1].name, "Name2")
+        
+        lx.eval('replay.fileClose prompt_save:false')      
+        
 from replay_lineDelete import UndoLineDelete
 class TestLineDelete(unittest.TestCase):
     def test_lineDelete(self):
@@ -1621,6 +1829,10 @@ def runUnitTest():
     suite.addTests(loader.loadTestsFromTestCase(TestLineColor))
     suite.addTests(loader.loadTestsFromTestCase(TestLineComment))
     suite.addTests(loader.loadTestsFromTestCase(TestLinePrefix))
+    suite.addTests(loader.loadTestsFromTestCase(TestLineRename))
+    suite.addTests(loader.loadTestsFromTestCase(TestLineReorder))
+    suite.addTests(loader.loadTestsFromTestCase(TestLineSuppress))
+    suite.addTests(loader.loadTestsFromTestCase(TestSelToBlock))
     suite.addTests(loader.loadTestsFromTestCase(TestLineDelete))
     suite.addTests(loader.loadTestsFromTestCase(TestArgClear))
     suite.addTests(loader.loadTestsFromTestCase(TestArgEdit))
