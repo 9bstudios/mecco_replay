@@ -82,7 +82,9 @@ class CmdListener(lxifc.CmdSysListener):
             'tool.noChange',
             'actionCenter.state',
             'workPlane.state',
-            'falloff.state'
+            'falloff.state',
+            'layout.restore',
+            'view3d.toggleHUD'
             ]:
             self.debug_path_print(cmd.Name() + " - Black list. Ignore.")
             return False
