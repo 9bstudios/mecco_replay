@@ -84,7 +84,7 @@ class CommandClass(replay.commander.CommanderClass):
             sel_children.sort(key=lambda x: x.index, reverse=True)
 
             for child in sel_children:
-                actionList.append(child.index, child.index - 1)
+                actionList.append(child.index, child.index + 1)
 
         elif mode == "top":
             for child in sel_children:

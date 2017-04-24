@@ -41,6 +41,9 @@ class CommandClass(replay.commander.CommanderClass):
                 if macro.file_path is None:
                     file_path = modo.dialogs.customFile(dtype = 'fileSave', title = message("MECCO_REPLAY", "SAVE_DIALOG_TITLE"), \
                                                  names = ('LXM',), unames = ('LXM file'), ext=('LXM',))
+                    if file_path is None:
+                        return
+                        
                 macro.render_LXM(file_path)
 
         # No more file path

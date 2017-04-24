@@ -108,6 +108,7 @@ class MacroBlockCommand(MacroBaseCommand):
         kwargs.pop('type', None)
         kwargs.pop('command_json', None)
         kwargs.pop('block_json', None)
+        kwargs.pop('path', None)
 
         index = 0
         for command in attributes['commands']:
