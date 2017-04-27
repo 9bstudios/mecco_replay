@@ -127,7 +127,7 @@ class MacroCommand(MacroBaseCommand):
         return locals()
 
     prefix = property(**prefix())
-    
+
     def display_prefix():
         doc = """Usually one or two characters to prepend to the command string to
         suppress or force dialogs, etc. e.g. `!mesh.cleanup`

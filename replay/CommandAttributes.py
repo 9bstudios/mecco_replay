@@ -3,6 +3,18 @@
 import lx, re
 
 class ArgAttributes(object):
+    '''
+    Class for wrapping a modo argument as a generic
+
+    Args:
+        idx (???): index
+        command (???): modo command
+        attributes (???): attributes
+        value_parsed (???): whether the value has been parsed
+
+    Returns:
+        ArgAttributes: generic argument
+    '''
     def __init__(self, idx, command, attributes, value_parsed):
         self.m_index = idx
         self.m_command = command

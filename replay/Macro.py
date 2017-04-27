@@ -213,7 +213,7 @@ class Macro(lumberjack.Lumberjack):
             self.root.children[index].selected = True
         else:
             self.node_for_path(index).selected = True
-            
+
     class TmpCommandCache:
         def __init__(self):
             self.child_args = []
@@ -227,7 +227,7 @@ class Macro(lumberjack.Lumberjack):
         def children_create_args(self):
             for args in self.child_args:
                 yield args
-                
+
     def parse_and_insert_string(self, string, path):
         """Parse a macro file and store its commands in the `commands` property."""
 
@@ -240,7 +240,7 @@ class Macro(lumberjack.Lumberjack):
             nodes.append(self.add_child(**kwargs))
 
         return nodes
-            
+
     def parse(self, mode, input_path):
         """Parse a macro file and store its commands in the `commands` property."""
 
@@ -297,7 +297,7 @@ class Macro(lumberjack.Lumberjack):
         else:
             self.parse_LXM(input_path, **kwargs)
         return format_name
-        
+
     class MacroTreeBuilder(LXMBuilder):
         def __init__(self, macro, **kwargs):
             self.macro = macro
@@ -355,7 +355,7 @@ class Macro(lumberjack.Lumberjack):
         parser = LXMParser()
         builder = Macro.MacroTreeBuilder(self, **kwargs)
         parser.parse(input_path, builder)
-        
+
     def parse_LXM_string(self, string, **kwargs):
         """Parse an LXM file and store its commands in the `commands` property."""
         parser = LXMParser()
@@ -395,12 +395,12 @@ class Macro(lumberjack.Lumberjack):
 
     def run(self):
         """Runs the macro."""
-        
+
         # Run every node with run attribute in the macro:
         for node in self.depth_first_search():
             if hasattr(node, 'run'):
                 node.run()
-        
+
     def all_suppressed(self):
         for child in self.children:
             if not child.suppress:
@@ -432,7 +432,7 @@ class Macro(lumberjack.Lumberjack):
         if command:
             command.run()
         else:
-			return None
+            return None
 
         # Get the index for the next command, which will now be the primary one:
         next_command_path = command.path
@@ -449,17 +449,17 @@ class Macro(lumberjack.Lumberjack):
         self.node_for_path(next_command_path).selected = True
         new_path = next_command_path
         return (prev_path, new_path)
-        
+
     def shabang(self, lxm, sep):
         res = ""
         if lxm:
             res = "#LXMacro#" + sep;
         else:
             res = "# python" + sep
-            
+
         res += "# Made with Replay" + sep
         res += "# mechanicalcolor.com" + sep + sep
-        
+
         return res
 
     def render_LXM(self, output_path):
@@ -477,7 +477,7 @@ class Macro(lumberjack.Lumberjack):
                 output_file.write(line + "\n")
 
         output_file.close()
-        
+
     def render_LXM_selected(self):
         """Generates an LXM string for export."""
 
@@ -489,7 +489,7 @@ class Macro(lumberjack.Lumberjack):
             lines = command.render_LXM_if_selected()
             for line in lines:
                 res += line + os.linesep
-                
+
         return res
 
     def render_Python(self, output_path):
