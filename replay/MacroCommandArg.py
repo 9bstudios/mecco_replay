@@ -1,5 +1,8 @@
 # python
-
+'''
+The MacroCommandArg module contains the MacroCommandArg class, which is serves
+as single API to all aspects of a command within the macro
+'''
 import lx
 import re
 import lumberjack
