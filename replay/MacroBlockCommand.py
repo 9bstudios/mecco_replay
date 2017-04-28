@@ -1,5 +1,8 @@
 # python
-
+'''
+The MacroBlockCommand module contains the MacroBlockCommand class, which is used
+for encapsulating multiple commands as though they were one
+'''
 import lx
 import lxifc
 import re
@@ -11,11 +14,20 @@ from MacroCommand import MacroCommand
 
 
 class MacroBlockCommand(MacroBaseCommand):
-    """Contains everything necessary to read, construct, write, and translate a
-    MODO command for use in macros or Python scripts. Note that if the `command`
-    property is `None`, the `comment_before` property will still be rendered, but
-    the command will be ignored. (This way you can add comment-only lines.)"""
+    '''
+    Abstraction class for treating multiple commands as one
 
+    Contains everything necessary to read, construct, write, and translate a
+    modo command for use in macros or python scripts. Note that if the command
+    property is None, the comment_before property will still be rendered, but
+    the command will be ignored. (This way you can add comment-only lines.)
+
+    Args:
+        \**kwargs: varkwargs
+
+    Returns:
+        MacroBlockCommand
+    '''
     def __init__(self, **kwargs):
         super(self.__class__, self).__init__(**kwargs)
 
@@ -35,12 +47,30 @@ class MacroBlockCommand(MacroBaseCommand):
             self.add_commands(**kwargs)
 
     def add_commands(self, **kwargs):
+        '''
+        Add MacroCommands as children
+
+        Args:
+            \**kwargs: varkwargs
+
+        Returns:
+            locals???
+        '''
         idx = 0
         for cmd in kwargs.get('block'):
             self.children.append(MacroCommand(parent=self, command = cmd, index = idx))
             idx = idx + 1
 
     def name():
+        doc = '''
+        Gets and sets name of block
+
+        Args:
+            None
+
+        Returns:
+            locals???
+        '''
         def fget(self):
             return self.columns['name'].value
         def fset(self, value):
@@ -53,7 +83,18 @@ class MacroBlockCommand(MacroBaseCommand):
     name = property(**name())
 
     def render_LXM_Python(self, renderName):
-        """Construct MODO command string from stored internal parts. Also adds comments"""
+        '''
+        Construct modo command string from stored internal parts and adds comments
+
+        Args:
+            renderName (str): renderName attribute of command
+
+        Returns:
+            list: list of python lx.eval commands
+
+        Raises:
+            AssertionError
+        '''
         res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
@@ -73,6 +114,15 @@ class MacroBlockCommand(MacroBaseCommand):
         return res
 
     def render_LXM_if_selected(self):
+        '''
+        Render selected commands as LXM
+
+        Args:
+            None
+
+        Returns:
+            list: rendered commands
+        '''
         if self.selected:
             return self.render_LXM()
         else:
@@ -85,13 +135,43 @@ class MacroBlockCommand(MacroBaseCommand):
             return res
 
     def render_LXM(self):
+        '''
+        Renders python with render_LXM renderName
+
+        Args:
+            None
+
+        Returns:
+            list: rendered python commands
+
+        .. todo:
+            - my guess is that this is a typo and should render lxm not python
+        '''
         return self.render_LXM_Python('render_LXM')
 
     def render_Python(self):
+        '''
+        Renders python with render_Python renderName
+
+        Args:
+            None
+
+        Returns:
+            list: rendered python commands
+        '''
         return self.render_LXM_Python('render_Python')
 
     def render_json(self):
-        """Construct MODO command string in json format for each nested command."""
+        '''
+        Construct modo command string in json format for each nested command.
+
+
+        Args:
+            None
+
+        Returns:
+            dict: command dict
+        '''
         commands = list()
         for command in self.children:
             command = command.render_json()
@@ -100,6 +180,20 @@ class MacroBlockCommand(MacroBaseCommand):
         return {"command block" : {"name" : self.name, "suppress": self.direct_suppress, "comment" : self.comment_before, "commands": commands}}
 
     def parse_json(self, json_struct, **kwargs):
+        '''
+        Parses json command structure
+
+        Args:
+            json_struct (dict): json command structure
+            \**kwargs: varkwargs
+
+        Returns:
+            None
+
+        .. todo::
+            - method expects type, command_json, block_json and path to be in
+              kwargs, so those should be declared explicitly
+        '''
         attributes = json_struct['command block']
         self.name = attributes['name']
         self.direct_suppress = attributes['suppress']
@@ -121,8 +215,15 @@ class MacroBlockCommand(MacroBaseCommand):
             index += 1
 
     def run(self):
-        """Runs the command."""
+        '''
+        Runs the command.
 
+        Args:
+            None
+
+        Returns:
+            None
+        '''
         if self.suppress:
             return
 
