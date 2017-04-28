@@ -1,16 +1,20 @@
 # python
-
+'''
+The CommandAttributes module contains the CommandAttributes class, which is used
+as an API to modo's command attributes
+'''
 import lx, re
 
 class ArgAttributes(object):
     '''
-    Class for wrapping a modo argument as a generic
+    Convenience class for wrapping a modo argument as a generic, such that
+    CommandAttributes can use it
 
     Args:
-        idx (???): index
-        command (???): modo command
-        attributes (???): attributes
-        value_parsed (???): whether the value has been parsed
+        idx (int): index of command assuming they are in a list
+        command (lx.object.Command): modo command instance
+        attributes (lx.object.Attributes): modo command parameters
+        value_parsed (bool): whether the value of the command has been parsed
 
     Returns:
         ArgAttributes: generic argument
@@ -21,7 +25,16 @@ class ArgAttributes(object):
         self.m_attributes = attributes
         self.m_value_parsed = value_parsed
 
-    def type_name(self, default = None):
+    def type_name(self, default=None):
+        '''
+        Returns the name of the argument type
+
+        Args:
+            default (object): default type name. Default: None
+
+        Returns:
+            str: type name
+        '''
         res = default
         try:
             if self.m_attributes is not None:
@@ -40,7 +53,16 @@ class ArgAttributes(object):
 
         return res
 
-    def type(self, default = None):
+    def type(self, default=None):
+        '''
+        Returns the argument type
+
+        Args:
+            default (object): default type. Default: None
+
+        Returns:
+            lx.symbol: type
+        '''
         res = default
         try:
             if self.m_attributes is not None:
@@ -51,8 +73,17 @@ class ArgAttributes(object):
 
         return res
 
-    def value_string(self, default = None):
-        """Returns string representation of value as it appears in command line. Hint and bool conversion is done"""
+    def value_string(self, default=None):
+        '''
+        Returns string representation of the argument value as it appears in
+        the command line. Performs hint and bool conversion.
+
+        Args:
+            default (object): default value. Default: None
+
+        Returns:
+            str: value as string
+        '''
         res = default
 
         if self.m_value_parsed:
@@ -79,9 +110,17 @@ class ArgAttributes(object):
 
         return res
 
-    def value_as_string(self, default = None):
-        """Returns comand value as Python string. No any hint conversion or bool conversion is done
-           For bool this will return "0"/"1". """
+    def value_as_string(self, default=None):
+        '''
+        Returns argument value as a Python string.
+        Does not perform hint or bool conversion.  Bool will return 1 or 0.
+
+        Args:
+            default (object): default value. Default: None
+
+        Returns:
+            str: value as string
+        '''
         res = default
 
         if self.m_value_parsed:
@@ -99,7 +138,16 @@ class ArgAttributes(object):
 
         return res
 
-    def value_as_float(self, default = None):
+    def value_as_float(self, default=None):
+        '''
+        Returns argument value as a float
+
+        Args:
+            default (object): default value. Default: None
+
+        Returns:
+            float: argument value
+        '''
         res = default
 
         if self.m_value_parsed:
@@ -111,7 +159,16 @@ class ArgAttributes(object):
 
         return res
 
-    def value_as_integer(self, default = None):
+    def value_as_integer(self, default=None):
+        '''
+        Returns argument value as an integer
+
+        Args:
+            default (object): default value. Default: None
+
+        Returns:
+            int: argument value
+        '''
         res = default
 
         if self.m_value_parsed:
@@ -123,7 +180,16 @@ class ArgAttributes(object):
 
         return res
 
-    def hints(self, default = None):
+    def hints(self, default=None):
+        '''
+        Returns argument hints
+
+        Args:
+            default (object): default hint. Default: None
+
+        Returns:
+            object: argument hints
+        '''
         res = default
         try:
             if self.m_attributes is not None:
@@ -137,7 +203,16 @@ class ArgAttributes(object):
 
         return res
 
-    def name(self, default = None):
+    def name(self, default=None):
+        '''
+        Returns argument name
+
+        Args:
+            default (object): default name. Default: None
+
+        Returns:
+            object: argument name
+        '''
         res = default
         try:
             if self.m_attributes is not None:
@@ -147,7 +222,17 @@ class ArgAttributes(object):
 
         return res
 
-    def test_flag(self, flag, default = None):
+    def test_flag(self, flag, default=None):
+        '''
+        Returns argument test flag???
+
+        Args:
+            flag (???): test flag
+            default (object): default flag. Default: None
+
+        Returns:
+            object: argument test flag
+        '''
         res = default
 
         try:
@@ -158,19 +243,27 @@ class ArgAttributes(object):
 
         return res
 
-    def is_variable(self, default = None):
+    def is_variable(self, default=None):
         return self.test_flag(lx.symbol.fCMDARG_VARIABLE)
 
-    def is_value_set(self, default = None):
+    def is_value_set(self, default=None):
         return self.test_flag(lx.symbol.fCMDARG_VALUE_SET)
 
-    def is_hidden(self, default = None):
+    def is_hidden(self, default=None):
         return self.test_flag(lx.symbol.fCMDARG_HIDDEN)
 
-# Class provides interface for accessing command and argument attributes
-# All methods are taking default values that will be used if command and attributes
-# interfaces are not constructed successfully.
 class CommandAttributes(object):
+    '''
+    An interface for accessing modo command and argument attributes
+    All methods are taking default values that will be used if command and
+    attributes interfaces are not constructed successfully.
+
+    Args:
+        \**kwargs: varkwargs
+
+    Returns:
+        CommandAttributes
+    '''
     def __init__(self, **kwargs):
 
         self.m_value_parsed = True
@@ -204,20 +297,47 @@ class CommandAttributes(object):
         self.m_command = lx.object.Command(cmd)
         self.m_attributes = lx.object.Attributes(cmd)
 
+    def arg_count(self, default=None):
+        '''
+        Count of arguments
 
-    def arg_count(self, default = None):
-        """Return count of arguments"""
+        Args:
+            default (object): default argument count. Default: None
+
+        Returns:
+            int: argument count
+        '''
         if self.m_attributes is not None:
             return self.m_attributes.Count()
         else:
             return default
 
     def arg(self, idx):
-        """Returns ArgAttributes for argument with index idx"""
+        '''
+        ArgAttributes for argument of given index
+
+        Args:
+            idx (int): argument index
+
+        Returns:
+            ArgAttributes: argument attributes
+
+        Raises:
+            AssertionError
+        '''
         assert idx < self.arg_count(0)
         return ArgAttributes(idx, self.m_command, self.m_attributes, self.m_value_parsed)
 
-    def prefix(self, default = None):
+    def prefix(self, default=None):
+        '''
+        Returns argument prefix
+
+        Args:
+            default (object): default prefix. Default: None
+
+        Returns:
+            str: argument prefix
+        '''
         res = default
         try:
             if self.m_command is not None:
@@ -228,7 +348,16 @@ class CommandAttributes(object):
 
         return res
 
-    def name(self, default = None):
+    def name(self, default=None):
+        '''
+        Returns argument name
+
+        Args:
+            default (object): default name. Default: None
+
+        Returns:
+            str: argument name
+        '''
         res = default
         try:
             if self.m_command is not None:
