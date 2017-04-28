@@ -195,11 +195,6 @@ class Lumberjack(object):
     _primary = None
     final_class = None
 
-    # In case you need to extend the TreeNode class, you can inherit TreeNode in
-    # your own class and then tell your Lumberjack Object to use it by overwriting this method
-    def create_child_node(self, **kwargs):
-        return TreeNode(**kwargs)
-
     def __init__(self):
         """A lumberjack class is a self-contained model-view-controller system.
 
@@ -211,6 +206,11 @@ class Lumberjack(object):
         and the lumberjack object acts as controller."""
 
         pass
+
+    # In case you need to extend the TreeNode class, you can inherit TreeNode in
+    # your own class and then tell your Lumberjack Object to use it by overwriting this method
+    def create_child_node(self, **kwargs):
+        return TreeNode(**kwargs)
 
     def on_drag_drop(self, source_nodes):
         pass
@@ -527,15 +527,15 @@ class Lumberjack(object):
 
     class BadPath(Exception):
         pass
-        
+
     @staticmethod
     def depth_first_search_recursive(node):
         for child in node.children:
             for res in Lumberjack.depth_first_search_recursive(child):
                 yield res
-                
+
         yield node
-            
+
     def depth_first_search(self):
         for node in Lumberjack.depth_first_search_recursive(self.root):
             yield node
