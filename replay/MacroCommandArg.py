@@ -14,8 +14,8 @@ class MacroCommandArg(lumberjack.TreeNode):
     argument.
 
     Args:
-        parent (???): parent object of instance
-        arg_index (???): argument index???
+        parent (MacroCommand): parent MacroCommand instance
+        arg_index (int): argument position within command
         \**kwargs: varkwargs
 
     Returns:
@@ -70,11 +70,15 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not the supression of this argument can be changed
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
+        .. todo:
+            - what is the point of having functions that have no logic and are
+              not properties?
+              def __init__(self): self.can_change_suppress = False       Done.
         '''
         return False
 
@@ -82,11 +86,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not the color of this argument's GUI widget can be changed
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -94,11 +98,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not a command can be added to this argument
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -106,11 +110,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not this argument can be added to a block
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -118,11 +122,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not this argument can be copied
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -130,11 +134,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not this argument can be inserted after another
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -142,11 +146,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not this argument can be deleted
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -154,27 +158,21 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or not this argument's name can be changed
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
     def value():
-        '''
+        doc = '''
+        dict: local context
         The value property is really a proxy for the command cell value.
         If you set it to a string, it will try to convert it to to the
-        apropriate datatype based on argType.
-
-        Returns:
-            locals???
+        appropriate datatype based on argType.
         '''
-        doc = """The value property is really a proxy for the `command` cell value.
-
-        NOTE: If you set it to a string, it will try to convert it to to the apropriate
-        datatype based on argType."""
         def fget(self):
             return self.columns['command'].value
         def fset(self, value):
@@ -189,11 +187,8 @@ class MacroCommandArg(lumberjack.TreeNode):
     value = property(**value())
 
     def display_prefix():
-        '''
+        '''dict: locdoc = al context
         Gets and sets the display of the command prefix for this argument
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.columns['prefix'].display_value
@@ -204,11 +199,9 @@ class MacroCommandArg(lumberjack.TreeNode):
     display_prefix = property(**display_prefix())
 
     def asString():
-        '''
+        doc = '''
+        dict: local context
         Gets and sets whether or not the argument value is displayed as a string
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return (self.columns['prefix'].display_value == "%")
@@ -219,13 +212,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     asString = property(**asString())
 
     def argName():
-        '''
+        doc = '''
+        dict: local context
         Gets and sets the name for this argument's name cell value
-
-        Returns:
-            locals???
         '''
-        doc = "The argName property is really a proxy for the `name` cell value."
         def fget(self):
             return self.columns['name'].value
         def fset(self, value):
@@ -235,13 +225,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     argName = property(**argName())
 
     def argUsername():
-        '''
+        doc = '''
+        dict: local context
         Gets and sets the display_value cell, which controls display of the user name
-
-        Returns:
-            locals???
         '''
-        doc = "The argUsername property is really a proxy for the `name` cell `display_value`."
         def fget(self):
             return self._argUsername
         def fset(self, value):
@@ -255,13 +242,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     argUsername = property(**argUsername())
 
     def argType():
+        doc = '''
+        dict: local context
+        Gets and sets the argType property
         '''
-        Gets and sets the argument type property
-
-        Returns:
-            locals???
-        '''
-        doc = "The argType property."
         def fget(self):
             return self._argType
         def fset(self, value):
@@ -271,13 +255,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     argType = property(**argType())
 
     def argTypeName():
-        '''
+        doc = '''
+        dict: local context
         Gets and sets the argTypeName property
-
-        Returns:
-            locals???
         '''
-        doc = "The argTypeName property."
         def fget(self):
             return self._argTypeName
         def fset(self, value):
@@ -287,13 +268,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     argTypeName = property(**argTypeName())
 
     def argDesc():
+        doc = '''
+        dict: local context
+        Gets and sets the argDesc property
         '''
-        Gets and sets the argument descriptor property
-
-        Returns:
-            locals???
-        '''
-        doc = "The argDesc property."
         def fget(self):
             return self._argDesc
         def fset(self, value):
@@ -303,13 +281,10 @@ class MacroCommandArg(lumberjack.TreeNode):
     argDesc = property(**argDesc())
 
     def argExample():
+        doc = '''
+        dict: local context
+        Gets and sets the argExample property
         '''
-        Gets and sets the argument example property
-
-        Returns:
-            locals???
-        '''
-        doc = "The argExample property."
         def fget(self):
             return self._argExample
         def fset(self, value):
@@ -322,11 +297,11 @@ class MacroCommandArg(lumberjack.TreeNode):
         '''
         Whether or the argument can be evaluated
 
+        Args:
+            None
+
         Returns:
             bool: False
-
-        .. todo::
-           - change this to a property using @property
         '''
         return False
 
@@ -354,7 +329,6 @@ class MacroCommandArg(lumberjack.TreeNode):
                 }
             ]
         '''
-
         base_command = self.parent.command
         arg_index = self._arg_index
 
@@ -406,8 +380,12 @@ class MacroCommandArg(lumberjack.TreeNode):
 
         Raises:
             Exception
-        '''
 
+        .. todo:
+            - raising a generic exception does not help much with debugging via
+              traceback.  if the exception is related to a bad arg name then
+              raise a ValueError.
+        '''
         # Get the argument value and, if given, its name:
         full_argument = re.search(r'(\S+):(\S+)', arg)
 

@@ -39,6 +39,14 @@ class Macro(lumberjack.Lumberjack):
         - why do you have an init if you aren't changing the constructor logic?
         - In fact Lumberjack takes no args or kwargs so why does it have an init
           either?
+        - A good redesign would be to create a modo context class that acts as
+          you global space. Context would have a register method that gets
+          called within the constructor of Macro, and if an instance is already
+          registered Context raises an error.  Alternatively, you could
+          construct a Macro upon creation of a context and use
+          Context.get_macro() to retrieve it. Thus no class methods and
+          attributes.  The later will enable you to build objects in context,
+          and thus may obviate your need for builders.
     '''
     _file_path = None
     _file_format = None
@@ -87,15 +95,10 @@ class Macro(lumberjack.Lumberjack):
 
     def file_path():
         doc = '''
+        dict: local context
         Gets and sets the file path for the current macro. If None, assume that the macro
         is unsaved, and needs a save-as. When a macro is loaded and parsed, be
         sure to set this value. (It will not be set automatically.)
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.__class__._file_path
@@ -107,15 +110,10 @@ class Macro(lumberjack.Lumberjack):
 
     def reset_color_on_select():
         doc = '''
+        dict: local context
         Gets and sets the UI color upon selection
         If set to True, the next select event will run "select.color {0 0 0}"
         to clear out any color values left behind by an argument edit (see replay.argEdit)
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.__class__._reset_color_on_select
@@ -127,14 +125,9 @@ class Macro(lumberjack.Lumberjack):
 
     def file_format():
         doc = '''
+        dict: local context
         Gets and sets the file format for the current macro
         If None, assume that the macro is unsaved, and needs a save-as.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.__class__._file_format
@@ -146,13 +139,8 @@ class Macro(lumberjack.Lumberjack):
 
     def unsaved_changes():
         doc = '''
+        dict: local context
         Gets and sets the current macro unsaved changes state
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.__class__._unsaved_changes
@@ -164,14 +152,9 @@ class Macro(lumberjack.Lumberjack):
 
     def commands():
         doc = '''
+        dict: local context
         Gets list of MacroCommand objects for the macro, in order from first to
         last.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.root.children
@@ -182,14 +165,9 @@ class Macro(lumberjack.Lumberjack):
 
     def selected_commands():
         doc = '''
+        dict: local context
         Gets a list of implicitly selected MacroCommand instances,
         including both selected nodes and nodes that have selected descendants.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             nodes = set()
@@ -204,14 +182,9 @@ class Macro(lumberjack.Lumberjack):
 
     def selected_args():
         doc = '''
+        dict: local context
         Gets a list of implicitly selected MacroCommandArg instances,
         including both selected nodes and nodes that have selected descendants.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             nodes = set()
@@ -272,7 +245,7 @@ class Macro(lumberjack.Lumberjack):
             None
 
         Returns:
-            locals???
+            dict: local context
         '''
         def fget(self):
             return len(self.commands) == 0
@@ -288,11 +261,12 @@ class Macro(lumberjack.Lumberjack):
             \**kwargs: varkwargs
 
         Returns:
-            ???
+            None
 
         .. todo::
-            - what does this command do?
-            - receiver should be an explicit arg if this method expects it
+            - add_child returns None because it has no return statement, it is
+              silly for this command to return the results of a coomand that has
+              not return.
         '''
         return kwargs.get('receiver', self).add_child(type='command', **kwargs)
 
@@ -304,11 +278,11 @@ class Macro(lumberjack.Lumberjack):
             \**kwargs: varkwargs
 
         Returns:
-            ???
+            None
 
         .. todo::
-            - what does this command do?
             - receiver should be an explicit arg if this method expects it
+            - again add_child has no return
         '''
         return kwargs.get('receiver', self).add_child(type='block', **kwargs)
 
@@ -421,14 +395,14 @@ class Macro(lumberjack.Lumberjack):
 
     def parse_and_insert_string(self, string, path):
         '''
-        Parse a string and ???
+        Parse a string and append parsed string to children
 
         Args:
             string (str): command string
-            path (str): ???
+            path (str): filepath to macro
 
         Returns:
-            nodes (???): child nodes
+            nodes (list): list of child nodes
         '''
         cache = Macro.TmpCommandCache()
 
@@ -442,7 +416,7 @@ class Macro(lumberjack.Lumberjack):
 
     def parse(self, mode, input_path):
         '''
-        Parse a macro file specified by input_path according to mode???
+        Parse a macro file specified by input_path according to parse mode
 
         Args:
             mode (str): parse mode. Options include: open and insert
@@ -476,7 +450,7 @@ class Macro(lumberjack.Lumberjack):
 
     def parse_and_insert(self, input_path, **kwargs):
         '''
-        Parse macro fule specified by input_path and insert???
+        Parse macro fule specified by input_path and insert
 
         Args:
             input_path (str): path to command to be parsed
@@ -496,7 +470,7 @@ class Macro(lumberjack.Lumberjack):
 
     def _parse_and_insert(self, input_path, **kwargs):
         '''
-        Parse a macro file and insert???
+        Parse a macro file and insert what???
 
         Args:
             input_path (str): macro file path
@@ -585,7 +559,7 @@ class Macro(lumberjack.Lumberjack):
 
         def buildBlockStart(self, block, suppress):
             '''
-            Begins to add a block to the macro
+            Begins block command
 
             Args:
                 block (list): block
@@ -606,7 +580,7 @@ class Macro(lumberjack.Lumberjack):
 
         def buildBlockEnd(self, block):
             '''
-            Ends block???
+            Ends a previously started block command
 
             Args:
                 block (list): block
@@ -622,7 +596,7 @@ class Macro(lumberjack.Lumberjack):
 
         def buildMeta(self, name, value):
             '''
-            Append name and it assossciated metadata to meta
+            Append name and its assosciated metadata to self.meta
 
             Args:
                 name (str): metadata name
@@ -636,7 +610,7 @@ class Macro(lumberjack.Lumberjack):
 
         def buildComment(self, comment):
             '''
-            Adds comment to macro comments
+            Adds comment to self.comments
 
             Args:
                 comment (str): comment to be added

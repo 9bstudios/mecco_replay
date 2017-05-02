@@ -2,6 +2,11 @@
 '''
 The Notifier module contains the Notifier class, which is used to fire
 CommandEvents in modo
+
+.. todo:
+    - don't import modules using commas. use separate import lines.
+    - name everything according to PEP 8 conventions, only classes should use
+      UpCase all others should be snake_case, constants are UPPER_SNAKE_CASE.
 '''
 import lx, lxifc
 
@@ -27,12 +32,16 @@ class Notifier(lxifc.Notifier):
 
         Returns:
             str: replay.notifier
+
+        .. todo:
+            - these methods occur in the class body of a class called Notifier.
+              why do the method names need "noti_" prepended to them?
         '''
         return "replay.notifier"
 
     def noti_AddClient(self, event):
         '''
-        Add event to masterlist???
+        Registers a client event with the masterlist???
 
         Args:
             event (???): event to be added
@@ -44,7 +53,7 @@ class Notifier(lxifc.Notifier):
 
     def noti_RemoveClient(self, event):
         '''
-        Removes event from masterlist???
+        Removes event from masterlist
 
         Args:
             event (???): event to be removed

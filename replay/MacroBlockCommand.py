@@ -15,12 +15,7 @@ from MacroCommand import MacroCommand
 
 class MacroBlockCommand(MacroBaseCommand):
     '''
-    Abstraction class for treating multiple commands as one
-
-    Contains everything necessary to read, construct, write, and translate a
-    modo command for use in macros or python scripts. Note that if the command
-    property is None, the comment_before property will still be rendered, but
-    the command will be ignored. (This way you can add comment-only lines.)
+    Container class for multiple commands.  Stores MacroCommands as children.
 
     Args:
         \**kwargs: varkwargs
@@ -54,22 +49,17 @@ class MacroBlockCommand(MacroBaseCommand):
             \**kwargs: varkwargs
 
         Returns:
-            locals???
+            dict: local context
         '''
         idx = 0
         for cmd in kwargs.get('block'):
-            self.children.append(MacroCommand(parent=self, command = cmd, index = idx))
+            self.children.append(MacroCommand(parent=self, command=cmd, index=idx))
             idx = idx + 1
 
     def name():
         doc = '''
+        dict: local context
         Gets and sets name of block
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.columns['name'].value
@@ -115,7 +105,7 @@ class MacroBlockCommand(MacroBaseCommand):
 
     def render_LXM_if_selected(self):
         '''
-        Render selected commands as LXM
+        Render selected commands as lxm code
 
         Args:
             None
@@ -136,7 +126,7 @@ class MacroBlockCommand(MacroBaseCommand):
 
     def render_LXM(self):
         '''
-        Renders python with render_LXM renderName
+        Renders python with "render_LXM" as renderName
 
         Args:
             None

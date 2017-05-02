@@ -14,7 +14,7 @@ class RecordingCache(object):
         None
 
     Attributes:
-        commands: class property of modo commands???
+        list: commands
 
     Returns:
         None
@@ -47,15 +47,8 @@ class RecordingCache(object):
 
     def commands():
         '''
-        Makes commands available to modo
-
-        Args:
-            None
-
-        Returns:
-            locals???
+        list: cached commands
         '''
-        doc = """List of cached commands"""
         def fget(self):
             return self.__class__._commands
         def fset(self, value):

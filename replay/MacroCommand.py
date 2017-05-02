@@ -27,9 +27,6 @@ class MacroCommand(MacroBaseCommand):
 
     Returns:
         MacroCommand
-
-    .. todo::
-        - change the if bool(kwargs.get) design pattern because it's too arcane
     '''
     _args = {}
 
@@ -99,7 +96,8 @@ class MacroCommand(MacroBaseCommand):
 
     def attributes(self):
         '''
-        Convenience method for getting CommandAttributes of the rendered LXM
+        Convenience method for getting CommandAttributes of the rendered LXM.
+        Ignores comments.
 
         Args:
             None
@@ -111,30 +109,22 @@ class MacroCommand(MacroBaseCommand):
 
     def canAcceptDrop(self, source_nodes):
         '''
-        Whether source nodes can accept drop???
+        Whether source nodes can accept drag'n'drop actions
 
         Args:
             source_nodes (list): nodes
 
         Returns:
             bool: False
-
-        .. todo::
-            - what is this function supposed to do?
         '''
         return False
 
     def command():
+        doc = '''
+        dict: local context
+        The base modo command, such as "item.name".
+        Gets and sets the modo command
         '''
-        Gets and sets this command via modo
-
-        Args:
-            None
-
-        Returns:
-            locals???
-        '''
-        doc = "The base modo command, e.g. `item.name`."
         def fget(self):
             command = self.columns.get('command')
             if command:
@@ -152,14 +142,9 @@ class MacroCommand(MacroBaseCommand):
     command = property(**command())
 
     def name():
-        '''
-        Gets and sets the name of this command via modo
-
-        Args:
-            None
-
-        Returns:
-            locals???
+        doc = '''
+        dict: local context
+        Gets and sets the name of the modo command
         '''
         def fget(self):
             return self.columns.get('name').value
@@ -174,14 +159,9 @@ class MacroCommand(MacroBaseCommand):
     name = property(**name())
 
     def markedStringArgs():
-        '''
-        Gets and sets the asString property of this command via modo
-
-        Args:
-            None
-
-        Returns:
-            locals???
+        doc = '''
+        dict: local context
+        Gets and sets the asString property of the modo command
         '''
         def fget(self):
             return self.meta.get('asString')
@@ -193,6 +173,7 @@ class MacroCommand(MacroBaseCommand):
 
     def prefix():
         doc = '''
+        dict: local context
         Characters prepended to modo command string to control dialog display
 
         Usually one or two characters to suppress or force dialogs.
@@ -213,12 +194,6 @@ class MacroCommand(MacroBaseCommand):
         +----+----------------------+
 
         See http://sdk.luxology.com/wiki/Command_System:_Executing#Special_Prefixes
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.columns['prefix'].value
@@ -230,13 +205,8 @@ class MacroCommand(MacroBaseCommand):
 
     def display_prefix():
         doc = '''
+        dict: local context
         Gets and sets the display value for the command prefix
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.columns['prefix'].display_value
@@ -248,14 +218,9 @@ class MacroCommand(MacroBaseCommand):
 
     def args():
         doc = '''
+        dict: local context
         The MacroCommand node's arguments, which should all be of class
         MacroCommandArg.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self.children
@@ -272,7 +237,7 @@ class MacroCommand(MacroBaseCommand):
 
         Args:
             command (str): modo command string
-            suppress (???): modo suppress flag
+            suppress (bool): supress command
 
         Returns:
             None
@@ -297,7 +262,7 @@ class MacroCommand(MacroBaseCommand):
 
     def parse_json(self, command_json):
         '''
-        Parse a modo command in json struct into its constituent parts, and
+        Parse a modo command in json dict into its constituent parts, and
         stores those in the command and args properties for the object.
 
         Args:
@@ -436,7 +401,8 @@ class MacroCommand(MacroBaseCommand):
             self.args[arg_number].value = arg_value
 
             # Increase the argument counter, and check if it's not out of bounds:
-            if arg_counter == len(self.args): raise Exception("Error in parsing: too many arguments detected.")
+            if arg_counter == len(self.args):
+                raise Exception("Error in parsing: too many arguments detected.")
             arg_counter += 1
 
     def retreive_args(self):
@@ -452,6 +418,10 @@ class MacroCommand(MacroBaseCommand):
 
         .. todo::
             - fix the spelling of this method (retrieve)
+            - returns that follow raise statements will never be called
+            - empty returns should be avoided because the do not explicitly
+              convey intent.  Did you forget to remove the statement?
+              Did you forget to include what you wanted to return?
         '''
         if not self.command:
             raise Exception("Command string not set.")
@@ -527,7 +497,13 @@ class MacroCommand(MacroBaseCommand):
 
     def render_LXM_if_selected(self):
         '''
+        Renders selected nodes as a list of lxm strings
 
+        Args:
+            None
+
+        Returns:
+            list: lxm strings
         '''
         if self.selected:
             return self.render_LXM()
@@ -544,7 +520,10 @@ class MacroCommand(MacroBaseCommand):
         Returns:
             str: LXM rendered command string sans comments
         '''
-        result = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
+        result = '{prefix}{command}'.format(
+            prefix=(self.prefix if self.prefix is not None else ""),
+            command=self.command
+        )
 
         def wrap_quote(value):
             if re.search(r"\W", value):
@@ -554,7 +533,10 @@ class MacroCommand(MacroBaseCommand):
 
         for arg in self.args:
             if arg.value is not None:
-                result += " {name}:{value}".format(name=arg.argName, value=wrap_quote(str(arg.value)))
+                result += " {name}:{value}".format(
+                    name=arg.argName,
+                    value=wrap_quote(str(arg.value))
+                )
         return result
 
     def render_Python(self):
@@ -570,7 +552,13 @@ class MacroCommand(MacroBaseCommand):
         res = self.render_comments()
         if self.direct_suppress:
             res.append("# replay suppress:")
-        res.append(("# " if self.direct_suppress else "") + "lx.eval({command})".format(command=repr(self.render_LXM_without_comment().replace("'", "\\'"))))
+        res.append(
+            ("# " if self.direct_suppress else "") + "lx.eval({command})".format(
+                command=repr(
+                    self.render_LXM_without_comment().replace("'", "\\'")
+                )
+            )
+        )
         return res
 
     def render_json(self):
@@ -583,7 +571,10 @@ class MacroCommand(MacroBaseCommand):
         Returns:
             dict: modo command as json
         '''
-        full_cmd = '{prefix}{command}'.format(prefix=(self.prefix if self.prefix is not None else ""), command=self.command)
+        full_cmd = '{prefix}{command}'.format(
+            prefix=(self.prefix if self.prefix is not None else ""),
+            command=self.command
+        )
 
         args_list = list()
         for arg in self.args:
@@ -597,7 +588,15 @@ class MacroCommand(MacroBaseCommand):
             arg_dict['argExample'] = arg.argExample
             args_list.append(arg_dict)
 
-        return {"command" : {"name" : self.command, "prefix" : self.prefix, "suppress": self.direct_suppress, "comment" : self.comment_before, "args": args_list}}
+        return {
+            "command": {
+                "name": self.command,
+                "prefix": self.prefix,
+                "suppress": self.direct_suppress,
+                "comment" : self.comment_before,
+                "args": args_list
+            }
+        }
 
     def run(self):
         '''

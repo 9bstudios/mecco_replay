@@ -75,7 +75,7 @@ class MacroBaseCommand(lumberjack.TreeNode):
         Whether this command accepts drag'n'drop actions
 
         Args:
-            source_nodes (???): ???
+            source_nodes (list): sources nodes to be tested
 
         Returns:
             bool: True
@@ -118,7 +118,7 @@ class MacroBaseCommand(lumberjack.TreeNode):
             None
 
         Returns:
-            bool: supression changability
+            bool: supression changeability
         '''
         if hasattr(self.parent, 'suppress'):
             return not self.parent.suppress
@@ -241,13 +241,9 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def direct_suppress():
         doc = '''
-        Gets and sets whether a command is directly suppressed (not by supressing block)
-
-        Args:
-            None
-
-        Returns:
-            bool: True if command suppressed directly not by suppressing block.
+        bool: True if command suppressed directly not by suppressing block.
+        Gets and sets whether a command is directly suppressed (not by
+        supressing block)
         '''
         def fget(self):
             return self._suppress
@@ -266,14 +262,9 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def suppress():
         doc = '''
+        bool: supression state
         Gets and sets whether a command is directly suppressed (not by supressing block)
         Suppresses (comments) the command by appending a "#" before it.
-
-        Args:
-            None
-
-        Returns:
-            bool: supression state
         '''
         def fget(self):
             if hasattr(self.parent, 'suppress'):
@@ -292,7 +283,7 @@ class MacroBaseCommand(lumberjack.TreeNode):
             line: (str): metadata line
 
         Returns:
-            tuple: ???, metadata
+            tuple: name, value
         '''
         meta = re.search(r'^replay\s+(\S+):(.+)$', line)
         if meta is not None:
@@ -330,17 +321,12 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def comment_before():
         doc = '''
+        dict: local context
         Gets and sets comment before the command.
 
         Long strings will automatically be broken into lines of 80 characters or
         less. Appropriate comment syntax will be rendered at export time.
         Include only the raw string.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             res = list(self._user_comment_before)
@@ -363,13 +349,8 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
     def user_comment_before():
         doc = '''
+        dict: local context
         Gets and sets user comment before the command.
-
-        Args:
-            None
-
-        Returns:
-            locals???
         '''
         def fget(self):
             return self._user_comment_before

@@ -111,7 +111,7 @@ class LXMParser(object):
 
     def initParser(self, builder):
         '''
-        Initializes the parser???
+        Initializes the parser
 
         Args:
             builder (object): builder instance

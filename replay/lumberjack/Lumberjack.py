@@ -202,7 +202,7 @@ class Lumberjack(object):
         - a `TreeNode()` object
         - a `TreeView()` object
 
-        The TreeNode object is the data moel, the TreeView is the view model,
+        The TreeNode object is the data model, the TreeView is the view model,
         and the lumberjack object acts as controller."""
 
         pass

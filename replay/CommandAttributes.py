@@ -11,7 +11,7 @@ class ArgAttributes(object):
     CommandAttributes can use it
 
     Args:
-        idx (int): index of command assuming they are in a list
+        idx (int): index of the command
         command (lx.object.Command): modo command instance
         attributes (lx.object.Attributes): modo command parameters
         value_parsed (bool): whether the value of the command has been parsed
@@ -27,13 +27,13 @@ class ArgAttributes(object):
 
     def type_name(self, default=None):
         '''
-        Returns the name of the argument type
+        Returns the argument's type as a string
 
         Args:
-            default (object): default type name. Default: None
+            default (object): default type. Default: None
 
         Returns:
-            str: type name
+            str: type
         '''
         res = default
         try:
@@ -55,7 +55,7 @@ class ArgAttributes(object):
 
     def type(self, default=None):
         '''
-        Returns the argument type
+        Returns the argument's type
 
         Args:
             default (object): default type. Default: None
@@ -224,14 +224,14 @@ class ArgAttributes(object):
 
     def test_flag(self, flag, default=None):
         '''
-        Returns argument test flag???
+        Tests parity between argument's ArgFlags and given flag
 
         Args:
-            flag (???): test flag
+            flag (int): flag status
             default (object): default flag. Default: None
 
         Returns:
-            object: argument test flag
+            bool: if parity
         '''
         res = default
 
@@ -244,17 +244,44 @@ class ArgAttributes(object):
         return res
 
     def is_variable(self, default=None):
+        '''
+        Test if argument has a variable flag
+
+        Args:
+            default (object): default flag. Default: None
+
+        Returns:
+            bool: variable flag status
+        '''
         return self.test_flag(lx.symbol.fCMDARG_VARIABLE)
 
     def is_value_set(self, default=None):
+        '''
+        Test if argument has a value set flag
+
+        Args:
+            default (object): default flag. Default: None
+
+        Returns:
+            bool: value set flag status
+        '''
         return self.test_flag(lx.symbol.fCMDARG_VALUE_SET)
 
     def is_hidden(self, default=None):
+        '''
+        Test if argument has a hidden flag
+
+        Args:
+            default (object): default flag. Default: None
+
+        Returns:
+            bool: hidden flag status
+        '''
         return self.test_flag(lx.symbol.fCMDARG_HIDDEN)
 
 class CommandAttributes(object):
     '''
-    An interface for accessing modo command and argument attributes
+    An interface for accessing modo command and argument attributes.
     All methods are taking default values that will be used if command and
     attributes interfaces are not constructed successfully.
 
@@ -277,9 +304,10 @@ class CommandAttributes(object):
                 command_with_prefix = re.sub(r"(^[!?+]*)(.*)", r"!!\2", command)
                 x, y, cmd = svc.SpawnFromString(command_with_prefix)
             except:
-                # If this fail then command cannot be successfully executed at this state
-                # In this case we will use meta information which will provide almost the same
-                # Data except information about variable arguments
+                # If this fail then command cannot be successfully executed at
+                # this state. In this case we will use meta information which
+                # will provide almost the same data except information about
+                # variable arguments
 
                 # Spawn is not parsing values
                 self.m_value_parsed = False
@@ -320,7 +348,7 @@ class CommandAttributes(object):
             idx (int): argument index
 
         Returns:
-            ArgAttributes: argument attributes
+            ArgAttributes: modo argument attributes object
 
         Raises:
             AssertionError
@@ -330,7 +358,7 @@ class CommandAttributes(object):
 
     def prefix(self, default=None):
         '''
-        Returns argument prefix
+        Returns argument prefix. Prefixes are used in modo to control dialogs.
 
         Args:
             default (object): default prefix. Default: None
