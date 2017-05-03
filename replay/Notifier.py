@@ -7,8 +7,10 @@ CommandEvents in modo
     - don't import modules using commas. use separate import lines.
     - name everything according to PEP 8 conventions, only classes should use
       UpCase all others should be snake_case, constants are UPPER_SNAKE_CASE.
+    - Arman: If you mean noti_Xxxx functions to be snake_case, they are coming from lxifc.Notifier
 '''
-import lx, lxifc
+import lx
+import lxifc
 
 
 class Notifier(lxifc.Notifier):
@@ -36,6 +38,8 @@ class Notifier(lxifc.Notifier):
         .. todo:
             - these methods occur in the class body of a class called Notifier.
               why do the method names need "noti_" prepended to them?
+            - Arman: Good question but need to be addressed to Python API developers. It is from lxifc.Notifier.
+              We just overwriting it here.
         '''
         return "replay.notifier"
 

@@ -6,30 +6,6 @@ code with replay markup
 import re
 import lx
 
-
-class LXMBuilder:
-    '''
-    .. todo::
-        - remove this class as it is unused
-    '''
-    def buildType(self, type):
-        pass
-
-    def buildCommand(self, line, suppress):
-        pass
-
-    def buildBlockStart(self, block, suppress):
-        pass
-
-    def buildBlockEnd(self, block):
-        pass
-
-    def buildMeta(self, name, value):
-        pass
-
-    def buildComment(self, comment):
-        pass
-
 class LXMError(Exception):
     '''
     LXM parsing error message
@@ -105,7 +81,7 @@ class LXMParser(object):
         self.initParser(builder)
 
         # Check shabang
-        self.readShabang(file)
+        self.readShebang(file)
 
         self.readLines(file)
 
@@ -121,6 +97,7 @@ class LXMParser(object):
 
         .. todo::
             - why is this not called in the constructor?
+            - Arman: In this way same parser object could parse many file. Not important actually but why to restrict ?
         '''
         self.builder = builder
         self.line_index = 1
@@ -133,7 +110,7 @@ class LXMParser(object):
         self.block_stack = []
         self.skip_next_comments = True
 
-    def readShabang(self, file):
+    def readShebang(self, file):
         '''
         Parses a string of lxm code
 
@@ -142,9 +119,6 @@ class LXMParser(object):
 
         Returns:
             None
-
-        .. todo::
-            - rename to readShebang
         '''
         if isinstance(file, list):
             line = file[0]

@@ -82,22 +82,6 @@ class MacroBaseCommand(lumberjack.TreeNode):
         '''
         return True
 
-    def iter_tooltip(self):
-        '''
-        Iterates of commmand tooltip
-
-        Args:
-            None
-
-        Yields:
-            str: tool tip line
-
-        .. todo::
-            - is this ever called by anything but tooltip(index)?
-        '''
-        for line in self.user_comment_before:
-            yield line
-
     def tooltip(self, columnIndex):
         '''
         Whether this command is draggable in the UI
@@ -108,7 +92,7 @@ class MacroBaseCommand(lumberjack.TreeNode):
         Returns:
             str: command tooltip
         '''
-        return '\n'.join(self.iter_tooltip())
+        return '\n'.join(self.user_comment_before)
 
     def can_change_suppress(self):
         '''

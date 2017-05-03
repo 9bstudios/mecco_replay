@@ -135,7 +135,7 @@ class MacroCommand(MacroBaseCommand):
             if not value in lx.eval('query commandservice commands ?'):
                 raise Exception("Invalid command %s" % value)
             self.columns['command'].value = value
-            self.retreive_args()
+            self.retrieve_args()
             self.columns['name'].value = self.meta['name'] if 'name' in self.meta else self.command_meta()['username']
         return locals()
 
@@ -405,7 +405,7 @@ class MacroCommand(MacroBaseCommand):
                 raise Exception("Error in parsing: too many arguments detected.")
             arg_counter += 1
 
-    def retreive_args(self):
+    def retrieve_args(self):
         '''
         Retrieves a list of arguments and datatypes from modo's commandservice.
         See http://sdk.luxology.com/wiki/Commandservice#command.argNames
@@ -415,17 +415,9 @@ class MacroCommand(MacroBaseCommand):
 
         Returns:
             None
-
-        .. todo::
-            - fix the spelling of this method (retrieve)
-            - returns that follow raise statements will never be called
-            - empty returns should be avoided because the do not explicitly
-              convey intent.  Did you forget to remove the statement?
-              Did you forget to include what you wanted to return?
         '''
         if not self.command:
             raise Exception("Command string not set.")
-            return
 
         # Names of the arguments for the current command.
         argNames = lx.evalN("query commandservice command.argNames ? {%s}" % self.command)

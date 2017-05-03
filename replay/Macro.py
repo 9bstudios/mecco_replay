@@ -256,6 +256,9 @@ class Macro(lumberjack.Lumberjack):
     def add_command(self, **kwargs):
         '''
         Adds a command as a child to the kwargs receiver???
+        - Arman receiver is a object in which child is added. It could be 'self' and in that case child will be added in 
+          Lumberjack tree. It also could be another object. This is used for handling parsing errors. Tree nodes are collected in TmpCommandCache
+          object and only if parsing successes Lumberjack content is cleared and new commands are added.
 
         Args:
             \**kwargs: varkwargs
@@ -267,12 +270,16 @@ class Macro(lumberjack.Lumberjack):
             - add_child returns None because it has no return statement, it is
               silly for this command to return the results of a coomand that has
               not return.
+            - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
         return kwargs.get('receiver', self).add_child(type='command', **kwargs)
 
     def add_block(self, **kwargs):
         '''
         Adds a command as a block to the kwargs receiver???
+        - Arman receiver is a object in which child is added. It could be 'self' and in that case child will be added in 
+          Lumberjack tree. It also could be another object. This is used for handling parsing errors. Tree nodes are collected in TmpCommandCache
+          object and only if parsing successes Lumberjack content is cleared and new commands are added.
 
         Args:
             \**kwargs: varkwargs
@@ -283,6 +290,7 @@ class Macro(lumberjack.Lumberjack):
         .. todo::
             - receiver should be an explicit arg if this method expects it
             - again add_child has no return
+            - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
         return kwargs.get('receiver', self).add_child(type='block', **kwargs)
 
@@ -470,7 +478,8 @@ class Macro(lumberjack.Lumberjack):
 
     def _parse_and_insert(self, input_path, **kwargs):
         '''
-        Parse a macro file and insert what???
+        Parse a macro file and insert new commands at position given by kwargs['path']
+        without erasing existing commands.
 
         Args:
             input_path (str): macro file path
@@ -511,6 +520,8 @@ class Macro(lumberjack.Lumberjack):
         .. todo::
             - remove this from the Macro body, you do not ever include a builder
               class inside the body of the class that it builds
+            - Arman. The same could be said about parse_LXM. If parse_LXM is there why to not include 
+              the part of it's implementation inside class?
         '''
         def __init__(self, macro, **kwargs):
             self.macro = macro
@@ -633,6 +644,7 @@ class Macro(lumberjack.Lumberjack):
               as a constuctor argument, then a parser, defined within the method
               body, is used to "parse" this builder instance.  What could
               possibly go wrong?
+            - Arman: Really don't understand what can go wrong there. Could you please explain?
         '''
         parser = LXMParser()
         builder = Macro.MacroTreeBuilder(self, **kwargs)
@@ -782,7 +794,7 @@ class Macro(lumberjack.Lumberjack):
         new_path = next_command_path
         return (prev_path, new_path)
 
-    def shabang(self, lxm, sep):
+    def shebang(self, lxm, sep):
         '''
         Creates an appropriate shebang for writing to file
 
@@ -793,8 +805,6 @@ class Macro(lumberjack.Lumberjack):
         Returns:
             str: header
 
-        .. todo::
-            - rename this to shebang
         '''
         res = ""
         if lxm:
@@ -820,7 +830,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .lxm file
         output_file = open(output_path, 'w')
 
-        output_file.write(self.shabang(True, '\n'))
+        output_file.write(self.shebang(True, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -840,8 +850,8 @@ class Macro(lumberjack.Lumberjack):
         Returns:
             str: lxm text
         '''
-        # Render shabang
-        res = self.shabang(True, os.linesep)
+        # Render shebang
+        res = self.shebang(True, os.linesep)
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:
@@ -864,7 +874,7 @@ class Macro(lumberjack.Lumberjack):
         # Open the .py file
         output_file = open(output_path, 'w')
 
-        output_file.write(self.shabang(False, '\n'))
+        output_file.write(self.shebang(False, '\n'))
 
         # Loop over the commands to get all the command strings:
         for command in self.commands:

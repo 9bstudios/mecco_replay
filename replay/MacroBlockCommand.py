@@ -126,16 +126,13 @@ class MacroBlockCommand(MacroBaseCommand):
 
     def render_LXM(self):
         '''
-        Renders python with "render_LXM" as renderName
+        Renders LXM with "render_LXM" as renderName
 
         Args:
             None
 
         Returns:
-            list: rendered python commands
-
-        .. todo:
-            - my guess is that this is a typo and should render lxm not python
+            list: rendered LXM commands
         '''
         return self.render_LXM_Python('render_LXM')
 
@@ -183,6 +180,7 @@ class MacroBlockCommand(MacroBaseCommand):
         .. todo::
             - method expects type, command_json, block_json and path to be in
               kwargs, so those should be declared explicitly
+            - Arman: Command doesn't expect them. It just make sure that they are not in kwargs
         '''
         attributes = json_struct['command block']
         self.name = attributes['name']
