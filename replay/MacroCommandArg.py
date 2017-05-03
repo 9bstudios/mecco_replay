@@ -79,6 +79,10 @@ class MacroCommandArg(lumberjack.TreeNode):
             - what is the point of having functions that have no logic and are
               not properties?
               def __init__(self): self.can_change_suppress = False       Done.
+            - Arman. It is non-trivial in other node class MacroBaseCommand and the caller doesn't know
+              exact type of object when calling (lineSuppress command implementation). Generally having functions instead of 
+              variables is more flexible since even if there is no logic at this moment it could be added easly later. For example
+              can_change_color have no logic in any node class but it could be easely added if it will be needed.
         '''
         return False
 
@@ -379,12 +383,7 @@ class MacroCommandArg(lumberjack.TreeNode):
             None
 
         Raises:
-            Exception
-
-        .. todo:
-            - raising a generic exception does not help much with debugging via
-              traceback.  if the exception is related to a bad arg name then
-              raise a ValueError.
+            ValueError
         '''
         # Get the argument value and, if given, its name:
         full_argument = re.search(r'(\S+):(\S+)', arg)
@@ -397,7 +396,7 @@ class MacroCommandArg(lumberjack.TreeNode):
             if arg_name in [self.args[i]['argNames'] for i in range(len(args))]:
                 arg_number = [self.args[i]['argNames'] for i in range(len(args))].index(arg_name)
             else:
-                raise Exception("Wrong argument name.")
+                raise ValueError("Wrong argument name.")
 
             arg_value = full_argument.group(2)
 
