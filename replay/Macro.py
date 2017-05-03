@@ -9,8 +9,6 @@ from MacroCommandArg import MacroCommandArg
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 from LXMParser import LXMParser
-from LXMParser import LXMBuilder
-
 
 class Macro(lumberjack.Lumberjack):
     '''
@@ -506,7 +504,7 @@ class Macro(lumberjack.Lumberjack):
             self.parse_LXM(input_path, **kwargs)
         return format_name
 
-    class MacroTreeBuilder(LXMBuilder):
+    class MacroTreeBuilder:
         '''
         Builder class used for creating Macro instances
 
