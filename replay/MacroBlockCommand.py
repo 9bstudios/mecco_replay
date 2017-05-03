@@ -180,7 +180,7 @@ class MacroBlockCommand(MacroBaseCommand):
         .. todo::
             - method expects type, command_json, block_json and path to be in
               kwargs, so those should be declared explicitly
-            - Arman: Agree. Will do later since this will require some testing.
+            - Arman: Command doesn't expect them. It just make sure that they are not in kwargs
         '''
         attributes = json_struct['command block']
         self.name = attributes['name']

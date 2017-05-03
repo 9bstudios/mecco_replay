@@ -478,7 +478,8 @@ class Macro(lumberjack.Lumberjack):
 
     def _parse_and_insert(self, input_path, **kwargs):
         '''
-        Parse a macro file and insert what???
+        Parse a macro file and insert new commands at position given by kwargs['path']
+        without erasing existing commands.
 
         Args:
             input_path (str): macro file path
