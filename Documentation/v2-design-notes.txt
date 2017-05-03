@@ -1,0 +1,193 @@
+Essentially you need a full rewrite of the stuff in replay that is not lumberjack
+or commander.  It should obey the SOLID principles of design.  Now that you know
+all the stuff you have to do to make this thing work that becomes way easier.
+
+- The big violator here is the S, single responsibility.  It likely leads to other
+  issues in I (interface segregation) and D (dependency inversion).
+- Lumberjack is decent because it consists of a MVC framework for wrapping modo
+  functionality.
+- The modules in lumberjack are well abstracted from each other and don’t
+  overlap in responsibility AFAIK.
+- This leads to all sorts of niceties and maintainable code.
+- The stuff in the directory above is all over the place.
+
+So, I'm going to make some design recommendations for version 2 and you can decide
+what is possible and what isn’t.
+
+Parsing:
+  - Use pyparsing + backus naur forms developed with pyparsing to make a parser for:
+    - python code + replay markup
+    - lxm code + replay markup
+  - Include pyparsing in lib
+  - Trust me on this one, pyparsing is awesome
+  - API:
+    - parse: method to parse string of data
+    - _conform: semiprivate function called by parse to conform pyparsing output
+                to a valid data structure (ie particular dictionary)
+  - Do all the raw parsing first
+  - Then look at all of the disparate data
+    structures and decide on one or an amalgam of all of them
+  - Then write your _conforms
+
+Data Handling:
+  - Dumper
+    - Equivalent design pattern to YAML, JSON, etc dumpers
+    - API:
+      - dump: dump to file object
+      - dumps: dump to string
+  - Loader
+    - Equivalent design pattern to YAML, JSON, etc loaders
+    - API:
+      - load: load from a file object
+      - loads: load from a string
+  - Serializer
+    - Serialize data (which is a particularly formated dict) into a string
+    - API:
+      - validate: validates given data
+      - serialize: serializes data pending validation
+
+  - load and dump get always get called within a with block:
+        with open('foo.txt') as f:
+            bar = obj.load(f)
+
+Generics and Dispatch:
+  - Generics are a great design patterns for creating simple, consistent APIs
+    and delegating work/responsibility so as to keep it away from otherwise
+    irrelevant code
+  - A generic API is one that accepts multipe data types as inputs and resolves
+    what to do with them internally
+  - Dispatch is how the ambiguity of the data type gets resolved and the actual
+    work gets delegated
+  - You sort of employ the concept, but your division of responsibility is too
+    messy
+  - Create a utils.py file, which is your bag of functions module
+  - For macro data:
+    - Create a class called MacroData or something descriptive like that
+    - The API to the class includes the methods includes:
+      - load: loads a JSON, Python or LXM file into a dict
+      - loads: loads a JSON, Python or LXM string into a dict
+      - dump: dumps a JSON, Python or LXM to a file object
+      - dumps: dumps a JSON, Python or LXM to a string
+
+def is_json(fullpath):
+    _, ext = os.path.splitext(fullpath)
+    # use regex for case insensitivity (re.I)
+    if re.search('\.json', ext, re.I):
+        return True
+    return False
+
+def is_python(fullpath):
+    _, ext = os.path.splitext(fullpath)
+    if re.search('\.py', ext, re.I):
+        return True
+    return False
+
+class MacroData:
+    def load(self, fullpath):
+        with open(fullpath) as f:
+            # dispatch logic
+            if utils.is_json(fullpath):
+                return json.load(f) #if you don't have your own special JSON parser
+            if utils.is_lxm(fullpath):
+                return LXMParser().parse(f.read())
+            if utils.is_python(fullpath):
+                return PythonParser().parse(f.read())
+
+    def dump(self, data, fullpath):
+        with open(fullpath, 'w+') as f:
+            # dispatch logic
+            if utils.is_json(fullpath):
+                json.dump(f) #if you don't have your own special JSON serializer
+            if utils.is_lxm(fullpath):
+                f.write(LXMSerializer().serialize(data))
+            if utils.is_python(fullpath):
+                f.write(PythonSerializer().serialize(data))
+
+Parsing, serialization, read, write and a standard data representation are no
+well-defined, implemented, maintainable, extensible and portable between
+different projects.  Glory of glories!
+
+Contexts
+  - Modo wants to do something like run each call to python as a separate
+    process with its own environment
+  - This new environement is devoid of the context of the call and so
+    certain design patterns like singletons seem impossible
+  - A ModoContext class will solve this issue
+  - The context design pattern is essentially an API that stores retrieves and
+    resolves information relevant other APIs that cannot be called and/or
+    expected to function properly without it
+  - They are used to centralize information across different environments and
+    programming modalities, and, more importantly to keep other APIs clean and
+    on point, rather than cluttered with a bunch of conditional logic for
+    resolving every which case
+  - You need a storage mechanism that persists for an entire Modo session
+    (ie between events)
+  - Modo user values is probably a good candidate
+  - Define a ModoContext class that expects a __modo_context value to exist or
+    creates one if it doesn't
+  - ModoContext should inherit from dict and its default values should be
+    None (defaultdict style)
+  - Be sure to overload the getitem and setitem funtions so you can use square brackets
+    as accessors
+  - Load your context state from __modo_context before all calls to context that
+    don't modify state
+  - Dump your context state as JSON to the __modo_context value after each call
+    that modifies context state
+  - If you want singletons
+    - Add a {[class name]: [id(instance)]} key-value pair
+      to the context
+    - Pass the context into singleton constructor
+
+import gc
+
+def get_object_by_id(id_):
+    for obj in gc.get_objects():
+        if id(obj) == id_:
+            return obj
+    raise EnvironmentError( 'Instance:{} Not found.'.format(str(id_)) )
+
+class ModoContext(dict):
+    def __init__(self):
+        self._data = self._get_state()
+
+    def __getitem__(self, key):
+        try:
+            return self._data[key]
+        except KeyError:
+            self._data[key] = None
+            # self.save()
+            return self._data[key]
+
+    def __setitem_(self, key, value):
+        self._get_state()
+        self._data[key] = value
+        self.save()
+
+    def _get_state(self):
+        # from modo user values get __modo_context as state
+        self._data = json.loads(state)
+
+    def save(self):
+        state = json.dumps(self._data)
+        # from modo user values set __modo_context to state
+
+    def reset(self, data={}):
+        self._data = data
+        self.save()
+
+    def create_singleton(self, cls, args=[], kwargs={}):
+        # raises error if singleton exists in different environment
+        id_ = self[cls]
+        if id_ is None:
+            instance = cls(*args, **kwargs)
+        else:
+            instance = get_object_by_id(id_)
+        self[cls] = id(instance)
+        return instance
+
+Now you have a normal, singular development environment with all calls to modo,
+modo's context, replay's context (singleton stuff) and your central data
+structure fully abstracted by small, simple APIs.  Each API have responsibilites
+fully separable from the rest of your plugin, making them testable, maintainable,
+intelligible and portable for other plugins.  Beer and skittles rain from the
+heavens and the angels sing!
