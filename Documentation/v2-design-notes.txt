@@ -185,6 +185,76 @@ class ModoContext(dict):
         self[cls] = id(instance)
         return instance
 
+Builders
+- The builder design pattern is generally used as way to get around the fact
+  that python classes only have on constructor.  So, if you would like construct
+  an instance of a class in different, well-defined ways, then:
+    - Leave the __init__ empty or close too empty
+    - Use separate builder classes to construct each fancy instance
+
+class Foo(Object):
+    def __init__(self, herp):
+        self.herp = herp
+
+    def blarg(self, fizz):
+        self.fizz = fizz
+        return 'blarg', self.herp
+
+    def blerg(self):
+        return 'blerg', self.herp
+
+def foobar_build(self):
+    inst = Foo('derp')
+    inst.fizz = 'buzz'
+    return inst
+
+inst = foobar_build()
+
+OR
+
+FooBuilder(object):
+    def __init__(self):
+        self.args = []
+        self.kwargs = {}
+        self.fizz = 'buzz'
+        self.bingo = 'bango'
+
+    def set_herp(self, herp):
+        self.args.append(herp)
+        return self
+
+    def set_fizz(self, fizz):
+        self.fizz = fizz
+        return self
+
+    def set_bingo(self, bingo):
+        self.bingo = bingo
+        return self
+
+    def build_bar(self):
+        inst = Foo(*self.args, **self.kwargs)
+        inst.fizz = self.fizz
+        return inst
+
+    def build_bango(self):
+        inst = Foo(*self.args, **self.kwargs)
+        inst.bingo = self.bingo
+        return inst
+
+    def build(self):
+        inst = Foo(*self.args, **self.kwargs)
+        inst.fizz = self.fizz
+        inst.bingo = self.bingo
+        return inst
+
+custom = FooBuilder()\
+    .set_herp('slurp')\
+    .set_fizz('wizz')\
+    .set_bingo('bongo')\
+    .build()
+
+bango = FooBuilder().build_bango()
+
 Now you have a normal, singular development environment with all calls to modo,
 modo's context, replay's context (singleton stuff) and your central data
 structure fully abstracted by small, simple APIs.  Each API have responsibilites
