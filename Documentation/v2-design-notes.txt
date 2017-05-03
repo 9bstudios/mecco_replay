@@ -60,7 +60,9 @@ Generics and Dispatch:
     work gets delegated
   - You sort of employ the concept, but your division of responsibility is too
     messy
-  - Create a utils.py file, which is your bag of functions module
+  - Create a utils.py file, which is your bag of functions module for placing
+    all your miscelanneous bullshit, like those rich text coversion functions
+    we don't speak of and try to forget.
   - For macro data:
     - Create a class called MacroData or something descriptive like that
     - The API to the class includes the methods includes:
