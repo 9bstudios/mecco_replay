@@ -19,7 +19,7 @@ class TreeView( lxifc.TreeView,
     There is a lot of dark magic involved in the MODO API. Don't mess
     with this unless you know what you're doing."""
 
-    # Gloabal list of all created tree views.
+    # Global list of all created tree views.
     # These are used for shape and attribute changes
     _listenerClients = {}
 

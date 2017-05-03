@@ -1,0 +1,2 @@
+class BasicCommand(object):
+    pass

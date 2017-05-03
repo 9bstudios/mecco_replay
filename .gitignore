@@ -55,3 +55,6 @@ Temporary Items
 .idea/*
 *.pyc
 tmp.LXM
+
+Documentation/_build
+sftp-config.json
