@@ -29,7 +29,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro = replay.Macro()
 
-        file_path = macro.file_path
+        file_path = None
         file_format = macro.file_format
         # If there is no associated file path try to get from command line or prompt the user for new destination
 
@@ -56,6 +56,9 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro.render(file_format, file_path)
 
+        lx.eval('replay.fileClose')
+        lx.eval('replay.fileOpen {%s}' % file_path)
+
         # Add to recently-opened
         lx.eval('replay.fileOpenAddRecent {%s}' % file_path)
 
@@ -66,4 +69,4 @@ class CommandClass(replay.commander.CommanderClass):
         return True
 
 
-lx.bless(CommandClass, 'replay.fileSave')
+lx.bless(CommandClass, 'replay.fileSaveAs')
