@@ -19,7 +19,7 @@ class RunScriptCommand(replay.commander.CommanderClass):
         ]
 
     def commander_execute(self, msg, flags):
-    
+
         # Try to get the path from the command line:
         input_path = self.commander_arg_value(0)
 
@@ -36,13 +36,13 @@ class RunScriptCommand(replay.commander.CommanderClass):
             )
             if input_path is None:
                 return
-            
+
         if macro.file_path == input_path and macro.unsaved_changes and not macro.is_empty:
             if modo.dialogs.yesNo(message("MECCO_REPLAY", "ASK_FOR_SAVE_BEFORE_RUN_DIALOG_TITLE"), message("MECCO_REPLAY", "ASK_FOR_SAVE_BEFORE_RUN_DIALOG_MSG")) == 'yes':
                 macro.render(macro.file_format, macro.file_path)
-                
+
         lx.eval('@{%s}' % input_path)
-            
+
     def basic_Enable(self, msg):
         return True
 
