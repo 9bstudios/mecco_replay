@@ -72,7 +72,7 @@ class MacroBlockCommand(MacroBaseCommand):
 
     name = property(**name())
 
-    def render_LXM_Python(self, renderName):
+    def render_LXM_Python(self, renderName, ident):
         '''
         Construct modo command string from stored internal parts and adds comments
 
@@ -98,7 +98,7 @@ class MacroBlockCommand(MacroBaseCommand):
                 if line.startswith('#'):
                     res.append(("# " if self.direct_suppress else "") + line)
                 else:
-                    res.append(("# " if self.direct_suppress else "") + ' '*4 + line)
+                    res.append(("# " if self.direct_suppress else "") + ' '*4 if ident else '' + line)
 
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
@@ -134,7 +134,7 @@ class MacroBlockCommand(MacroBaseCommand):
         Returns:
             list: rendered LXM commands
         '''
-        return self.render_LXM_Python('render_LXM')
+        return self.render_LXM_Python('render_LXM', True)
 
     def render_Python(self):
         '''
@@ -146,7 +146,7 @@ class MacroBlockCommand(MacroBaseCommand):
         Returns:
             list: rendered python commands
         '''
-        return self.render_LXM_Python('render_Python')
+        return self.render_LXM_Python('render_Python', False)
 
     def render_json(self):
         '''
