@@ -98,7 +98,7 @@ class MacroBlockCommand(MacroBaseCommand):
                 if line.startswith('#'):
                     res.append(("# " if self.direct_suppress else "") + line)
                 else:
-                    res.append(("# " if self.direct_suppress else "") + ' '*4 if ident else '' + line)
+                    res.append(("# " if self.direct_suppress else "") + (' '*4 if ident else '') + line)
 
         res.append(("# " if self.direct_suppress else "") + "# Command Block End: %s" % self.name)
         return res
