@@ -289,8 +289,8 @@ class CmdListener(lxifc.CmdSysListener):
             
     def sendCommand(self, cmd):
         if cmd.Name() != "tool.doApply":
-            if cmd.Name() == "tool.set" and replay.CommandAttributes(object=cmd).arg(1).value_string() == "off" and \
-                    self.recording_session_data.lastCommand().Name() == "tool.doApply":
+            if cmd.Name() == "tool.set" and self.recording_session_data.lastCommand() is not None and \
+                            self.recording_session_data.lastCommand().Name() == "tool.doApply":
                 self.sendCommandImpl(self.recording_session_data.lastCommand())
             self.sendCommandImpl(cmd)
             
