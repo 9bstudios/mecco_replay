@@ -30,11 +30,8 @@ class CommandClass(replay.commander.CommanderClass):
             # No unsaved changes
             macro.unsaved_changes = False
 
-            # Clear current data
-            macro.clear()
-
             # Reload saved data
-            macro.parse(macro.file_path)
+            macro.parse('open', macro.file_path)
 
             # Rebuild treeview
             macro.rebuild_view()

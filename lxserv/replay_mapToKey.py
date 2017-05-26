@@ -16,7 +16,7 @@ class CommandClass(replay.commander.CommanderClass):
         macro = replay.Macro()
 
         if macro.file_path:
-            lx.eval('cmds.mapKey command:{@{%s}}' % macro.file_path)
+            lx.eval('cmds.mapKey command:{replay.runScript {%s}}' % macro.file_path)
 
         else:
             default_path = lx.eval('query platformservice alias ? {scripts:}')

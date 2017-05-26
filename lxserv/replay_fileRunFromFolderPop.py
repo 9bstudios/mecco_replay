@@ -1,6 +1,7 @@
 # python
 
 import lx, modo, replay, os, traceback
+from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
 https://github.com/adamohern/commander for details"""
@@ -34,9 +35,16 @@ class CommandClass(replay.commander.CommanderClass):
         return [("replay.notifier", "")]
 
     def commander_execute(self, msg, flags):
+        directory = lx.eval('query platformservice alias ? {%s}' % self.commander_arg_value(0))
         path = self.commander_arg_value(1)
+
+        if not path:
+            notifier = replay.Notifier()
+            notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
+            return
+
         try:
-            lx.eval('@{%s}' % path)
+            lx.eval('replay.runScript {%s}' % path)
         except:
             traceback.print_exc()
 
@@ -46,6 +54,8 @@ class CommandClass(replay.commander.CommanderClass):
         commands_list = []
         for sub in [f for f in os.listdir(path) if is_valid_script(os.path.join(path, f))]:
             commands_list.append((os.path.join(path, sub), os.path.basename(sub)))
+
+        commands_list.append(('', '(%s)' % message("MECCO_REPLAY", "REFRESH")))
 
         return commands_list
 

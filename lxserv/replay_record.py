@@ -16,6 +16,24 @@ https://github.com/adamohern/commander for details"""
 # undos and you detect a post command (by checking its command flags), you can skip
 # the post command.  I think there might be some other special cases, though.
 
+        
+# Objects of this class holding data for single recording session
+# After recording stops all data must be erased (onStopRecording)
+class RecordSessionData:
+    def __init__(self):
+        self.m_lastCommand = None
+        # Add more data here
+        
+    def onStopRecording(self):
+        self.m_lastCommand = None
+        # clear all data here
+        
+    def setLastCommand(self, cmd):
+        self.m_lastCommand = cmd
+
+    def lastCommand(self):
+        return self.m_lastCommand
+
 class CmdListener(lxifc.CmdSysListener):
     lazy_queue = {}
 
@@ -34,6 +52,7 @@ class CmdListener(lxifc.CmdSysListener):
         self.refire_last = {}
 
         self.state = False
+        self.recording_session_data = RecordSessionData()
         self.block_depth = 0
         self.total_depth = 0
         self.tool_doApply = False
@@ -43,6 +62,19 @@ class CmdListener(lxifc.CmdSysListener):
 
         # A list of sub-commands and blocks for debug printing.
         self.debug_path = []
+        
+    def set_state(self, state):
+        if self.state and not state:
+            self.recording_session_data.onStopRecording()
+        self.state = state
+
+    @classmethod
+    def set_lisnter(cls):
+        if cls._cmd_listner is None:
+            layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
+            cls._cmd_listner = CmdListener(
+                layoutCreateOrClose = layoutCreateOrClose
+            )
 
     def valid_for_record(self, cmd, isResult = False):
 
@@ -247,13 +279,22 @@ class CmdListener(lxifc.CmdSysListener):
         self.record_in_block = False
         if replay.RecordingCache().commands:
             self.queue_lazy_visitor(replay_lastBlockInsert)
-
-    def sendCommand(self, cmd):
+            
+    def sendCommandImpl(self, cmd):
         if self.record_in_block:
             svc_command = lx.service.Command()
             replay.RecordingCache().add_command(svc_command.ArgsAsStringLen(cmd, True))
         else:
             self.queue_lazy_visitor(replay_lineInsert, cmd)
+            
+    def sendCommand(self, cmd):
+        if cmd.Name() != "tool.doApply":
+            if cmd.Name() == "tool.set" and self.recording_session_data.lastCommand() is not None and \
+                            self.recording_session_data.lastCommand().Name() == "tool.doApply":
+                self.sendCommandImpl(self.recording_session_data.lastCommand())
+            self.sendCommandImpl(cmd)
+            
+        self.recording_session_data.setLastCommand(cmd)
 
     @classmethod
     def queue_lazy_visitor(cls, todo_function, *args, **kwargs):
@@ -334,7 +375,6 @@ class MyOnIdleVisitor (lxifc.Visitor):
             self.todo_function(*self.args, **self.kwargs)
         self.reset ()
 
-
 class RecordCommandClass(replay.commander.CommanderClass):
     """Start or stop Macro recording. The `mode` argument starts recording when
     `start`, stops recording when `stop`, and toggles recording when `toggle`.
@@ -379,7 +419,7 @@ class RecordCommandClass(replay.commander.CommanderClass):
         # We need to update our values whenever the replay notifier fires for
         # selection state changes and tree updates.
         return [("replay.notifier", "")]
-
+        
     @classmethod
     def set_state(cls, state):
         cls._recording = state
@@ -395,7 +435,7 @@ class RecordCommandClass(replay.commander.CommanderClass):
     @classmethod
     def set_lisnter_state(cls, value):
         cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
-        cls._cmd_listner.state = value
+        cls._cmd_listner.set_state(value)
 
     def commander_execute(self, msg=None, flags=None):
         mode = self.commander_arg_value(0, 'toggle')
