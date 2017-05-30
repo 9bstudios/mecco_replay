@@ -12,6 +12,47 @@
     <body>
       <h1>Replay Release Notes</h1>
 
+      <h2>1.1.0</h2>
+
+      <ul>
+        <li>
+          <h3>Play button uses built-in interpreter</h3>
+          Clicking the green 'play' button in the Replay window used to fire each command in the Macro one-by-one using "lx.eval". In certain cases this behavior did not match perfectly with the internal script interpreter's behavior. As a workaround, Replay now stores an external temp file with the latest LXM code, and fires it using the built-in '@' syntax, thus using the built-in Macro interpreter every time. Behavior should now match perfectly.
+        </li>
+        <li>
+          <h3>Fixed "tool echo" bug, with one caveat...</h3>
+          You can now record modeling operations like Bevel or Push without extra "tool.doApply" commands being added at inappropriate places. The fix does come with a catch: recording cannot support shift+LMB tool refiring. This is a limitation of the current MODO SDK, and we hope to fix it as soon as the SDK is patched.
+        </li>
+        <li>
+          <h3>Moved Help</h3>
+          Moved documentation links to the Help > Kit Help menu where they belong.
+        </li>
+        <li>
+          <h3>Fixed Python export bug</h3>
+          Macro style block indent is now removed during Python export
+        </li>
+        <li>
+          <h3>Save As</h3>
+          Macro... > Save As is effectively like Export, except without the extra format options. (Added for consistency with MODOs File menu.)
+        </li>
+        <li>
+          <h3>UI improvements</h3>
+          The Replay button in the modes tail is now a toggle button, and recording prefs can no longer be changed during recording
+        </li>
+        <li>
+          <h3>Bug fixes</h3>
+          Lots of under-the-hood fixes and improvements
+        </li>
+        <li>
+          <h3>LPK support</h3>
+          Zipped kit folder can now be renamed with the .lpk extension for automated installation. (Not implemented for mechanicalcolor.com distribution.)
+        </li>
+        <li>
+          <h3>Error handling</h3>
+          Added error handling when Scripts directory is empty, a warning is fired when attempting to run a script that is currently open in the editor, and several other situations.
+        </li>
+      </ul>
+
       <h2>1.0.5</h2>
 
       <ul>
