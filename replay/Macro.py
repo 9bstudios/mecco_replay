@@ -9,6 +9,7 @@ from MacroCommandArg import MacroCommandArg
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 from LXMParser import LXMParser
+from CommandAttributes import CommandAttributes
 
 class Macro(lumberjack.Lumberjack):
     '''
@@ -270,7 +271,10 @@ class Macro(lumberjack.Lumberjack):
               not return.
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
-        return kwargs.get('receiver', self).add_child(type='command', **kwargs)
+        node = kwargs.get('receiver', self).add_child(type='command', **kwargs)
+        if self.track_insertions and len(node.path) == (len(self.root.path) + 1):
+            self.insertions.append(node)
+        return node
 
     def add_block(self, **kwargs):
         '''
@@ -290,7 +294,10 @@ class Macro(lumberjack.Lumberjack):
             - again add_child has no return
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
-        return kwargs.get('receiver', self).add_child(type='block', **kwargs)
+        node = kwargs.get('receiver', self).add_child(type='block', **kwargs)
+      #  if self.track_insertions:
+       #     self.insertions.append((node.path, "block"))
+        return node
 
     def select_event_treeview(self):
         '''
@@ -357,6 +364,80 @@ class Macro(lumberjack.Lumberjack):
             self.root.children[index].selected = True
         else:
             self.node_for_path(index).selected = True
+            
+    class CommandMerger:
+        '''
+        Temporary command cache
+
+        Args:
+            None
+
+        Returns:
+            TmpCommandCache
+        '''
+        def __init__(self, macro):
+            self.macro = macro
+            self.insertion_index = 0
+            self.stopped = False
+
+        def add_child(self, **kwargs):
+            if self.stopped:
+                return
+            if kwargs['type'] == 'block':
+                return
+            
+            inserted_node = self.macro.insertions[self.insertion_index]
+            inserted_command = inserted_node.command
+
+            if len(kwargs['path']) != (len(self.macro.root.path) + 1):                
+                return
+            attrs = CommandAttributes(string=kwargs['command'])
+            built_in_command = attrs.name()
+            if inserted_command != built_in_command:
+                if built_in_command == "tool.doApply":
+                    kwargs['path'] = inserted_node.path
+                    self.macro.add_child(**kwargs)
+                    return
+                elif inserted_command == "tool.doApply":
+                    inserted_node.delete()
+                else:
+                    self.stopped = True
+                            
+            self.insertion_index += 1
+            if self.insertion_index >= len(self.macro.insertions):
+                self.stopped = True
+                
+    def merge_with_build_in(self, file_path):
+        receiver = Macro.CommandMerger(self)
+        self._parse_and_insert(file_path, receiver=receiver)
+
+    _track_insertions = False
+    _insertions = []
+    
+    def track_insertions():
+        def fget(self):
+            return self.__class__._track_insertions
+        def fset(self, value):
+            self.__class__._track_insertions = value
+        return locals()
+
+    track_insertions = property(**track_insertions())
+    
+    def insertions():
+        def fget(self):
+            return self.__class__._insertions
+        def fset(self, value):
+            self.__class__._insertions = value
+        return locals()
+
+    insertions = property(**insertions())
+                
+    def start_track_insertions(self, start):
+        if start:
+            del self.insertions[:]
+            self.track_insertions = True
+        else:
+            self.track_insertions = False
 
     class TmpCommandCache:
         '''

@@ -1,6 +1,6 @@
 # python
 
-import lx, lxifc, modo, replay, re
+import lx, lxifc, modo, replay, re, os
 from replay import message as message
 
 """A simple example of a blessed MODO command using the commander module.
@@ -434,8 +434,26 @@ class RecordCommandClass(replay.commander.CommanderClass):
 
     @classmethod
     def set_lisnter_state(cls, value):
-        cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
-        cls._cmd_listner.set_state(value)
+        if value:
+            lx.eval("!!macro.record true")
+            replay.Macro().start_track_insertions(True)
+            cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
+            cls._cmd_listner.set_state(value)
+        else:
+            anyRecordedCommand = cls._cmd_listner.recording_session_data.lastCommand() is not None
+            cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
+            cls._cmd_listner.set_state(value)
+            lx.eval("!!macro.record false")
+            if anyRecordedCommand:
+                file_path = lx.eval('query platformservice alias ? {kit_mecco_replay:}')
+                file_path = os.path.join(file_path, "Replay_built_in.LXM")
+                lx.eval("!!macro.saveRecorded {%s}" % file_path)
+                replay.Macro().start_track_insertions(False)
+                replay.Macro().merge_with_build_in(file_path)
+                replay.Macro().rebuild_view()
+                
+                notifier = replay.Notifier()
+                notifier.Notify(lx.symbol.fCMDNOTIFY_CHANGE_ALL)
 
     def commander_execute(self, msg=None, flags=None):
         mode = self.commander_arg_value(0, 'toggle')
