@@ -272,7 +272,7 @@ class Macro(lumberjack.Lumberjack):
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
         node = kwargs.get('receiver', self).add_child(type='command', **kwargs)
-        if self.track_insertions and len(node.path) == (len(self.root.path) + 1):
+        if self.track_insertions:
             self.insertions.append(node)
         return node
 
@@ -295,8 +295,8 @@ class Macro(lumberjack.Lumberjack):
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
         node = kwargs.get('receiver', self).add_child(type='block', **kwargs)
-      #  if self.track_insertions:
-       #     self.insertions.append((node.path, "block"))
+        if self.track_insertions:
+            self.insertions.append(node)
         return node
 
     def select_event_treeview(self):
@@ -364,52 +364,15 @@ class Macro(lumberjack.Lumberjack):
             self.root.children[index].selected = True
         else:
             self.node_for_path(index).selected = True
-            
-    class CommandMerger:
-        '''
-        Temporary command cache
-
-        Args:
-            None
-
-        Returns:
-            TmpCommandCache
-        '''
-        def __init__(self, macro):
-            self.macro = macro
-            self.insertion_index = 0
-            self.stopped = False
-
-        def add_child(self, **kwargs):
-            if self.stopped:
-                return
-            if kwargs['type'] == 'block':
-                return
-            
-            inserted_node = self.macro.insertions[self.insertion_index]
-            inserted_command = inserted_node.command
-
-            if len(kwargs['path']) != (len(self.macro.root.path) + 1):                
-                return
-            attrs = CommandAttributes(string=kwargs['command'])
-            built_in_command = attrs.name()
-            if inserted_command != built_in_command:
-                if built_in_command == "tool.doApply":
-                    kwargs['path'] = inserted_node.path
-                    self.macro.add_child(**kwargs)
-                    return
-                elif inserted_command == "tool.doApply":
-                    inserted_node.delete()
-                else:
-                    self.stopped = True
-                            
-            self.insertion_index += 1
-            if self.insertion_index >= len(self.macro.insertions):
-                self.stopped = True
                 
     def merge_with_build_in(self, file_path):
-        receiver = Macro.CommandMerger(self)
-        self._parse_and_insert(file_path, receiver=receiver)
+        if len(self.insertions) == 0:
+            return;
+        primary_path = self.insertions[0].path[0:1]
+        for inserted in self.insertions:
+            inserted.delete()
+        
+        self._parse_and_insert(file_path, path=primary_path, receiver=self)        
 
     _track_insertions = False
     _insertions = []
