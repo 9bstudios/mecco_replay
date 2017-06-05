@@ -37,6 +37,9 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
         # Create default name value object
         self.columns['name'] = lumberjack.TreeValue()
+        if kwargs['temporary']:
+            self.columns['name'].font.set_italic()
+
         # self.columns['name'].icon_resource = 'uiicon_replay.suppress'
 
         if kwargs.get('suppress') != None:

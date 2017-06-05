@@ -14,6 +14,8 @@ from MacroCommand import MacroCommand
 
 
 class MacroBlockCommand(MacroBaseCommand):
+    _temporary = False
+
     '''
     Container class for multiple commands.  Stores MacroCommands as children.
 
@@ -33,6 +35,8 @@ class MacroBlockCommand(MacroBaseCommand):
 
         self.columns['enable'].input_region = 'MacroCommandEnable'
         self.columns['name'].input_region = 'MacroCommandBlock'
+        
+        self._temporary = kwargs['temporary']
 
         self.name = kwargs.get('name', "")
 
@@ -53,7 +57,7 @@ class MacroBlockCommand(MacroBaseCommand):
         '''
         idx = 0
         for cmd in kwargs.get('block'):
-            self.children.append(MacroCommand(parent=self, command=cmd, index=idx))
+            self.children.append(MacroCommand(parent=self, command=cmd, temporary=self._temporary, index=idx))
             idx = idx + 1
 
     def name():
@@ -191,6 +195,7 @@ class MacroBlockCommand(MacroBaseCommand):
         kwargs.pop('command_json', None)
         kwargs.pop('block_json', None)
         kwargs.pop('path', None)
+        kwargs.pop('temporary', None)
 
         index = 0
         for command in attributes['commands']:

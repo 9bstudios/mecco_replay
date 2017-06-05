@@ -88,9 +88,11 @@ class Macro(lumberjack.Lumberjack):
             MacroCommand or MacroBlockCommand
         '''
         if kwargs.get('type', "command") == "command":
-            return MacroCommand(**kwargs)
+            node = MacroCommand(temporary=self.track_insertions, **kwargs)
         else:
-            return MacroBlockCommand(**kwargs)
+            node = MacroBlockCommand(temporary=self.track_insertions, **kwargs)
+
+        return node
 
     def file_path():
         doc = '''
