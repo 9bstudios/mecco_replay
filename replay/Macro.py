@@ -9,6 +9,7 @@ from MacroCommandArg import MacroCommandArg
 from MacroBlockCommand import MacroBlockCommand
 from Notifier import Notifier
 from LXMParser import LXMParser
+from CommandAttributes import CommandAttributes
 
 class Macro(lumberjack.Lumberjack):
     '''
@@ -87,9 +88,11 @@ class Macro(lumberjack.Lumberjack):
             MacroCommand or MacroBlockCommand
         '''
         if kwargs.get('type', "command") == "command":
-            return MacroCommand(**kwargs)
+            node = MacroCommand(temporary=self.track_insertions, **kwargs)
         else:
-            return MacroBlockCommand(**kwargs)
+            node = MacroBlockCommand(temporary=self.track_insertions, **kwargs)
+
+        return node
 
     def file_path():
         doc = '''
@@ -270,7 +273,10 @@ class Macro(lumberjack.Lumberjack):
               not return.
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
-        return kwargs.get('receiver', self).add_child(type='command', **kwargs)
+        node = kwargs.get('receiver', self).add_child(type='command', **kwargs)
+        if self.track_insertions:
+            self.insertions.append(node)
+        return node
 
     def add_block(self, **kwargs):
         '''
@@ -290,7 +296,10 @@ class Macro(lumberjack.Lumberjack):
             - again add_child has no return
             - Arman. If receiver is 'self' add_child (from Lumberjack) returns new node and it is actually used (see lineInsert).
         '''
-        return kwargs.get('receiver', self).add_child(type='block', **kwargs)
+        node = kwargs.get('receiver', self).add_child(type='block', **kwargs)
+        if self.track_insertions:
+            self.insertions.append(node)
+        return node
 
     def select_event_treeview(self):
         '''
@@ -357,6 +366,43 @@ class Macro(lumberjack.Lumberjack):
             self.root.children[index].selected = True
         else:
             self.node_for_path(index).selected = True
+                
+    def merge_with_build_in(self, file_path):
+        if len(self.insertions) == 0:
+            return;
+        primary_path = self.insertions[0].path[0:1]
+        for inserted in self.insertions:
+            inserted.delete()
+        
+        self._parse_and_insert(file_path, path=primary_path, receiver=self)        
+
+    _track_insertions = False
+    _insertions = []
+    
+    def track_insertions():
+        def fget(self):
+            return self.__class__._track_insertions
+        def fset(self, value):
+            self.__class__._track_insertions = value
+        return locals()
+
+    track_insertions = property(**track_insertions())
+    
+    def insertions():
+        def fget(self):
+            return self.__class__._insertions
+        def fset(self, value):
+            self.__class__._insertions = value
+        return locals()
+
+    insertions = property(**insertions())
+                
+    def start_track_insertions(self, start):
+        if start:
+            del self.insertions[:]
+            self.track_insertions = True
+        else:
+            self.track_insertions = False
 
     class TmpCommandCache:
         '''

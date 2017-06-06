@@ -58,3 +58,6 @@ tmp.LXM
 
 Documentation/_build
 sftp-config.json
+
+Replay_built_in.LXM
+Replay_TempFile.LXM

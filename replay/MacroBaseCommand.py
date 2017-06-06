@@ -19,6 +19,7 @@ class MacroBaseCommand(lumberjack.TreeNode):
         MacroBaseCommand
     '''
     _suppress = False
+    _temporary = False
     _user_comment_before = []
 
     def __init__(self, **kwargs):
@@ -37,6 +38,12 @@ class MacroBaseCommand(lumberjack.TreeNode):
 
         # Create default name value object
         self.columns['name'] = lumberjack.TreeValue()
+        if kwargs['temporary']:
+            self.columns['name'].font.set_italic()
+            self.columns['name'].color.special_by_name('gray')
+            
+        self._temporary = kwargs['temporary']
+
         # self.columns['name'].icon_resource = 'uiicon_replay.suppress'
 
         if kwargs.get('suppress') != None:
@@ -209,8 +216,9 @@ class MacroBaseCommand(lumberjack.TreeNode):
                 self.columns['enable'].value = True
                 self.columns['enable'].display_value = ''
                 # self.columns['enable'].icon_resource = 'MIMG_CHECKMARK'
-                self.columns['name'].color.special_by_name('default')
-                self.columns['prefix'].color.special_by_name('default')
+                if not self._temporary:
+                    self.columns['name'].color.special_by_name('default')
+                    self.columns['prefix'].color.special_by_name('default')
             elif self.suppress:
                 # If it is suppressed, display nothing and store False
                 self.columns['enable'].value = False
