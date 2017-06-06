@@ -10,45 +10,76 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
+      <img src="images/overview.png" />
+      <div class="textContent">
       <h1>Replay Release Notes</h1>
+
+      <h2>1.2.0</h2>
+
+      <ul>
+        <li>
+          <strong>Save As fixed: </strong>
+          Save As no longer prompts the user to save a second time.
+        </li>
+        <li>
+          <p><strong>Built-In Macro Recorder: </strong>Because of a limitation of the current MODO API, we have been forced to
+          use the built-in Macro recorder for reliability.</p>
+          <p>This means that the steps
+          you see in the Replay window during recording may be different from the
+          ones that appear after recording is finished. To help make this less jarring,
+          the steps are displayed in gray italic during recording, and then change
+          to normal black text when recording is complete.</p>
+          <p>The upside is that we can now correctly record certain tool interactions
+          that we previously could not. The downsides are many, including an inability
+          to record proper names for some commands ("Unit Cube Item" is now displayed
+          as "Run Script..."), and certain MODO bugs like the inability to record
+          very small distance value changes ("1um" is now recorded as "0.0").</p>
+          <p>We do hope that in the future we can go back to using our built-in recorder.</p>
+        </li>
+        <li>
+          <strong>layout.createOrClose: </strong>
+          Since we are now using the built-in macro recorder, the preference to record
+          <code>layout.createOrClose</code> has been removed.
+        </li>
+      </ul>
 
       <h2>1.1.0</h2>
 
       <ul>
         <li>
-          <h3>Play button uses built-in interpreter</h3>
+          <strong>Play button uses built-in interpreter: </strong>
           Clicking the green 'play' button in the Replay window used to fire each command in the Macro one-by-one using "lx.eval". In certain cases this behavior did not match perfectly with the internal script interpreter's behavior. As a workaround, Replay now stores an external temp file with the latest LXM code, and fires it using the built-in '@' syntax, thus using the built-in Macro interpreter every time. Behavior should now match perfectly.
         </li>
         <li>
-          <h3>Fixed "tool echo" bug, with one caveat...</h3>
+          <strong>Fixed "tool echo" bug, with one caveat...: </strong>
           You can now record modeling operations like Bevel or Push without extra "tool.doApply" commands being added at inappropriate places. The fix does come with a catch: recording cannot support shift+LMB tool refiring. This is a limitation of the current MODO SDK, and we hope to fix it as soon as the SDK is patched.
         </li>
         <li>
-          <h3>Moved Help</h3>
+          <strong>Moved Help: </strong>
           Moved documentation links to the Help > Kit Help menu where they belong.
         </li>
         <li>
-          <h3>Fixed Python export bug</h3>
+          <strong>Fixed Python export bug: </strong>
           Macro style block indent is now removed during Python export
         </li>
         <li>
-          <h3>Save As</h3>
+          <strong>Save As: </strong>
           Macro... > Save As is effectively like Export, except without the extra format options. (Added for consistency with MODOs File menu.)
         </li>
         <li>
-          <h3>UI improvements</h3>
+          <strong>UI improvements: </strong>
           The Replay button in the modes tail is now a toggle button, and recording prefs can no longer be changed during recording
         </li>
         <li>
-          <h3>Bug fixes</h3>
+          <strong>Bug fixes: </strong>
           Lots of under-the-hood fixes and improvements
         </li>
         <li>
-          <h3>LPK support</h3>
+          <strong>LPK support: </strong>
           Zipped kit folder can now be renamed with the .lpk extension for automated installation. (Not implemented for mechanicalcolor.com distribution.)
         </li>
         <li>
-          <h3>Error handling</h3>
+          <strong>Error handling: </strong>
           Added error handling when Scripts directory is empty, a warning is fired when attempting to run a script that is currently open in the editor, and several other situations.
         </li>
       </ul>
@@ -57,15 +88,16 @@
 
       <ul>
         <li>
-          <h3>Added Documentation to Help Menu</h3>
+          <strong>Added Documentation to Help Menu: </strong>
           Help > Replay Help<br />
           Help > Replay Hotkey Reference<br />
           Htlp > Replay Release Notes
         </li>
         <li>
-          <h3>Added tooltips in modes tail</h3>
+          <strong>Added tooltips in modes tail: </strong>
           Tooltips now appear for the Replay icons in the MODO modes tail.
         </li>
       </ul>
+    </div>
     </body>
 </html>

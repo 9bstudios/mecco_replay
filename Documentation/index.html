@@ -10,228 +10,241 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <h1>Replay Documentation</h1>
-        
+
         <div class="videoWrapper">
           <iframe width="560" height="315" src="https://www.youtube.com/embed/rImDO6be4-U" frameborder="0" allowfullscreen></iframe>
         </div>
 
-        <h2 id="About">About Replay</h2>
-        <p>Replay is a recording, editing, and export tool for macros and simple scripts in MODO.</p>
-        <p>Automating repetitive tasks in Replay is much quicker than with traditional macros, and we wrote our own command listener system that catches much more detail and nuance than the built-in macro recorder in MODO.</p>
-        <p>Rewriting the MODO macro recording system from scratch was no small effort. If you see something amiss, don't hesitate to let us know. (<a href="mailto:adam@mechanicalcolor.com">adam@mechanicalcolor.com</a>)</p>
+        <div class="textContent">
+          <h1>Replay</h1>
 
-        <hr />
-
-        <div id="quickstart">
-          <h2>Quickstart</h2>
-          <ol>
-            <li>Click the <span class="click">R</span> icon in the MODO Modes Bar</li>
-            <li>Click the <span class="click">record</span> icon at the bottom-right</li>
-            <li>Perform some actions to record. Note that these should NOT be interactive actions.</li>
-            <li>At any time during recording, you can stop recording by clicking the <span class="click">record</span> icon again. If you begin recording again, new commands will be inserted after the currently-selected command.</li>
-            <li>To run the script, click the <span class="click">play</span> button. To test the script step-by-step to find errors and efficiencies, use the <span class="click">step</span> button.</li>
-            <li>To modify the arguments of a command, either <span class="click">right-click > Edit</span> on the command (or <span class="click">moddle-click</span> on it for short). Note that you can edit like-named arguments from multiple commands at the same time using multi-selections.</li>
-            <li>To reorder commands in the list, simply drag and drop. If you prefer, you can use the reorder up, down, top, and bottom commands in the <span class="click">right-click</span> menu.</li>
-            <li>Click <span class="click">Macro > Save</span>. The save dialog defaults to your MODO user Scripts directory.</li>
-            <li>Once saved, you can run the script using the <span class="click">run</span> menu in the MODO Modes Bar, or using <span class="click">Macro > Map to Key...</span>.</li>
-          </ol>
-          <h3>Notes:</h3>
-          <ul>
-            <li>You may find that certain commands work best when fired in groups rather than stepwise. For example, firing a tool and setting its attributes should usually be done in one operation, rather than stepping through one-by-one. For these cases, we use 'Blocks'. A block is a group of commands that must always be fired as a single group. The macro recorder will group certain commands into blocks automatically, but sometimes you may want to use <span class="click">right-click > Add to Block</span> to manually create them.</li>
-            <li>As your scripts become more sophisticated, you will find that Python provides much more freedom and flexibility. To export a macro to Python, use <span class="click">Macro > Export...</span></li>
-            <li>You can also insert commands arbitrarily into a script using the <span class="click">Insert Command</span> popup. This provides an exhaustive list of every command currently available in MODO.</li>
-            <li>Some commands in MODO are flagged as "quiet", meaning they are not recorded by the MODO macro recorder. We respect this convention, but there are certain cases where quiet commands are very useful. For example, you may want for a script to fire a File > Open dialog to open a MODO scene. This is only possible using <code>scene.load</code>, which is not recorded by default. To add it, use the <span class="click">Insert Special</span> popup. This contains a number of useful commands that aren't easy to record or configure manually.</li>
-          </li>
-
+          <p>Replay is a recording, editing, and export tool for macros and simple scripts in MODO.</p>
+          <p>Automating repetitive tasks in Replay is much quicker than with traditional macros, and we wrote our own command listener system that catches much more detail and nuance than the built-in macro recorder in MODO.</p>
+          <p>Rewriting the MODO macro recording system from scratch was no small effort. If you see something amiss, don't hesitate to let us know. (<a href="mailto:adam@mechanicalcolor.com">adam@mechanicalcolor.com</a>)</p>
         </div>
 
-        <hr />
+        <img src="images/overview.png" />
 
-        <h2>Commands</h2>
-        <div id="quicklinks">
-          <ul>
-            <li><a href="#replay.fileNew">New<code>replay.fileNew</code></a></li>
-            <li><a href="#replay.fileOpen">Open...<code>replay.fileOpen</code></a></li>
-            <li><a href="#replay.fileClose">Close<code>replay.fileClose</code></a></li>
-            <li><a href="#replay.fileSave">Save<code>replay.fileSave</code></a></li>
-            <li><a href="#replay.fileExport">Export...<code>replay.fileExport</code></a></li>
-            <li><a href="#replay.mapToKey">Map to key...<code>replay.mapToKey</code></a></li>
-            <li><a href="#replay.play">Play Macro<code>replay.play</code></a></li>
-            <li><a href="#replay.record">Record Macro<code>replay.record</code></a></li>
-            <li><a href="#replay.lineComment">Comment<code>replay.lineComment</code></a></li>
-            <li><a href="#replay.lineColor">Color<code>replay.lineColor</code></a></li>
-            <li><a href="#replay.lineDelete">Delete<code>replay.lineDelete</code></a></li>
-            <li><a href="#replay.lineEdit">Edit...<code>replay.lineEdit</code></a></li>
-            <li><a href="#replay.lineReorder">Reorder<code>replay.lineReorder</code></a></li>
-            <li><a href="#replay.lineSuppress">Suppress<code>replay.lineSuppress</code></a></li>
-            <li><a href="#replay.step">Step Forward<code>replay.step</code></a></li>
-            <li><a href="#replay.fileOpenExternal">Open in Filesystem Editor<code>replay.fileOpenExternal</code></a></li>
-            <li><a href="#replay.argEditor">Edit Argument<code>replay.argEditor</code></a></li>
-            <li><a href="#replay.argEditFCL">List Arguments<code>replay.argEditFCL</code></a></li>
-            <li><a href="#replay.argClear">Clear Arg Value<code>replay.argClear</code></a></li>
-            <li><a href="#replay.fileOpenAddRecent">Add Recent Macro<code>replay.fileOpenAddRecent</code></a></li>
-            <li><a href="#replay.fileOpenRecentFCL">Recent Files<code>replay.fileOpenRecentFCL</code></a></li>
-            <li><a href="#replay.lineInsert">Insert Command<code>replay.lineInsert</code></a></li>
-            <li><a href="#replay.fileRevert">Revert<code>replay.fileRevert</code></a></li>
-            <li><a href="#replay.fileInsert">Insert From File<code>replay.fileInsert</code></a></li>
-            <li><a href="#replay.selToBlock">Add to Block<code>replay.selToBlock</code></a></li>
-            <li><a href="#replay.lineInsertSpecial">Insert Special<code>replay.lineInsertSpecial</code></a></li>
-            <li><a href="#replay.clipboardCut">Insert Special<code>replay.clipboardCut</code></a></li>
-            <li><a href="#replay.clipboardCopy">Insert Special<code>replay.clipboardCopy</code></a></li>
-            <li><a href="#replay.clipboardPaste">Insert Special<code>replay.clipboardPaste</code></a></li>
+        <div class="textContent">
+
+          <div id="quickstart">
+            <h2>Quickstart</h2>
+            <ol>
+              <li>Click the <span class="click">R</span> icon in the MODO Modes Bar</li>
+              <li>Click the <span class="click">record</span> icon at the bottom-right</li>
+              <li>Perform some actions to record. <div class="tip"><strong>Tip:</strong> For most reliable results, avoid any interaction that involves dragging the mouse. Instead, use numeric entry wherever possible.</div></li>
+              <li>At any time during recording, you can stop recording by clicking the <span class="click">record</span> icon again. If you begin recording again, new commands will be inserted after the currently-selected command. Undo is not supported during recording.<div class="tip"><strong>Note:</strong> During recording, recorded steps will be displayed in gray italic. When recording stops, these will be replaced with the final macro recording. There may be differences between the italic commands during recording and the final recorded macro. This is normal.</div></li></li>
+              <li>To run the script, click the <span class="click">play</span> button. To test the script step-by-step to find errors and efficiencies, use the <span class="click">step</span> button.</li>
+              <li>To modify the arguments of a command, either <span class="click">right-click > Edit</span> on the command (or <span class="click">moddle-click</span> on it for short). Note that you can edit like-named arguments from multiple commands at the same time using multi-selections.</li>
+              <li>To reorder commands in the list, simply drag and drop. If you prefer, you can use the reorder up, down, top, and bottom commands in the <span class="click">right-click</span> menu.</li>
+              <li>Click <span class="click">Macro > Save</span>. The save dialog defaults to your MODO user Scripts directory, which is typically the best place to save scripts like these.<div class="tip"><strong>Note:</strong> You can save elsewhere, but we warned that MODO may not know how to find them later.</div></li>
+              <li>Once saved, you can run the script using the <span class="click">run</span> menu in the MODO Modes Bar, or using <span class="click">Macro > Map to Key...</span>.</li>
+            </ol>
+          </div>
+          </div>
+
+          <img src="images/lxmCode.png" />
+
+          <div class="textContent">
+
+            <h3>Notes</h3>
+              <p>Replay makes it possible to do all of your Macro editing from within the MODO GUI without ever touching a text editor. If, however, you want to dig in using your code editor of choice, set your editor's syntax highlighting mode to Python when viewing LXM files.</p>
+              <p>As your scripts become more sophisticated, you will find that Python provides much more freedom and flexibipty. To export a macro to Python, use <span class="click">Macro > Export...</span></p>
+              <p>You can also insert commands arbitrarily into a script using the <span class="click">Insert Command</span> popup. This provides an exhaustive pst of every command currently available in MODO.</p>
+              <p>You may find that certain commands work best when fired in groups rather than stepwise. For example, firing a tool and setting its attributes should usually be done in one operation, rather than stepping through one-by-one. For these cases, we use 'Blocks'. A block is a group of commands that must always be fired as a single group. The macro recorder will group certain commands into blocks automatically, but sometimes you may want to use <span class="cpck">right-cpck > Add to Block</span> to manually create them.</p>
+              <p>See the <a href="hotkeys.html">hotkey documentation</a> for a few useful keyboard shortcuts.</p>
+
+
+          <hr />
+
+          <h2>Commands</h2>
+          <div id="quicklinks">
+            <ul>
+              <li><a href="#replay.fileNew">New<code>replay.fileNew</code></a></li>
+              <li><a href="#replay.fileOpen">Open...<code>replay.fileOpen</code></a></li>
+              <li><a href="#replay.fileOpenRecentFCL">Recent Files<code>replay.fileOpenRecentFCL</code></a></li>
+              <li><a href="#replay.fileInsert">Insert From File<code>replay.fileInsert</code></a></li>
+              <li><a href="#replay.fileClose">Close<code>replay.fileClose</code></a></li>
+              <li><a href="#replay.fileSave">Save<code>replay.fileSave</code></a></li>
+              <li><a href="#replay.fileExport">Export...<code>replay.fileExport</code></a></li>
+              <li><a href="#replay.fileRevert">Revert<code>replay.fileRevert</code></a></li>
+
+              <li><a href="#replay.fileOpenExternal">Open in Filesystem Editor<code>replay.fileOpenExternal</code></a></li>
+
+              <li><a href="#replay.record">Record Macro<code>replay.record</code></a></li>
+              <li><a href="#replay.play">Play Macro<code>replay.play</code></a></li>
+              <li><a href="#replay.step">Step Forward<code>replay.step</code></a></li>
+
+              <li><a href="#replay.lineComment">Line Comment<code>replay.lineComment</code></a></li>
+              <li><a href="#replay.lineColor">Line Color<code>replay.lineColor</code></a></li>
+              <li><a href="#replay.lineDelete">Line Delete<code>replay.lineDelete</code></a></li>
+              <li><a href="#replay.lineEdit">Line Edit...<code>replay.lineEdit</code></a></li>
+              <li><a href="#replay.lineReorder">Line Reorder<code>replay.lineReorder</code></a></li>
+              <li><a href="#replay.lineSuppress">Line Suppress<code>replay.lineSuppress</code></a></li>
+              <li><a href="#replay.lineInsert">Insert Command<code>replay.lineInsert</code></a></li>
+              <li><a href="#replay.lineInsertSpecial">Insert Special<code>replay.lineInsertSpecial</code></a></li>
+              <li><a href="#replay.selToBlock">Add Lines to Block<code>replay.selToBlock</code></a></li>
+
+              <li><a href="#replay.argEditor">Edit Argument<code>replay.argEditor</code></a></li>
+              <li><a href="#replay.argEditFCL">List Arguments<code>replay.argEditFCL</code></a></li>
+              <li><a href="#replay.argClear">Clear Arg Value<code>replay.argClear</code></a></li>
+
+              <li><a href="#replay.clipboardCut">Cut<code>replay.clipboardCut</code></a></li>
+              <li><a href="#replay.clipboardCopy">Copy<code>replay.clipboardCopy</code></a></li>
+              <li><a href="#replay.clipboardPaste">Paste<code>replay.clipboardPaste</code></a></li>
+
+              <li><a href="#replay.fileOpenAddRecent">Add Recent Macro<code>replay.fileOpenAddRecent</code></a></li>
+              <li><a href="#replay.mapToKey">Map to key...<code>replay.mapToKey</code></a></li>
+            </ul>
+          </div>
+
+          <ul id="commandsList">
+            <li id="replay.fileNew">
+              <h3 class="UserName">New</h3>
+              <code>replay.fileNew</code>
+              <p class="Desc">Creates a new macro, closing any currently-open one in the process.</p>
+            </li>
+            <li id="replay.fileOpen">
+              <h3 class="UserName">Open...</h3>
+              <code>replay.fileOpen</code>
+              <p class="Desc">Open an LXM file for editing. Supports both LXM and simple Python files (i.e. containing only <code>lx.eval()</code> statements and comments.)</p>
+            </li>
+            <li id="replay.fileClose">
+              <h3 class="UserName">Close</h3>
+              <code>replay.fileClose</code>
+              <p class="Desc">Close the currently-open LXM file.</p>
+            </li>
+            <li id="replay.fileSave">
+              <h3 class="UserName">Save</h3>
+              <code>replay.fileSave</code>
+              <p class="Desc">Saves the currently-open LXM file. If current macro is un-saved, prompts for Save As location.</p>
+            </li>
+            <li id="replay.fileExport">
+              <h3 class="UserName">Export...</h3>
+              <code>replay.fileExport</code>
+              <p class="Desc">Export the currently-open LXM file to Python or JSON.</p>
+            </li>
+            <li id="replay.mapToKey">
+              <h3 class="UserName">Map to key...</h3>
+              <code>replay.mapToKey</code>
+              <p class="Desc">Map the currently-open LXM file to a key. If file is un-saved, prompts for a Save As location.</p>
+            </li>
+            <li id="replay.play">
+              <h3 class="UserName">Play Macro</h3>
+              <code>replay.play</code>
+              <p class="Desc">Runs the currently-open macro in its entirety. (Suppressed lines are skipped.)</p>
+            </li>
+            <li id="replay.record">
+              <h3 class="UserName">Record Macro</h3>
+              <code>replay.record</code>
+              <p class="Desc">Toggles macro recording. Finished recording will be inserted after the currently-selected step in the Macro view.</p>
+            </li>
+            <li id="replay.lineComment">
+              <h3 class="UserName">Comment</h3>
+              <code>replay.lineComment</code>
+              <p class="Desc">Inserts a comment line before the primary command selection.</p>
+            </li>
+            <li id="replay.lineColor">
+              <h3 class="UserName">Color</h3>
+              <code>replay.lineColor</code>
+              <p class="Desc">Sets the row color for the currently-selected command(s).</p>
+            </li>
+            <li id="replay.lineDelete">
+              <h3 class="UserName">Delete</h3>
+              <code>replay.lineDelete</code>
+              <p class="Desc">Deletes the currently selected command(s).</p>
+            </li>
+            <li id="replay.lineEdit">
+              <h3 class="UserName">Edit...</h3>
+              <code>replay.lineEdit</code>
+              <p class="Desc">Fires a dialog to edit arguments for the primary command selection.</p>
+            </li>
+            <li id="replay.lineReorder">
+              <h3 class="UserName">Reorder</h3>
+              <code>replay.lineReorder</code>
+              <p class="Desc">Reorders the currently selected command(s) up one line, down one line, to the top of the macro, or to the bottom of the macro.</p>
+            </li>
+            <li id="replay.lineSuppress">
+              <h3 class="UserName">Suppress</h3>
+              <code>replay.lineSuppress</code>
+              <p class="Desc">Fires a dialog to edit arguments for the primary command selection.</p>
+            </li>
+            <li id="replay.step">
+              <h3 class="UserName">Step Forward</h3>
+              <code>replay.step</code>
+              <p class="Desc">Fires the next command in the Macro.</p>
+            </li>
+            <li id="replay.fileOpenExternal">
+              <h3 class="UserName">Open in Filesystem Editor</h3>
+              <code>replay.fileOpenExternal</code>
+              <p class="Desc">Opens the currently-open Macro in your default filesystem text editor. To avoid conflicts, the macro will be closed in Replay.</p>
+            </li>
+            <li id="replay.argEditor">
+              <h3 class="UserName">Edit Argument</h3>
+              <code>replay.argEditor</code>
+              <p class="Desc">A queriable form element for editing arguments in the selected command(s).</p>
+            </li>
+            <li id="replay.argEditFCL">
+              <h3 class="UserName">List Arguments</h3>
+              <code>replay.argEditFCL</code>
+              <p class="Desc">List all arguments for the currently-selected command(s) in the macro editor.</p>
+            </li>
+            <li id="replay.argClear">
+              <h3 class="UserName">Clear Arg Value</h3>
+              <code>replay.argClear</code>
+              <p class="Desc">Removes the values for all selected command arguments in the macro editor.</p>
+            </li>
+            <li id="replay.fileOpenAddRecent">
+              <h3 class="UserName">Add Recent Macro</h3>
+              <code>replay.fileOpenAddRecent</code>
+              <p class="Desc">Adds a file path to the list of recently-opened macro files.</p>
+            </li>
+            <li id="replay.fileOpenRecentFCL">
+              <h3 class="UserName">Recent Files</h3>
+              <code>replay.fileOpenRecentFCL</code>
+              <p class="Desc">Generates a list of recently-opened macro files.</p>
+            </li>
+            <li id="replay.lineInsert">
+              <h3 class="UserName">Insert Command</h3>
+              <code>replay.lineInsert</code>
+              <p class="Desc">Inserts a command into a macro from provided string.</p>
+            </li>
+            <li id="replay.fileRevert">
+              <h3 class="UserName">Revert</h3>
+              <code>replay.fileRevert</code>
+              <p class="Desc">Discard changes and restore last save.</p>
+            </li>
+            <li id="replay.fileInsert">
+              <h3 class="UserName">Insert From File</h3>
+              <code>replay.fileInsert</code>
+              <p class="Desc">Inserts all steps from a stored macro into the current position in the current macro.</p>
+            </li>
+            <li id="replay.selToBlock">
+              <h3 class="UserName">Add to Block</h3>
+              <code>replay.selToBlock</code>
+              <p class="Desc">Adds the selected commands to a new Block.</p>
+            </li>
+            <li id="replay.lineInsertSpecial">
+              <h3 class="UserName">Insert Special</h3>
+              <code>replay.lineInsertSpecial</code>
+              <p class="Desc">Adds special commands ordinarily ignored by the macro recorder.</p>
+            </li>
+            <li id="replay.clipboardCut">
+              <h3 class="UserName">Cut</h3>
+              <code>replay.clipboardCut</code>
+              <p class="Desc">Cuts currently-selected macro commands to the clipboard as plain text.</p>
+            </li>
+            <li id="replay.clipboardCopy">
+              <h3 class="UserName">Copy</h3>
+              <code>replay.clipboardCopy</code>
+              <p class="Desc">Copies currently-selected macro commands to the clipboard as plain text.</p>
+            </li>
+            <li id="replay.clipboardPaste">
+              <h3 class="UserName">Paste</h3>
+              <code>replay.clipboardPaste</code>
+              <p class="Desc">Pastes clipboard text after the currently-selected macro step. Text must be a valid macro, and must begin with an <code>#LXMacro#</code> shebang.</p>
+            </li>
           </ul>
-        </div>
-
-        <h2>Replay Commands</h2>
-
-        <ul id="commandsList">
-          <li id="replay.fileNew">
-            <h3 class="UserName">New</h3>
-            <code>replay.fileNew</code>
-            <p class="Desc">Creates a new macro, closing any currently-open one in the process.</p>
-          </li>
-          <li id="replay.fileOpen">
-            <h3 class="UserName">Open...</h3>
-            <code>replay.fileOpen</code>
-            <p class="Desc">Open an LXM file for editing. Supports both LXM and simple Python files (i.e. containing only <code>lx.eval()</code> statements and comments.)</p>
-          </li>
-          <li id="replay.fileClose">
-            <h3 class="UserName">Close</h3>
-            <code>replay.fileClose</code>
-            <p class="Desc">Close the currently-open LXM file.</p>
-          </li>
-          <li id="replay.fileSave">
-            <h3 class="UserName">Save</h3>
-            <code>replay.fileSave</code>
-            <p class="Desc">Saves the currently-open LXM file. If current macro is un-saved, prompts for Save As location.</p>
-          </li>
-          <li id="replay.fileExport">
-            <h3 class="UserName">Export...</h3>
-            <code>replay.fileExport</code>
-            <p class="Desc">Export the currently-open LXM file to Python or JSON.</p>
-          </li>
-          <li id="replay.mapToKey">
-            <h3 class="UserName">Map to key...</h3>
-            <code>replay.mapToKey</code>
-            <p class="Desc">Map the currently-open LXM file to a key. If file is un-saved, prompts for a Save As location.</p>
-          </li>
-          <li id="replay.play">
-            <h3 class="UserName">Play Macro</h3>
-            <code>replay.play</code>
-            <p class="Desc">Runs the currently-open macro in its entirety. (Suppressed lines are skipped.)</p>
-          </li>
-          <li id="replay.record">
-            <h3 class="UserName">Record Macro</h3>
-            <code>replay.record</code>
-            <p class="Desc">Toggles macro recording. Finished recording will be inserted after the currently-selected step in the Macro view.</p>
-          </li>
-          <li id="replay.lineComment">
-            <h3 class="UserName">Comment</h3>
-            <code>replay.lineComment</code>
-            <p class="Desc">Inserts a comment line before the primary command selection.</p>
-          </li>
-          <li id="replay.lineColor">
-            <h3 class="UserName">Color</h3>
-            <code>replay.lineColor</code>
-            <p class="Desc">Sets the row color for the currently-selected command(s).</p>
-          </li>
-          <li id="replay.lineDelete">
-            <h3 class="UserName">Delete</h3>
-            <code>replay.lineDelete</code>
-            <p class="Desc">Deletes the currently selected command(s).</p>
-          </li>
-          <li id="replay.lineEdit">
-            <h3 class="UserName">Edit...</h3>
-            <code>replay.lineEdit</code>
-            <p class="Desc">Fires a dialog to edit arguments for the primary command selection.</p>
-          </li>
-          <li id="replay.lineReorder">
-            <h3 class="UserName">Reorder</h3>
-            <code>replay.lineReorder</code>
-            <p class="Desc">Reorders the currently selected command(s) up one line, down one line, to the top of the macro, or to the bottom of the macro.</p>
-          </li>
-          <li id="replay.lineSuppress">
-            <h3 class="UserName">Suppress</h3>
-            <code>replay.lineSuppress</code>
-            <p class="Desc">Fires a dialog to edit arguments for the primary command selection.</p>
-          </li>
-          <li id="replay.step">
-            <h3 class="UserName">Step Forward</h3>
-            <code>replay.step</code>
-            <p class="Desc">Fires the next command in the Macro.</p>
-          </li>
-          <li id="replay.fileOpenExternal">
-            <h3 class="UserName">Open in Filesystem Editor</h3>
-            <code>replay.fileOpenExternal</code>
-            <p class="Desc">Opens the currently-open Macro in your default filesystem text editor. To avoid conflicts, the macro will be closed in Replay.</p>
-          </li>
-          <li id="replay.argEditor">
-            <h3 class="UserName">Edit Argument</h3>
-            <code>replay.argEditor</code>
-            <p class="Desc">A queriable form element for editing arguments in the selected command(s).</p>
-          </li>
-          <li id="replay.argEditFCL">
-            <h3 class="UserName">List Arguments</h3>
-            <code>replay.argEditFCL</code>
-            <p class="Desc">List all arguments for the currently-selected command(s) in the macro editor.</p>
-          </li>
-          <li id="replay.argClear">
-            <h3 class="UserName">Clear Arg Value</h3>
-            <code>replay.argClear</code>
-            <p class="Desc">Removes the values for all selected command arguments in the macro editor.</p>
-          </li>
-          <li id="replay.fileOpenAddRecent">
-            <h3 class="UserName">Add Recent Macro</h3>
-            <code>replay.fileOpenAddRecent</code>
-            <p class="Desc">Adds a file path to the list of recently-opened macro files.</p>
-          </li>
-          <li id="replay.fileOpenRecentFCL">
-            <h3 class="UserName">Recent Files</h3>
-            <code>replay.fileOpenRecentFCL</code>
-            <p class="Desc">Generates a list of recently-opened macro files.</p>
-          </li>
-          <li id="replay.lineInsert">
-            <h3 class="UserName">Insert Command</h3>
-            <code>replay.lineInsert</code>
-            <p class="Desc">Inserts a command into a macro from provided string.</p>
-          </li>
-          <li id="replay.fileRevert">
-            <h3 class="UserName">Revert</h3>
-            <code>replay.fileRevert</code>
-            <p class="Desc">Discard changes and restore last save.</p>
-          </li>
-          <li id="replay.fileInsert">
-            <h3 class="UserName">Insert From File</h3>
-            <code>replay.fileInsert</code>
-            <p class="Desc">Inserts all steps from a stored macro into the current position in the current macro.</p>
-          </li>
-          <li id="replay.selToBlock">
-            <h3 class="UserName">Add to Block</h3>
-            <code>replay.selToBlock</code>
-            <p class="Desc">Adds the selected commands to a new Block.</p>
-          </li>
-          <li id="replay.lineInsertSpecial">
-            <h3 class="UserName">Insert Special</h3>
-            <code>replay.lineInsertSpecial</code>
-            <p class="Desc">Adds special commands ordinarily ignored by the macro recorder.</p>
-          </li>
-          <li id="replay.clipboardCut">
-            <h3 class="UserName">Cut</h3>
-            <code>replay.clipboardCut</code>
-            <p class="Desc">>Cuts currently-selected macro commands to the clipboard as plain text.</p>
-          </li>
-          <li id="replay.clipboardCopy">
-            <h3 class="UserName">Copy</h3>
-            <code>replay.clipboardCopy</code>
-            <p class="Desc">Copies currently-selected macro commands to the clipboard as plain text.</p>
-          </li>
-          <li id="replay.clipboardPaste">
-            <h3 class="UserName">Paste</h3>
-            <code>replay.clipboardPaste</code>
-            <p class="Desc">Pastes clipboard text after the currently-selected macro step. Text must be a valid macro.</p>
-          </li>
-        </ul>
-
+      </div>
     </body>
 </html>
