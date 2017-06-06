@@ -56,7 +56,7 @@ class CommandClass(replay.commander.CommanderClass):
 
         macro.render(file_format, file_path)
 
-        lx.eval('replay.fileClose')
+        lx.eval('!!replay.fileClose')
         lx.eval('replay.fileOpen {%s}' % file_path)
 
         # Add to recently-opened
