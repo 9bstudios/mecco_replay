@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<package version="1.1.0">
+<package version="1021">
 	<kit name="mecco_replay" restart="YES">
 		<source target="mecco_replay/index.cfg">index.cfg</source>
 		<source target="mecco_replay/requirements.txt">requirements.txt</source>
 		<source target="mecco_replay/bin/build-docs.sh">bin/build-docs.sh</source>
-		<source target="mecco_replay/Configs/.keymap.cfg.un~">Configs/.keymap.cfg.un~</source>
-		<source target="mecco_replay/Configs/.messages.cfg.un~">Configs/.messages.cfg.un~</source>
 		<source target="mecco_replay/Configs/command_help.cfg">Configs/command_help.cfg</source>
 		<source target="mecco_replay/Configs/forms_argEditor.CFG">Configs/forms_argEditor.CFG</source>
 		<source target="mecco_replay/Configs/forms_HelpMenu.cfg">Configs/forms_HelpMenu.cfg</source>
@@ -123,9 +121,6 @@
 		<source target="mecco_replay/replay/lumberjack/__init__.py">replay/lumberjack/__init__.py</source>
 		<source target="mecco_replay/Scripts/replay_autoTest.py">Scripts/replay_autoTest.py</source>
 		<source target="mecco_replay/Scripts/replay_quickTest.py">Scripts/replay_quickTest.py</source>
-		<source target="mecco_replay/utest/.Test02.LXM.un~">utest/.Test02.LXM.un~</source>
-		<source target="mecco_replay/utest/.toolBlock.lxm.un~">utest/.toolBlock.lxm.un~</source>
-		<source target="mecco_replay/utest/.Untitled.LXM.un~">utest/.Untitled.LXM.un~</source>
 		<source target="mecco_replay/utest/allvisible.LXM">utest/allvisible.LXM</source>
 		<source target="mecco_replay/utest/Blank_Macro_001.LXM">utest/Blank_Macro_001.LXM</source>
 		<source target="mecco_replay/utest/fixsymm_origin_x.LXM">utest/fixsymm_origin_x.LXM</source>
@@ -139,10 +134,8 @@
 		<source target="mecco_replay/utest/tear_polygons.lxm">utest/tear_polygons.lxm</source>
 		<source target="mecco_replay/utest/Test01.LXM">utest/Test01.LXM</source>
 		<source target="mecco_replay/utest/Test02.LXM">utest/Test02.LXM</source>
-		<source target="mecco_replay/utest/Test02.LXM~">utest/Test02.LXM~</source>
 		<source target="mecco_replay/utest/toggle_wire.lxm">utest/toggle_wire.lxm</source>
 		<source target="mecco_replay/utest/toolBlock.lxm">utest/toolBlock.lxm</source>
-		<source target="mecco_replay/utest/toolBlock.lxm~">utest/toolBlock.lxm~</source>
 		<source target="mecco_replay/utest/triangulate_radial.lxm">utest/triangulate_radial.lxm</source>
 		<source target="mecco_replay/utest/UnitTest.py">utest/UnitTest.py</source>
 		<source target="mecco_replay/utest/working_Macro_001.LXM">utest/working_Macro_001.LXM</source>
