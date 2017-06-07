@@ -29,6 +29,9 @@ class CommandClass(replay.commander.CommanderClass):
     def basic_Enable(self, msg):
         if lx.eval('replay.record query:?'):
             return False
+        name = self.commander_arg_value(1)
+        if name == "replay_record_layoutCreateOrClose":
+            return not lx.eval("user.value replay_use_built_in_recorder ?")
         return True
 
     def cmd_Query(self, index, vaQuery):
