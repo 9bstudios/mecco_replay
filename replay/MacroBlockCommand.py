@@ -14,6 +14,8 @@ from MacroCommand import MacroCommand
 
 
 class MacroBlockCommand(MacroBaseCommand):
+    _temporary = False
+
     '''
     Container class for multiple commands.  Stores MacroCommands as children.
 
@@ -34,6 +36,8 @@ class MacroBlockCommand(MacroBaseCommand):
         self.columns['enable'].input_region = 'MacroCommandEnable'
         self.columns['name'].input_region = 'MacroCommandBlock'
         
+        self._temporary = kwargs['temporary']
+
         self.name = kwargs.get('name', "")
 
         if kwargs.get('block_json'):
