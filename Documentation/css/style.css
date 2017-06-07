@@ -74,6 +74,13 @@ code {
   font-size: 1.1em;
 }
 
+pre {
+  background-color:#eee;
+  color:#666;
+  font-family:monospace;
+  padding:1em;
+}
+
 .keystroke {
   padding: .1em .3em 0;
   background-color: rgb(230, 244, 255);
@@ -131,6 +138,14 @@ code {
     padding: 1em;
     margin: 1em 0;
     font-size: .9em;
+}
+
+.tip .click {
+  padding: 0 .4em 0;
+  background-color: rgb(213, 238, 255);
+  color: rgb(10, 100, 177);
+  display: inline-block;
+  border-radius: .2em;
 }
 
 ul.arguments li {
