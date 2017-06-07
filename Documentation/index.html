@@ -32,13 +32,21 @@
             <ol>
               <li>Click the <span class="click">R</span> icon in the MODO Modes Bar</li>
               <li>Click the <span class="click">record</span> icon at the bottom-right</li>
-              <li>Perform some actions to record. <div class="tip"><strong>Tip:</strong> For most reliable results, avoid any interaction that involves dragging the mouse. Instead, use numeric entry wherever possible.</div></li>
-              <li>At any time during recording, you can stop recording by clicking the <span class="click">record</span> icon again. If you begin recording again, new commands will be inserted after the currently-selected command. Undo is not supported during recording.<div class="tip"><strong>Note:</strong> During recording, recorded steps will be displayed in gray italic. When recording stops, these will be replaced with the final macro recording. There may be differences between the italic commands during recording and the final recorded macro. This is normal.</div></li></li>
-              <li>To run the script, click the <span class="click">play</span> button. To test the script step-by-step to find errors and efficiencies, use the <span class="click">step</span> button.</li>
-              <li>To modify the arguments of a command, either <span class="click">right-click > Edit</span> on the command (or <span class="click">moddle-click</span> on it for short). Note that you can edit like-named arguments from multiple commands at the same time using multi-selections.</li>
+              <li>Perform some actions to record. <div class="tip"><strong>Recording Tips:</strong> During recording, recorded steps will be displayed in gray italic. When recording stops, these will be replaced with the final macro recording. There are some important limitations to keep in mind when recording:
+                <ul>
+                  <li><strong>Avoid dragging the mouse</strong> during recording. Try to do everything using explicit commands, hotkeys, and numeric entry.</li>
+                  <li><strong>Paint select</strong> (i.e. clicking to select components in the viewport) is not allowed during recording.</li>
+                  <li><strong>Undo and redo</strong> are not allowed during recording.</li>
+                  <li><strong>Shift-click to refire</strong> a tool is not allowed during recording when using the Replay macro recorder. If you want shift-click to work and are willing to lose the other benefits that the Replay recorder offers, you can enable the <span class="click">Replay Preferences &gt; "Use built-in macro recorder"</span></li>
+                  <li>If the <span class="click">"Use built-in macro recorder"</span> setting is enabled, there may be differences between the italic commands during recording and the final recorded macro. This is normal.</li>
+                </ul></div></li>
+              <li>At any time during recording, you can stop recording by clicking the <span class="click">record</span> icon again. If you begin recording again, new commands will be inserted after the currently-selected command. Undo is not supported during recording.</li></li>
+              <li>To run the script, click the <span class="click">play</span> button. To test the script step-by-step to find errors and efficiencies, use the <span class="click">step</span> button.
+              <div class="tip"><strong>Note:</strong> In most cases, stepping through a macro will yield identical results to playing it back as a whole. When using interactive modeling tools like Bevel, Bridge, or Push, it may not. To work around this problem, <span class="click">shift-click</span> to select all of the steps related with a given interactive tool step and <span class="click">RMB &gt; Add to Block</span>. The steps will now run as a unit, emulating the behavior of running the entire script.</div></li>
+              <li>To modify the arguments of a command, either <span class="click">right-click &gt; Edit</span> on the command (or <span class="click">middle-click</span> for short). You can edit like-named arguments from multiple commands at the same time using multi-selections.</li>
               <li>To reorder commands in the list, simply drag and drop. If you prefer, you can use the reorder up, down, top, and bottom commands in the <span class="click">right-click</span> menu.</li>
-              <li>Click <span class="click">Macro > Save</span>. The save dialog defaults to your MODO user Scripts directory, which is typically the best place to save scripts like these.<div class="tip"><strong>Note:</strong> You can save elsewhere, but we warned that MODO may not know how to find them later.</div></li>
-              <li>Once saved, you can run the script using the <span class="click">run</span> menu in the MODO Modes Bar, or using <span class="click">Macro > Map to Key...</span>.</li>
+              <li>Click <span class="click">Macro &gt; Save</span>. The save dialog defaults to your MODO user Scripts directory, which is typically the best place to save scripts like these.<div class="tip"><strong>Note:</strong> You can save your macros anywhere you like, but we warned that MODO may not know how to find them later.</div></li>
+              <li>If you save into the default MODO Scripts directory, you can run the script using the <span class="click">run</span> menu in the MODO Modes Bar, or map it to a custom hotkey using <span class="click">Macro &gt; Map to Key...</span>.</li>
             </ol>
           </div>
           </div>
@@ -48,11 +56,33 @@
           <div class="textContent">
 
             <h3>Notes</h3>
-              <p>Replay makes it possible to do all of your Macro editing from within the MODO GUI without ever touching a text editor. If, however, you want to dig in using your code editor of choice, set your editor's syntax highlighting mode to Python when viewing LXM files.</p>
-              <p>As your scripts become more sophisticated, you will find that Python provides much more freedom and flexibipty. To export a macro to Python, use <span class="click">Macro > Export...</span></p>
-              <p>You can also insert commands arbitrarily into a script using the <span class="click">Insert Command</span> popup. This provides an exhaustive pst of every command currently available in MODO.</p>
-              <p>You may find that certain commands work best when fired in groups rather than stepwise. For example, firing a tool and setting its attributes should usually be done in one operation, rather than stepping through one-by-one. For these cases, we use 'Blocks'. A block is a group of commands that must always be fired as a single group. The macro recorder will group certain commands into blocks automatically, but sometimes you may want to use <span class="cpck">right-cpck > Add to Block</span> to manually create them.</p>
-              <p>See the <a href="hotkeys.html">hotkey documentation</a> for a few useful keyboard shortcuts.</p>
+              <p><strong>Syntax Highlighting</strong> - Replay makes it possible to do all of your Macro editing from within the MODO GUI without ever touching a text editor. If, however, you want to dig in using your code editor of choice, set your editor's syntax highlighting mode to Python when viewing LXM files.</p>
+              <p><strong>Comment</strong> - To temporarily disable a command during playback, use the "comment" column at the far left. Clicking the far-left column will reveal a <span class="click">#</span> sign and turn the line gray, indicating that it will not be played back. To re-enable it, simply click the far-left column again.</p>
+              <p><strong>Cut/Copy/Paste</strong> - The Replay window allows for standard <span class="click">ctrl + X</span>, <span class="click">ctrl + C</span>, and <span class="click">ctrl + V</span> for Cut, Copy, and Paste, respectively. These allow you to copy and paste individual macro steps within the Replay window, and also allow you to copy and paste code between the Replay window and your text editor.</p>
+              <p><strong>Suppress Dialogs</strong> - To suppress dialogs for a command, use the second column to add any of the standard MODO command prefixes:</p>
+<pre>
+!  Suppress dialogs
+!! Suppress all dialogs
++  Show dialogs
+++ Show all dialogs
+?  Show command dialog
+</pre>
+              <p><strong>Line Metadata</strong> - Replay allows you to <span class="click">RMB &gt; Rename</span> your commands to assign human-readable labels. You can also use <span class="click">RMB &gt; Line Color</span> to define a highlight color for visual reference, or even <span class="click">RMB &gt; Comment</span> to add custom comments in the code (displayed as tooltips in the Replay GUI). This is all possible because Replay stores custom metadata as comments in the LXM code. For example:</p>
+<pre>
+#LXMacro#
+# Made with Replay
+# mechanicalcolor.com
+
+# This is a comment about my code.
+# replay row_color:"red"
+# replay name:"My Great Label"
+script.run hash:"macro.scriptservice:32235733333:macro"
+</pre>
+              <p>As you can see, by renaming our command, assigning a line color, and adding a comment, we've added special comments to the LXM code that can be read back into Replay the next time we open the Macro. They are all human-readable, so it should be pretty clear what's going on.</p>
+              <p><strong>Special Commands</strong> - Some useful interactive commands cannot be properly recorded in a traditional macro, especially the File Open, Save, Save As, Export, and Preset Do commands. These are cincluded in a special popup menu called "Insert Special" at the bottom left of the Replay window.</p>
+              <p><strong>Arbitrary Commands</strong> - You can also insert commands arbitrarily into a script using the <span class="click">Insert Command</span> popup. This provides an exhaustive pst of every command currently available in MODO.</p>
+              <p><strong>Python Export</strong> - As your scripts become more sophisticated, you will find that Python provides much more freedom and flexibility. To export a macro to Python, use <span class="click">Macro &gt; Export...</span></p>
+              <p><strong>Hotkeys</strong> - See the <a href="hotkeys.html">hotkey documentation</a> for a few useful keyboard shortcuts.</p>
 
 
           <hr />

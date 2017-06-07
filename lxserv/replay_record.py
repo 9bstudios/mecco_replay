@@ -431,9 +431,22 @@ class RecordCommandClass(replay.commander.CommanderClass):
             cls._cmd_listner = CmdListener(
                 layoutCreateOrClose = layoutCreateOrClose
             )
+            
+    @classmethod    
+    def set_lisnter_state(cls, value):
+        use_built_in = lx.eval("user.value replay_use_built_in_recorder ?")
+        if use_built_in:
+            cls.set_lisnter_state_for_built_in(value)
+        else:
+            cls.set_lisnter_state_for_native(value)
+    
+    @classmethod    
+    def set_lisnter_state_for_native(cls, value):
+        cls._cmd_listner.layoutCreateOrClose = lx.eval("user.value replay_record_layoutCreateOrClose ?")
+        cls._cmd_listner.set_state(value)
 
     @classmethod
-    def set_lisnter_state(cls, value):
+    def set_lisnter_state_for_built_in(cls, value):
         if value:
             lx.eval("!!macro.record true")
             replay.Macro().start_track_insertions(True)
