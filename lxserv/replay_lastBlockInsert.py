@@ -18,7 +18,10 @@ class LastBlockInsertClass(replay.commander.CommanderClass):
             idx = len(macro.children)
         else:
             # If there's a primary node, insert right after it
-            idx = macro.primary.index + 1
+            node = macro.primary
+            while not node.can_insert_after():
+                node = node.parent
+            idx = node.index + 1
 
         cache = replay.RecordingCache()
 

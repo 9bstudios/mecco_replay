@@ -48,6 +48,8 @@ class LineInsertClass(replay.commander.CommanderClass):
         else:
             # If there's a primary node, insert right after it
             path = macro.primary.path
+            while not macro.node_for_path(path).can_insert_after():
+                path = path[:-1]
             path[-1] += 1
             
         lineInsert = UndoLineInsert(script, ButtonName, path)
