@@ -264,7 +264,11 @@ class ArgEditClass(replay.commander.CommanderClass):
                 attrs = command.attributes()
                 argTypeName = attrs.arg(argIndex).type_name(lx.symbol.sTYPE_STRING)
                 default = attrs.arg(argIndex).value_as_string(command.args[argIndex].value)
-                hints = attrs.arg(argIndex).hints(None)
+                hints_ = attrs.arg(argIndex).hints(None)
+                hints = list()
+                for idx, name in hints_:
+                    if idx >= 0:
+                        hints.append((idx, name))
 
             if argTypeName:
                 types.add((argTypeName, None if hints is None else tuple(hints), default))
