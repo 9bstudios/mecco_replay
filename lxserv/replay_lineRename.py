@@ -11,7 +11,7 @@ class CommandClass(replay.commander.CommanderClass):
     def commander_arguments(self):
         return [
             {
-                'name': 'comment',
+                'name': 'name',
                 'datatype': 'string',
                 'default': '',
                 'flags':[]
